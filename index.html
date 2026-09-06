@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="0fNTfPbOePQP8l0pduPkag">
+<head data-page-node-id="akaMyCBieOILlETC9MsiHY">
+<meta charset="UTF-8" data-page-node-id="GnLriWOebG6JvI0VT5LLs0">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="Rwr0o88LQSoRDLzWnZlnTa">
+<title>ADGS · 智能体数据治理系统 Demo</title>
+<link rel="stylesheet" href="assets/css/tokens.css" data-page-node-id="guJNopSza6NLDcwrlyUDfP">
+<link rel="stylesheet" href="assets/css/app.css" data-page-node-id="WKqoi5QHzHdxA8SCZhdRBJ">
+<link rel="stylesheet" href="assets/css/pages-s1.css" data-page-node-id="5GWXQ8XEKJLJKm4RnLi3lS">
+<link rel="stylesheet" href="assets/css/pages-s8.css" data-page-node-id="GTJLwrEQ86kmqnKOuLFiRA">
+<style>
+  .landing-hero {
+    background: linear-gradient(135deg, #1d4ed8 0%, #6d4cff 100%);
+    color: #fff; padding: 64px 48px; border-radius: var(--r-4);
+    margin-bottom: 32px; position: relative; overflow: hidden;
+  }
+  .landing-hero::before {
+    content: ""; position: absolute; right: -60px; top: -80px;
+    width: 360px; height: 360px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.16) 0%, transparent 70%);
+  }
+  .landing-hero h1 { font-size: 44px; font-weight: 800; margin: 0 0 8px; letter-spacing: -.5px; }
+  .landing-hero p { font-size: var(--fs-16); opacity: .92; max-width: 720px; margin: 0 0 24px; }
+  .landing-hero .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .landing-hero .badges .b { background: rgba(255,255,255,.18); padding: 5px 12px; border-radius: var(--r-pill); font-size: 12px; }
+
+  .sys-entry {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r-4); padding: 28px;
+    transition: all .15s; position: relative; overflow: hidden;
+  }
+  .sys-entry:hover { box-shadow: var(--sh-3); transform: translateY(-2px); }
+  .sys-entry .hd { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+  .sys-entry .hd .mark {
+    width: 56px; height: 56px; border-radius: var(--r-3);
+    display: grid; place-items: center;
+    color: #fff; font-size: 22px; font-weight: 700;
+  }
+  .sys-entry.s1 .hd .mark { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+  .sys-entry.s8 .hd .mark { background: linear-gradient(135deg, #6d4cff, #9d7dff); }
+  .sys-entry h2 { margin: 0; font-size: var(--fs-24); font-weight: 700; }
+  .sys-entry .sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  .sys-entry p { color: var(--ink-2); margin: 0 0 20px; font-size: var(--fs-13); line-height: 1.7; }
+  .sys-entry .links { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; }
+  .sys-entry .links a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: var(--r-2);
+    background: var(--surface-2); color: var(--ink-1);
+    font-size: var(--fs-13); text-decoration: none; transition: background .12s;
+  }
+  .sys-entry .links a:hover { background: var(--primary-bg); color: var(--primary); text-decoration: none; }
+  .sys-entry .links a::before { content: "→"; color: var(--ink-3); font-size: 12px; }
+  .sys-entry .footer {
+    margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--line-2);
+    display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--ink-3);
+  }
+  .sys-entry .footer .btn { margin-left: auto; }
+
+  .arch-card {
+    margin-top: 32px; background: var(--surface);
+    border: 1px solid var(--line); border-radius: var(--r-3); padding: 24px;
+  }
+  .arch-card h3 { margin: 0 0 12px; font-size: var(--fs-18); font-weight: 700; }
+  .arch-card p { color: var(--ink-2); font-size: var(--fs-13); margin: 0 0 16px; }
+</style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E" data-page-node-id="Ti8JLt9IQ7A8e5GTenFopr">
+</head>
+<body data-page-node-id="3YDjh4CgpekGJav013eNaH">
+
+<!-- ===================== 顶部导航 ===================== -->
+<header class="topbar" data-page-node-id="BruXyzhgm8kBdLCJymC5B8">
+  <a class="topbar-logo" href="index.html" data-page-node-id="9slyb68x2xj5z0jyezC8zq">
+    <span class="logo-mark" data-page-node-id="ZkAcrBQ0zh5oONZbbpODBp">AD</span>
+    <span data-page-node-id="LOXua0WOoYqCIXV4ZUhel7">ADGS<span class="muted" style="font-weight:400" data-page-node-id="HXNIXrO3tPjtsy1Eq2kpbC">&nbsp;治理平台</span></span>
+    <small data-page-node-id="axKaAaa0rZ91gcDwjJFEkz">Demo</small>
+  </a>
+  <nav class="topbar-nav" data-page-node-id="E0mtZjqFRyaYE2dbRn1BBV">
+    <a href="index.html" class="active" data-page-node-id="mHPjIEtYRH1oEcLiQU5urJ">首页</a>
+    <a href="pages/s1/catalog.html" data-page-node-id="WfCLRefyLX7dwtMxhAs0to">S1 元数据与资产中心</a>
+    <a href="pages/s2/event-dict.html" data-page-node-id="s2NavLink">S2 埋点与事件治理平台</a>
+    <a href="pages/s8/quality-dash.html" data-page-node-id="2hPLJe8MlNQBQurN6WuYZT">S8 数据质量治理中心</a>
+  </nav>
+  <div class="topbar-right" data-page-node-id="884VegCG7kYgL69XCODrAH">
+    <span class="topbar-tenant" data-page-node-id="b3VtZw8ze4sFLYiXmdorm9">demo 租户</span>
+    <span class="topbar-user" data-page-node-id="0Db5vKfLuSePN0TC2GdCfO">
+      <span class="topbar-avatar" data-page-node-id="daGwhwXf32wOvGHywY3SYh">U0</span>
+      <span data-page-node-id="EuOb2Hw7DnYfjGwb4VPTE7">演示用户</span>
+    </span>
+  </div>
+</header>
+
+<!-- ===================== 主体 ===================== -->
+<main style="max-width:1200px;margin:0 auto;padding:calc(var(--topbar-h) + 24px) 24px 48px;" data-page-node-id="bN3GkIq8xDNs0OC8AT40yy">
+
+  <!-- Hero -->
+  <section class="landing-hero" data-page-node-id="QCp00BF3CbHQsVJUrqh4yI">
+    <h1 data-page-node-id="A9cCJZWcF24bCP2jsDk9Yd">ADGS · 智能体数据治理系统</h1>
+    <p data-page-node-id="GRJfa8gvDquqJsMgjrTQ4B">面向 AI Agent 时代的企业级数据治理平台。基于"治理面 ↔ 数据面 ↔ 消费面"三平面分层架构，提供 <b data-page-node-id="5UKb1pUtkgF0TpVBICrgK2">元数据与资产管理</b>、<b data-page-node-id="yItCM4zCp2oOOeC5WUZnhw">数据质量治理</b>、<b data-page-node-id="dindlpf7k4v9ftJ7kkPYJf">模型与指标治理</b>、<b data-page-node-id="yOORz5XVzI9oT4KB9QUfqT">智能体可观测</b> 等核心能力。本次 Demo 聚焦 <b data-page-node-id="kXYDQj20uADI9Asii5bwQo">S1 元数据与资产中心</b> 与 <b data-page-node-id="jqgnwLLAnob5rVXIAR1WiC">S8 数据质量治理中心</b> 的可视化界面与关键交互。</p>
+    <div class="badges" data-page-node-id="GqGpPP7hmYZ0Nv9wMRG7G8">
+      <span class="b" data-page-node-id="HOE7WHehrt9vFXxLjKxlJj">治理面 9 子系统</span>
+      <span class="b" data-page-node-id="oGdmakf4bCPWSDT2ckJkgH">数据面 5 子系统</span>
+      <span class="b" data-page-node-id="6XJxsNy7ZWLl3EKpTe02yo">消费面 4 应用场景</span>
+      <span class="b" data-page-node-id="GdZp3mSWWW3mHSw01JdQjW">13 类质量规则</span>
+      <span class="b" data-page-node-id="wdiVfz1xOI6z0C1jK2N9RT">6 维质量模型</span>
+    </div>
+  </section>
+
+  <!-- 双子系统入口 -->
+  <div class="grid grid-3" data-page-node-id="u7bIRpyzmJjkczZ7XfDd03">
+
+    <!-- S1 -->
+    <article class="sys-entry s1" data-page-node-id="6uTFco36cGvkZPwMzphLkK">
+      <div class="hd" data-page-node-id="JfFwOntbBOvo06LznFNrWv">
+        <div class="mark" data-page-node-id="dYVBhxHAW7GipW1IIx2QXA">M</div>
+        <div data-page-node-id="MxKGR3gHYgvIBHRbWz8pVF">
+          <h2 data-page-node-id="P8faQlyWIJo7IXoDpyp9qJ">S1 · 元数据与资产中心</h2>
+          <div class="sub" data-page-node-id="ffjOFeJcECPbQo6FWEhq0G">Metadata & Asset Hub</div>
+        </div>
+      </div>
+      <p data-page-node-id="ykq4QI47WroIQJrXleCIfl">负责全企业数据资产的统一目录、字段级元数据、数据标准与分类体系治理；是整个治理体系的中枢。覆盖采集 / 分类 / 检索 / 共享 / 订阅 全生命周期。</p>
+      <div class="links" data-page-node-id="DhA6aDlGT22xGzHHEoHkQw">
+        <a href="pages/s1/catalog.html" data-page-node-id="sQ6MD31sSw6xvhYAO98HUm">资产目录首页</a>
+        <a href="pages/s1/dataset-detail.html" data-page-node-id="8PGOpYqHnMG922K0J8nxKZ">数据集详情</a>
+        <a href="pages/s1/domain.html" data-page-node-id="igBIBWl1xGXW9CBkaZ5fpW">主题域浏览</a>
+        <a href="pages/s1/standards.html" data-page-node-id="R1o3CYMTNV2CCJciLlHA7I">数据标准库</a>
+        <a href="pages/s1/standard-detail.html" data-page-node-id="TlnrsL0zVuILHjzD6EQZ14">标准详情</a>
+        <a href="pages/s1/change-impact.html" data-page-node-id="LGXXtuvTZgMvXC6vfp3Asc">变更影响分析</a>
+      </div>
+      <div class="footer" data-page-node-id="QMSOH79J8X2h4tpTO97KU6">
+        <span data-page-node-id="jqQI5aTlP2ai7qDsqVrOPH">核心场景：资产盘点 / 字段治理 / 数据标准化</span>
+        <a class="btn primary sm" href="pages/s1/catalog.html" data-page-node-id="FvDGnKFWHuziYmbT23dIig">进入 S1 →</a>
+      </div>
+    </article>
+
+    <!-- S2 -->
+    <article class="sys-entry s2" data-page-node-id="BF1PjblmcgCGAUsa9YrnF6">
+      <div class="hd" data-page-node-id="QmAkZXALOzzLaLNBYUcwqd">
+        <div class="mark" style="background:linear-gradient(135deg,#0891b2,#14b8a6)" data-page-node-id="ttyGnXimVFyxGNZXlpkMNj">T</div>
+        <div data-page-node-id="LSpnDm7yBG1HLHNUvdsPZd">
+          <h2 data-page-node-id="WGgNlTcCGoJwfTdxE9vkMm">S2 · 埋点与事件治理平台</h2>
+          <div class="sub" data-page-node-id="DjxOfAZYG21RTx4VpDEubd">Track & Event Governance</div>
+        </div>
+      </div>
+      <p data-page-node-id="LdOS6WaM6VQrMDfEpWPwK5">负责全企业埋点与事件的"定义-设计-上报-观测-验收"全生命周期治理。覆盖事件字典、Schema 版本化、公共属性组、方案设计器、SDK 模板、4 类自动验收（覆盖率/完整率/时序/对账），与 S1 数据面资产化、S8 质量治理形成双闭环。</p>
+      <div class="links" data-page-node-id="uaQFJ5QMe02V7sGRGyFKzl">
+        <a href="pages/s2/event-dict.html" data-page-node-id="SLyHDeFOlY7bPSG5PGEhH9">事件字典首页</a>
+        <a href="pages/s2/event-detail.html" data-page-node-id="kn3F0gsK2W0G9l7IXrZPV5">事件详情</a>
+        <a href="pages/s2/plan-list.html" data-page-node-id="GnfyFHSDyInvZOtoEHFrPx">方案列表</a>
+        <a href="pages/s2/plan-designer.html" data-page-node-id="w9kmN5GFJBaHe7EJuXslbM">方案设计器</a>
+        <a href="pages/s2/plan-diff.html" data-page-node-id="XQfX07wzegjTm2DMuGEkCB">方案 Diff</a>
+        <a href="pages/s2/live-tap.html" data-page-node-id="O54xF9DjppvN9YcR5P91Vz">实时观测</a>
+        <a href="pages/s2/acceptance.html" data-page-node-id="YnKuc2xeltzTixr2ICCDiU">验收工作台</a>
+        <a href="pages/s2/acceptance-report.html" data-page-node-id="EOOHjUXhUs56IG63bDIyoU">验收报告导出</a>
+        <a href="pages/s2/agent-trace.html" data-page-node-id="VEpZx3uLSYyzh7280xEsGn">智能体步骤钻取</a>
+      </div>
+      <div class="footer" data-page-node-id="6HPl6x3RAdkJ2czgOPyheU">
+        <span data-page-node-id="di1PdePluilTnq4uOLwmVU">核心场景：事件资产化 / 智能体可观测 / 端到端验收 / Diff 比对 / 报告导出</span>
+        <a class="btn primary sm" href="pages/s2/event-dict.html" data-page-node-id="5BbCsyEgq44UT2cT8TQKjn">进入 S2 →</a>
+      </div>
+    </article>
+
+    <!-- S8 -->
+    <article class="sys-entry s8" data-page-node-id="SnRWiuzMckS1xaVuQhjypm">
+      <div class="hd" data-page-node-id="yZ0zNTPrBasDQ9DGKZVI91">
+        <div class="mark" style="background:linear-gradient(135deg,#6d4cff,#9d7dff)" data-page-node-id="YK5SDBsm6jDFF7izdKuq9A">Q</div>
+        <div data-page-node-id="EuQXw7cSVTe3HOyoyVCemy">
+          <h2 data-page-node-id="HhnzdAPQKiIXTnkG3UpjVq">S8 · 数据质量治理中心</h2>
+          <div class="sub" data-page-node-id="JG2G9DKnMGLHGQktfs0Eoj">Data Quality Governance</div>
+        </div>
+      </div>
+      <p data-page-node-id="jNwZkRoE379owMpg2Xk2in">负责全链路数据质量的规则定义、实时稽核、异常检测、影响面分析、回溯执行与质量闭环；面向数据开发、Owner、治理委员会三类用户提供分层视图。</p>
+      <div class="links" data-page-node-id="YzgmgdguqKVg2gbxROh0Fw">
+        <a href="pages/s8/quality-dash.html" data-page-node-id="hGDmaftgPOsrfZO8p9nF00">质量大盘首页</a>
+        <a href="pages/s8/rule-market.html" data-page-node-id="tDWZbvxzjEE3JmUoUX75FD">规则市场</a>
+        <a href="pages/s8/rule-detail.html" data-page-node-id="r7B5YKVJ8jV4mwucvWZEpL">规则详情</a>
+        <a href="pages/s8/anomaly.html" data-page-node-id="OsgjesGPtKQviRLJ5Ur5FO">异常中心</a>
+        <a href="pages/s8/anomaly-workbench.html" data-page-node-id="n9vaZnKApeswBcJ3tJGe63">异常处置工作台</a>
+        <a href="pages/s8/domain-focus.html" data-page-node-id="gitoFfUrOHKzfiXGP59I4L">主题域质量聚焦</a>
+      </div>
+      <div class="footer" data-page-node-id="ZsjWtkAirosbq2ih4QPZKM">
+        <span data-page-node-id="lyvzsf3F3xGDfuIEWikS3E">核心场景：规则治理 / 异常闭环 / 质量态势</span>
+        <a class="btn primary sm" href="pages/s8/quality-dash.html" data-page-node-id="c8xgONMz9zvXjabjHaUYd0">进入 S8 →</a>
+      </div>
+    </article>
+  </div>
+
+  <!-- 总体架构图（用占位说明跳转） -->
+  <section class="arch-card" data-page-node-id="qOpVTl8Rr6AyIDd8tRLcLG">
+    <h3 data-page-node-id="uN0NfvKcP0qOnqzinxVAHb">📐 系统总体分层架构</h3>
+    <p data-page-node-id="oQA1KroBPS8QSDiGCtIF4C">治理面 ↔ 数据面 ↔ 消费面，三平面分层。完整架构图与子系统依赖关系图见主文档第 3 章，并已作为交互图嵌入。本 Demo 展示 S1 / S2 / S8 三个子系统的可视化界面。</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px" data-page-node-id="GnWBA6csVElYbXQ2o9ksx6">
+      <div style="background:var(--surface-2);padding:16px;border-radius:var(--r-3)" data-page-node-id="DpuWZ8gKVu19N0mKOs4JfX">
+        <h4 style="margin:0 0 8px;font-size:14px" data-page-node-id="Y6Y59hcKPTFuJ1AndYtYs2">治理面（9 子系统）</h4>
+        <div style="font-size:12px;color:var(--ink-2);line-height:1.7" data-page-node-id="9E0DbGveopXkSFyyZDqC00">S1 元数据 · S2 架构 · S3 标准 · S4 模型 · S6 安全 · S7 指标 · S8 质量 · S9 服务化 · S11 合规 · ...</div>
+      </div>
+      <div style="background:var(--surface-2);padding:16px;border-radius:var(--r-3)" data-page-node-id="Ap8X6aPvr0MQCD3StrJoem">
+        <h4 style="margin:0 0 8px;font-size:14px" data-page-node-id="wNFDICRMUPJsZUtmJBdH1f">数据面（5 子系统）</h4>
+        <div style="font-size:12px;color:var(--ink-2);line-height:1.7" data-page-node-id="1dHI4BNnJAEGJBZDFq5bup">数据源接入 · 数据集成（S3） · 数据开发（S4） · 建模与存储 · 数据资产/服务（S10/S13）</div>
+      </div>
+      <div style="background:var(--surface-2);padding:16px;border-radius:var(--r-3)" data-page-node-id="mVspnhfhlulZGe7QaobtWO">
+        <h4 style="margin:0 0 8px;font-size:14px" data-page-node-id="HAQfxEU36w3h6X1HRdnvlm">消费面（4 场景）</h4>
+        <div style="font-size:12px;color:var(--ink-2);line-height:1.7" data-page-node-id="c1YhMaLbDCRIvFqBTNNLPR">F1 数据应用 · F2 决策分析 · F3 智能体应用 · F4 监管报送</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo 说明 -->
+  <section style="margin-top:32px;padding:20px 24px;background:var(--info-bg);border:1px solid var(--info-border);border-radius:var(--r-3);font-size:13px;color:#1e3a8a" data-page-node-id="FsZKFyyVjy2A93jPHb5njv">
+    <b data-page-node-id="rT3zIM55MBmHUc4K2vU8Pe">📦 关于本 Demo：</b>纯静态站点，无构建步骤。所有数据为模拟数据，仅用于演示界面形态、信息密度与交互体验。详见 <a href="README.md" style="color:#1e3a8a;text-decoration:underline" data-page-node-id="i5EyhyVXSpExZN3ClmU8Gy">README.md</a>。
+  </section>
+
+</main>
+
+</body>
+</html>

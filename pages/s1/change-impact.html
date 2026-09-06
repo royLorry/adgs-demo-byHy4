@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>变更影响分析 · S1 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s1.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's1';
+  window.PAGE = 'change';
+  window.SIDEBAR = {
+    section: '核心功能',
+    items: [
+      { id: 'catalog',    label: '资产目录',     icon: '📚', href: 'catalog.html' },
+      { id: 'dataset',    label: '数据集详情',   icon: '📄', href: 'dataset-detail.html' },
+      { id: 'domain',     label: '主题域浏览',   icon: '🗂️', href: 'domain.html' },
+      { id: 'standards',  label: '数据标准库',   icon: '📐', href: 'standards.html' },
+      { id: 'std-detail', label: '标准详情',     icon: '🏷️', href: 'standard-detail.html' },
+      { id: 'change',     label: '变更影响分析', icon: '🔄', href: 'change-impact.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <a href="standards.html">数据标准库</a><span class="sep">/</span>
+      <span>变更影响分析 · ST-201 订单状态枚举 v2.0</span>
+    </div>
+
+    <div class="page-head">
+      <h1>变更影响分析 <span class="badge warn">变更待发布</span></h1>
+      <p>本次变更将调整订单状态枚举，从 4 个值扩为 5 个值（新增「部分退款」状态），并同步变更字段类型。</p>
+    </div>
+
+    <!-- 概要 KPI -->
+    <div class="grid grid-4 mb-4">
+      <div class="kpi"><span class="label">受影响资产</span><span class="value">8</span><span class="delta">4 主题域</span></div>
+      <div class="kpi"><span class="label">受影响字段</span><span class="value">24</span></div>
+      <div class="kpi"><span class="label">下游消费者</span><span class="value">32</span><span class="delta">包含 6 个指标</span></div>
+      <div class="kpi"><span class="label">预估工作量</span><span class="value">3.5</span><span class="delta">人天</span></div>
+    </div>
+
+    <!-- 值域 diff -->
+    <div class="card mb-4">
+      <div class="card-hd"><h3>值域变更 diff</h3><span class="meta">v1.5 → v2.0</span></div>
+      <div class="diff-box">
+        <div class="line"><span class="lineno">12</span><span class="ctx">enum OrderStatus {</span></div>
+        <div class="line"><span class="lineno">13</span><span class="ctx">  INIT     = 0,   <span class="muted">// 待支付</span></span></div>
+        <div class="line"><span class="lineno">14</span><span class="ctx">  ACTIVE   = 1,   <span class="muted">// 已支付</span></span></div>
+        <div class="line"><span class="lineno">15</span><span class="ctx">  PAUSED   = 2,   <span class="muted">// 已取消</span></span></div>
+        <div class="line"><span class="lineno">16</span><span class="ctx">  CLOSED   = 3,   <span class="muted">// 已退款</span></span></div>
+        <div class="line"><span class="lineno">17</span><span class="add">  PARTIAL_REFUND = 4,  // 🆕 部分退款</span></div>
+        <div class="line"><span class="lineno">18</span><span class="ctx">}</span></div>
+      </div>
+      <div class="row mt-2" style="gap:16px;font-size:12px;color:var(--ink-2)">
+        <span><span class="diff-add">+ 新增</span> 1 项</span>
+        <span><span class="diff-del">- 删除</span> 0 项</span>
+        <span><span style="color:var(--warn)">⚠ 改动</span> 0 项</span>
+      </div>
+    </div>
+
+    <!-- 字段抽样比对 -->
+    <div class="card mb-4">
+      <div class="card-hd"><h3>字段类型抽样比对</h3><span class="meta">从 24 个受影响字段中抽样 3 个</span></div>
+      <table class="tbl">
+        <thead><tr><th>所属资产</th><th>字段</th><th>变更前</th><th>变更后</th><th>兼容性</th></tr></thead>
+        <tbody>
+          <tr><td><span class="mono">dwd_trade_order_di</span></td><td><span class="mono">order_status</span></td><td><span class="badge">TINYINT</span></td><td><span class="badge warn">TINYINT</span> + 扩展值</td><td><span class="badge warn">⚠ 需代码适配</span></td></tr>
+          <tr><td><span class="mono">dws_user_order_30d_df</span></td><td><span class="mono">last_status</span></td><td><span class="badge">TINYINT</span></td><td><span class="badge warn">TINYINT</span> + 扩展值</td><td><span class="badge ok">✅ 兼容（向下）</span></td></tr>
+          <tr><td><span class="mono">ads_gmv_summary_di</span></td><td><span class="mono">paid_cnt</span></td><td><span class="badge">BIGINT</span></td><td><span class="badge">BIGINT</span></td><td><span class="badge ok">✅ 无影响</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 受影响资产列表 -->
+    <div class="card mb-4">
+      <div class="card-hd"><h3>受影响资产</h3><span class="meta">8 张</span></div>
+      <table class="tbl">
+        <thead><tr><th>资产</th><th>主题域</th><th>Owner</th><th>健康分</th><th>影响类型</th><th>状态</th></tr></thead>
+        <tbody>
+          <tr><td><span class="mono">dwd_trade_order_di</span></td><td>交易域</td><td>张磊</td><td><span class="badge ok">92</span></td><td><span class="badge warn">类型扩展</span></td><td><span class="badge err">未处理</span></td></tr>
+          <tr><td><span class="mono">dws_user_order_30d_df</span></td><td>用户域</td><td>李婷</td><td><span class="badge ok">88</span></td><td><span class="badge warn">类型扩展</span></td><td><span class="badge info">已通知</span></td></tr>
+          <tr><td><span class="mono">ads_gmv_summary_di</span></td><td>交易域</td><td>王皓</td><td><span class="badge ok">95</span></td><td><span class="badge info">无影响</span></td><td><span class="badge ok">无需变更</span></td></tr>
+          <tr><td class="muted" colspan="6" style="text-align:center">+ 5 张其他资产</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 变更流程 -->
+    <div class="card">
+      <div class="card-hd"><h3>变更流程</h3><span class="meta">当前进度</span></div>
+      <div class="flow">
+        <div class="step done"><span class="n">1</span>草稿</div>
+        <span class="arrow">→</span>
+        <div class="step done"><span class="n">2</span>评审通过</div>
+        <span class="arrow">→</span>
+        <div class="step done"><span class="n">3</span>影响分析</div>
+        <span class="arrow">→</span>
+        <div class="step curr"><span class="n">4</span>通知 Owner</div>
+        <span class="arrow">→</span>
+        <div class="step"><span class="n">5</span>正式发布</div>
+      </div>
+      <div class="row mt-4" style="justify-content:flex-end;gap:8px">
+        <button class="btn">取消变更</button>
+        <button class="btn primary">通知所有 Owner</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+</body>
+</html>

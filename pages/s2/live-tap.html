@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实时观测 · S2 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s2.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230891b2%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2314b8a6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3ES2%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS  = 's2';
+  window.PAGE = 'live';
+  window.SIDEBAR = {
+    section: '事件治理',
+    items: [
+      { id: 'event-dict',  label: '事件字典首页',   icon: '📑', href: 'event-dict.html' },
+      { id: 'event-detail',label: '事件详情',       icon: '🔍', href: 'event-detail.html' },
+      { id: 'plan-list',   label: '方案列表',       icon: '📋', href: 'plan-list.html' },
+      { id: 'designer',    label: '方案设计器',     icon: '✏️',  href: 'plan-designer.html' },
+      { id: 'live',        label: '实时观测',       icon: '📡', href: 'live-tap.html', badge: 2 },
+      { id: 'acceptance',  label: '验收工作台',     icon: '✅', href: 'acceptance.html', badge: 3 }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <span>S2 埋点与事件治理平台 · 实时观测</span>
+    </div>
+
+    <!-- Hero 实时 -->
+    <section class="s2-hero">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <h1>📡 实时观测</h1>
+          <p>事件上报毫秒级流入，端侧时延 / 异常 / 失败率一屏掌握</p>
+        </div>
+        <div class="row gap-2">
+          <span class="badge ok" style="background:rgba(255,255,255,.18);color:#fff;font-size:13px;padding:6px 12px">● LIVE</span>
+          <select style="padding:6px 12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.12);color:#fff;border-radius:var(--r-2);font-size:12px">
+            <option style="color:#0f172a">近 1 分钟</option>
+            <option style="color:#0f172a">近 5 分钟</option>
+            <option style="color:#0f172a">近 1 小时</option>
+          </select>
+        </div>
+      </div>
+      <div class="kpi-row">
+        <div class="item"><div class="num">3,724</div><div class="lab">上报 / 秒</div><div class="delta up">▲ 12% vs 基线</div></div>
+        <div class="item"><div class="num">99.62%</div><div class="lab">成功率</div><div class="delta down">▼ 0.04%</div></div>
+        <div class="item"><div class="num">182<span style="font-size:14px;font-weight:400">ms</span></div><div class="lab">端到端 P99</div><div class="delta up">▲ 优化 24ms</div></div>
+        <div class="item"><div class="num">14</div><div class="lab">活跃异常</div><div class="delta down">▼ 6</div></div>
+      </div>
+    </section>
+
+    <!-- 上部：实时流量 -->
+    <div class="card mb-4">
+      <div class="card-hd">
+        <h3>📊 实时上报流量（每秒）</h3>
+        <span class="meta">近 60 秒 · 蓝色线：总流量 · 橙色线：失败量</span>
+      </div>
+      <div id="liveChart" style="height:140px"></div>
+    </div>
+
+    <!-- 中部：实时事件流 + 分事件TOP -->
+    <div class="grid grid-2" style="grid-template-columns:1.6fr 1fr">
+      <div class="card">
+        <div class="card-hd">
+          <h3>🌀 实时事件流</h3>
+          <div class="row gap-2">
+            <input type="text" placeholder="过滤事件 / 应用" style="padding:5px 10px;border:1px solid var(--line);border-radius:var(--r-2);font-size:12px;width:140px">
+            <button class="btn sm">⏸ 暂停</button>
+          </div>
+        </div>
+        <div class="s2-stream" id="liveStream"></div>
+      </div>
+
+      <div>
+        <!-- TOP 事件 -->
+        <div class="card">
+          <div class="card-hd"><h3>🔥 实时 TOP 10 事件</h3></div>
+          <div id="topEvents"></div>
+        </div>
+
+        <!-- TOP 来源应用 -->
+        <div class="card mt-4">
+          <div class="card-hd"><h3>📱 来源应用分布</h3></div>
+          <div id="topApps"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下半：异常追踪 -->
+    <div class="card mt-4">
+      <div class="card-hd">
+        <h3>⚠️ 实时异常追踪</h3>
+        <a class="badge primary" href="acceptance.html">查看全部 →</a>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>级别</th><th>事件</th><th>应用</th><th>异常类型</th><th>近 1 分钟</th><th>趋势</th><th>最近发生</th><th>状态</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge err">P0</span></td>
+            <td class="mono">evt_api_error</td><td>app_user_center</td>
+            <td>HTTP 503</td>
+            <td><b>24</b></td>
+            <td><span style="color:var(--err);font-weight:700">↑ 急升</span></td>
+            <td>12:28:10</td>
+            <td><span class="badge err">紧急</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge warn">P1</span></td>
+            <td class="mono">evt_agent_step_fail</td><td>app_ai_assistant</td>
+            <td>步骤超时</td>
+            <td><b>12</b></td>
+            <td><span style="color:var(--warn);font-weight:700">↑ 上升</span></td>
+            <td>12:28:14</td>
+            <td><span class="badge warn">关注</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge warn">P1</span></td>
+            <td class="mono">evt_agent_tool_call</td><td>app_ai_assistant</td>
+            <td>P99 > 30s</td>
+            <td><b>8</b></td>
+            <td><span style="color:var(--warn);font-weight:700">↑ 上升</span></td>
+            <td>12:28:18</td>
+            <td><span class="badge warn">已派单</span></td>
+          </tr>
+          <tr>
+            <td><span class="badge">P2</span></td>
+            <td class="mono">evt_cart_add</td><td>app_recommend_web</td>
+            <td>Schema 字段缺失</td>
+            <td><b>3</b></td>
+            <td><span style="color:var(--ink-3)">— 平稳</span></td>
+            <td>12:27:42</td>
+            <td><span class="badge info">已派单</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  // 实时流量（60 秒模拟）
+  const flow = [];
+  const fail = [];
+  for (let i = 0; i < 60; i++) {
+    flow.push(3200 + Math.round(Math.sin(i / 6) * 280 + Math.random() * 80));
+    fail.push(Math.round(8 + Math.random() * 14));
+  }
+
+  document.getElementById('liveChart').innerHTML = `
+    <svg viewBox="0 0 800 140" preserveAspectRatio="none" style="width:100%;height:140px">
+      ${(() => {
+        const max = 3700;
+        const pts = flow.map((v, i) => [i / 59 * 800, 140 - (v / max) * 130 - 5]);
+        const d = 'M ' + pts.map(p => p.join(',')).join(' L ');
+        const area = d + ` L 800,140 L 0,140 Z`;
+        const fPts = fail.map((v, i) => [i / 59 * 800, 140 - (v / 30) * 80 - 50]);
+        const fD = 'M ' + fPts.map(p => p.join(',')).join(' L ');
+        return `<path d="${area}" fill="var(--primary)" opacity=".10"/>
+                <path d="${d}" fill="none" stroke="var(--primary)" stroke-width="2"/>
+                <path d="${fD}" fill="none" stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+      })()}
+      <text x="10" y="20" font-size="11" fill="var(--ink-3)">3.7k/s</text>
+      <text x="10" y="135" font-size="11" fill="var(--ink-3)">-60s</text>
+      <text x="780" y="135" font-size="11" fill="var(--ink-3)" text-anchor="end">now</text>
+    </svg>`;
+
+  // 实时事件流（最近 15 条）
+  document.getElementById('liveStream').innerHTML = `
+    <div class="row head">
+      <div>时间</div><div>事件</div><div>应用</div><div>IP</div><div>延迟</div><div>状态</div>
+    </div>
+    ${M.s2.live.map(it => {
+      const stCls = it.status === 'ok' ? 'ok' : it.status === 'warn' ? 'warn' : 'fail';
+      const stLab = it.status === 'ok' ? '200' : it.status === 'warn' ? '慢' : it.code;
+      const evCls = it.status === 'fail' ? 'fail' : it.status === 'warn' ? 'warn' : '';
+      return `
+        <div class="row">
+          <div class="ts">${it.ts}</div>
+          <div class="ev ${evCls}">${it.ev}</div>
+          <div style="color:var(--ink-2);font-size:11px">${it.app}</div>
+          <div style="color:var(--ink-3);font-size:11px">${it.ip}</div>
+          <div>${it.lat}ms</div>
+          <div><span class="st ${stCls}">${stLab}</span></div>
+        </div>`;
+    }).join('')}`;
+
+  // TOP 事件
+  const tops = [
+    { ev: 'evt_page_view',        cnt: '1.2M', pct: 100 },
+    { ev: 'evt_agent_recall_hit', cnt: '128K', pct: 11 },
+    { ev: 'evt_cart_add',         cnt: '68K',  pct: 6 },
+    { ev: 'evt_search_query',     cnt: '86K',  pct: 7 },
+    { ev: 'evt_order_pay_success',cnt: '32K',  pct: 3 },
+    { ev: 'evt_user_register',    cnt: '4.2K', pct: 1 }
+  ];
+  document.getElementById('topEvents').innerHTML = tops.map((t, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line-2);font-size:13px">
+      <span class="muted" style="width:18px">${i+1}</span>
+      <span class="mono" style="flex:1;font-size:12px">${t.ev}</span>
+      <span style="width:90px"><div class="bar thin"><i style="width:${t.pct}%"></i></div></span>
+      <b style="width:64px;text-align:right">${t.cnt}</b>
+    </div>
+  `).join('');
+
+  // TOP 应用
+  const apps = [
+    { name: 'app_recommend_web',   cnt: '1.42亿', pct: 100, color: 'var(--primary)' },
+    { name: 'app_trade_h5',        cnt: '0.86亿', pct: 60,  color: 'var(--accent)' },
+    { name: 'app_ai_assistant',    cnt: '0.42亿', pct: 30,  color: '#6366f1' },
+    { name: 'app_user_center',     cnt: '0.18亿', pct: 13,  color: '#f59e0b' },
+    { name: 'app_miniprogram',     cnt: '0.12亿', pct: 9,   color: '#ef4444' },
+    { name: 'app_logistics_web',   cnt: '0.08亿', pct: 6,   color: '#8b5cf6' }
+  ];
+  document.getElementById('topApps').innerHTML = apps.map(a => `
+    <div style="padding:8px 0;border-bottom:1px dashed var(--line-2);font-size:13px">
+      <div class="row" style="justify-content:space-between;margin-bottom:4px">
+        <span class="mono" style="font-size:11px;color:var(--ink-2)">${a.name}</span>
+        <b>${a.cnt}</b>
+      </div>
+      <div class="bar thin"><i style="width:${a.pct}%;background:${a.color}"></i></div>
+    </div>
+  `).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>异常中心 · S8 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s8.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's8';
+  window.PAGE = 'anomaly';
+  window.SIDEBAR = {
+    section: '运营监控',
+    items: [
+      { id: 'dash',     label: '质量大盘',         icon: '📊', href: 'quality-dash.html' },
+      { id: 'rule',     label: '规则市场',         icon: '📋', href: 'rule-market.html' },
+      { id: 'rule-det', label: '规则详情',         icon: '🔍', href: 'rule-detail.html' },
+      { id: 'anomaly',  label: '异常中心',         icon: '⚠️', href: 'anomaly.html', badge: 7 },
+      { id: 'wb',       label: '异常处置工作台',   icon: '🛠️', href: 'anomaly-workbench.html' },
+      { id: 'focus',    label: '主题域质量聚焦',   icon: '🎯', href: 'domain-focus.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <span>S8 数据质量治理中心 · 异常中心</span>
+    </div>
+
+    <!-- KPI 摘要 -->
+    <div class="grid grid-4 mb-4">
+      <div class="kpi"><span class="label">活跃异常</span><span class="value">71</span><span class="delta down">▼ 8 vs 上周</span></div>
+      <div class="kpi"><span class="label">P0 紧急</span><span class="value">3</span><span class="delta err">需立即处理</span></div>
+      <div class="kpi"><span class="label">待认领</span><span class="value">12</span></div>
+      <div class="kpi"><span class="label">平均处置时长</span><span class="value">2.6h</span><span class="delta up">▼ 0.4h</span></div>
+    </div>
+
+    <!-- 过滤栏 -->
+    <div class="row mb-4" style="gap:8px;flex-wrap:wrap">
+      <select class="btn sm"><option>全部状态</option><option>待认领</option><option>处理中</option><option>已解决</option></select>
+      <select class="btn sm"><option>全部严重度</option><option>P0</option><option>P1</option><option>P2</option></select>
+      <select class="btn sm"><option>全部主题域</option><option>交易域</option><option>用户域</option></select>
+      <select class="btn sm"><option>近 24h</option><option>近 7d</option><option>近 30d</option></select>
+      <input type="text" placeholder="🔍 异常 ID / 资产 / 关键字" style="padding:6px 14px;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--surface);font-size:13px">
+    </div>
+
+    <!-- 异常卡列表 -->
+    <h3 style="margin:0 0 12px;font-size:16px">异常列表（聚合后 7 条）<span class="muted" style="font-weight:400;font-size:12px">· 已降噪</span></h3>
+    <div class="col" style="gap:12px" id="anomalyList"></div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  document.getElementById('anomalyList').innerHTML = M.anomalies.map(a => {
+    const sevClass = a.sev === 'P0' ? '' : a.sev === 'P1' ? 'warn' : 'info';
+    return `
+      <div class="anomaly ${sevClass}" onclick="location.href='anomaly-workbench.html'" style="cursor:pointer">
+        <div class="hd">
+          <span class="icon">${a.icon}</span>
+          <span class="title">${a.title}</span>
+          <span class="badge ${a.sev === 'P0' ? 'err' : a.sev === 'P1' ? 'warn' : 'info'}">${a.sev}</span>
+          <span class="time">${a.since}前</span>
+        </div>
+        <div class="ds">${a.ds}</div>
+        <div class="body">检测到 <b>${a.cnt.toLocaleString()}</b> 行触发异常 · 聚合自 <b>${a.agg}</b> 条原始告警</div>
+        <div class="tags">
+          ${a.tags.map(t => `<span class="badge primary">${t}</span>`).join('')}
+        </div>
+        <div class="ft">
+          <div class="meta">状态：${a.state}</div>
+          <button class="btn sm">认领</button>
+          <button class="btn sm">转派</button>
+          <button class="btn sm primary">查看工作台 →</button>
+        </div>
+      </div>`;
+  }).join('');
+</script>
+</body>
+</html>

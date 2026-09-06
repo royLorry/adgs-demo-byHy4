@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>智能体步骤级可视化钻取 · S2 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s2.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230891b2%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2314b8a6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3ES2%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS  = 's2';
+  window.PAGE = 'agent-trace';
+  window.SIDEBAR = {
+    section: '事件治理',
+    items: [
+      { id: 'event-dict',  label: '事件字典首页',   icon: '📑', href: 'event-dict.html' },
+      { id: 'event-detail',label: '事件详情',       icon: '🔍', href: 'event-detail.html' },
+      { id: 'plan-list',   label: '方案列表',       icon: '📋', href: 'plan-list.html' },
+      { id: 'designer',    label: '方案设计器',     icon: '✏️',  href: 'plan-designer.html' },
+      { id: 'diff',        label: '方案 Diff',      icon: '🔁', href: 'plan-diff.html' },
+      { id: 'live',        label: '实时观测',       icon: '📡', href: 'live-tap.html', badge: 2 },
+      { id: 'acceptance',  label: '验收工作台',     icon: '✅', href: 'acceptance.html', badge: 3 },
+      { id: 'report',      label: '验收报告导出',   icon: '📥', href: 'acceptance-report.html' },
+      { id: 'agent-trace', label: '智能体步骤钻取', icon: '🤖', href: 'agent-trace.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <a href="acceptance.html">验收工作台</a><span class="sep">/</span>
+      <a href="event-detail.html">事件详情</a><span class="sep">/</span>
+      <span>智能体步骤级钻取 · evt_2026_09_06_18_18_001</span>
+    </div>
+
+    <!-- Hero -->
+    <section class="s2-trace-hero">
+      <h1>🤖 智能体事件 · 步骤级可视化钻取</h1>
+      <p>对单次智能体调用 evt_agent_tool_call 的 7 个步骤做全链路可观测：耗时 / Token / 工具 / 异常</p>
+      <div class="meta">
+        <div>📌 事件 ID：<b class="mono">evt_2026_09_06_18_18_001</b></div>
+        <div>🧠 Agent：<b>recommend-agent-v3</b></div>
+        <div>👤 用户：<b>u_14530871</b></div>
+        <div>⏱ 总耗时：<b>43.7s</b></div>
+        <div>🤖 模型：<b>gpt-4o-2024-08</b></div>
+        <div>📊 7 步 · 3 工具调用</div>
+      </div>
+    </section>
+
+    <!-- 顶部 7 步骤条形时间线 -->
+    <div class="s2-trace-bar" id="stepBar">
+      <div class="seg active" data-idx="0">
+        <span class="st ok"></span>
+        <div class="idx">① 00:00.000</div>
+        <div class="nm">RAG 召回</div>
+        <div class="dur">82ms</div>
+      </div>
+      <div class="seg active" data-idx="1">
+        <span class="st ok"></span>
+        <div class="idx">② 00:00.082</div>
+        <div class="nm">LLM 推理</div>
+        <div class="dur">1.24s</div>
+      </div>
+      <div class="seg active" data-idx="2">
+        <span class="st ok"></span>
+        <div class="idx">③ 00:01.322</div>
+        <div class="nm">工具调用</div>
+        <div class="dur">240ms</div>
+      </div>
+      <div class="seg active" data-idx="3">
+        <span class="st ok"></span>
+        <div class="idx">④ 00:01.562</div>
+        <div class="nm">结果校验</div>
+        <div class="dur">18ms</div>
+      </div>
+      <div class="seg warn" data-idx="4">
+        <span class="st warn"></span>
+        <div class="idx">⑤ 00:01.580</div>
+        <div class="nm">应答输出</div>
+        <div class="dur">86ms</div>
+      </div>
+      <div class="seg fail active" data-idx="5">
+        <span class="st fail"></span>
+        <div class="idx">⑥ 00:01.666</div>
+        <div class="nm">总结存证</div>
+        <div class="dur">42s</div>
+      </div>
+      <div class="seg" data-idx="6">
+        <span class="st"></span>
+        <div class="idx">⑦ —</div>
+        <div class="nm">用户反馈</div>
+        <div class="dur" style="color:var(--ink-3)">缺失</div>
+      </div>
+    </div>
+
+    <!-- 火焰图 + 时间线 -->
+    <div class="s2-trace-flame">
+      <h4>🔥 步骤耗时火焰图（相对总耗时 43.7s）</h4>
+      <div class="lane"><div class="nm">① RAG 召回</div><div class="bar"><div class="fill" style="width:0.4%">82ms</div></div></div>
+      <div class="lane"><div class="nm">② LLM 推理</div><div class="bar"><div class="fill" style="width:3.4%">1.24s</div></div></div>
+      <div class="lane"><div class="nm">③ 工具调用</div><div class="bar"><div class="fill" style="width:1.2%">240ms</div></div></div>
+      <div class="lane"><div class="nm">④ 结果校验</div><div class="bar"><div class="fill" style="width:0.2%">18ms</div></div></div>
+      <div class="lane"><div class="nm">⑤ 应答输出</div><div class="bar"><div class="fill warn" style="width:0.5%">86ms</div></div></div>
+      <div class="lane"><div class="nm">⑥ 总结存证</div><div class="bar"><div class="fill fail" style="width:96%">42.0s ⚠️</div></div></div>
+      <div class="lane"><div class="nm">⑦ 用户反馈</div><div class="bar"><div class="fill" style="width:0;background:var(--line-2)">未触发</div></div></div>
+      <div class="ts-axis" style="grid-column:2;display:flex;justify-content:space-between">
+        <span>0s</span><span>10s</span><span>20s</span><span>30s</span><span>40s</span><span>43.7s</span>
+      </div>
+    </div>
+
+    <!-- 当前步骤详情卡 -->
+    <div class="s2-trace-step mt-4" id="stepDetail">
+      <!-- 内容由 JS 渲染 -->
+    </div>
+
+    <!-- 工具调用列表（仅在 tool_call 步骤显示，展开） -->
+    <div class="card mt-4">
+      <div class="card-hd">
+        <h3>🔧 本次事件工具调用清单 <span class="badge primary">3 次</span></h3>
+        <span class="meta">智能体在本事件中触发的所有外部工具</span>
+      </div>
+      <div class="s2-trace-tools">
+        <div class="tool">
+          <div class="ic">🔍</div>
+          <div class="nm">vector_search · 召回商品候选</div>
+          <div><span class="st ok">成功</span></div>
+          <div class="num">82ms</div>
+          <div class="ts">③ 240ms 内</div>
+        </div>
+        <div class="tool">
+          <div class="ic">📊</div>
+          <div class="nm">user_profile · 拉取用户画像</div>
+          <div><span class="st ok">成功</span></div>
+          <div class="num">38ms</div>
+          <div class="ts">③ 240ms 内</div>
+        </div>
+        <div class="tool">
+          <div class="ic">💾</div>
+          <div class="nm">memory_persist · 写会话记忆</div>
+          <div><span class="st fail">超时</span></div>
+          <div class="num">42,000ms</div>
+          <div class="ts">⑥ P99 42s</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 全链路溯源 -->
+    <div class="grid grid-2 mt-4">
+      <div class="card">
+        <div class="card-hd"><h3>🔗 数据流：从 SDK 到 ODS 全链路</h3></div>
+        <div class="dag" style="flex-wrap:wrap">
+          <div class="node done"><span>✓</span> app_agent_web</div>
+          <span class="arrow">→</span>
+          <div class="node done"><span>✓</span> track-sdk-js@2.4.1</div>
+          <span class="arrow">→</span>
+          <div class="node done"><span>✓</span> Kafka track_event_v3</div>
+          <span class="arrow">→</span>
+          <div class="node done"><span>✓</span> Flink etl-agent v1.6</div>
+          <span class="arrow">→</span>
+          <div class="node done"><span>✓</span> dwd_agent_run_log</div>
+          <span class="arrow">→</span>
+          <div class="node done"><span>✓</span> dws_agent_metric_1h</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>📊 验收结果（4 类自动）</h3></div>
+        <div class="col gap-2">
+          <div class="row" style="justify-content:space-between">
+            <span>📡 端到端覆盖率（11/11 步骤）</span><b style="color:var(--ok)">100%</b>
+          </div>
+          <div class="bar"><i class="ok" style="width:100%"></i></div>
+          <div class="row" style="justify-content:space-between">
+            <span>📋 字段完整率（PG-AGT-012 + 主键）</span><b style="color:var(--err)">85.7%</b>
+          </div>
+          <div class="bar"><i class="err" style="width:85.7%"></i></div>
+          <div class="row" style="justify-content:space-between">
+            <span>⏱ 时效 P99（SDK→ODS 5s）</span><b style="color:var(--err)">43,700ms</b>
+          </div>
+          <div class="bar"><i class="err" style="width:12%"></i></div>
+          <div class="row" style="justify-content:space-between">
+            <span>⚖️ 对账（与主键重复上报差）</span><b style="color:var(--ok)">0%</b>
+          </div>
+          <div class="bar"><i class="ok" style="width:100%"></i></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  const STEPS = [
+    {
+      idx: 0, icon: '🔍', name: 'RAG 召回（RAG Recall）',
+      time: '00:00.000', dur: '82ms', state: 'ok',
+      meta: 'ann_index_v3 · top_k=8 · threshold=0.78',
+      kpis: [
+        { l: '耗时', v: '82ms' },
+        { l: '召回数', v: '8 / 8' },
+        { l: '向量模型', v: 'bge-large-zh' },
+        { l: '相似度', v: '0.84' },
+        { l: '知识库', v: 'product_v3' }
+      ],
+      input: `{
+  <span class="k">"query"</span>: <span class="s">"用户最近浏览的运动鞋适合哪双跑鞋"</span>,
+  <span class="k">"user_id"</span>: <span class="s">"u_14530871"</span>,
+  <span class="k">"context_size"</span>: <span class="n">8</span>,
+  <span class="k">"filters"</span>: {
+    <span class="k">"category"</span>: <span class="s">"running_shoes"</span>,
+    <span class="k">"brand_in_stock"</span>: <span class="n">true</span>
+  }
+}`,
+      output: `{
+  <span class="k">"candidates"</span>: [
+    { <span class="k">"sku_id"</span>: <span class="s">"sku_7821"</span>, <span class="k">"score"</span>: <span class="n">0.92</span>, <span class="k">"title"</span>: <span class="s">"Nike Pegasus 41"</span> },
+    { <span class="k">"sku_id"</span>: <span class="s">"sku_8156"</span>, <span class="k">"score"</span>: <span class="n">0.88</span>, <span class="k">"title"</span>: <span class="s">"Adidas Boston 12"</span> },
+    <span class="c">// …… 6 more</span>
+  ],
+  <span class="k">"embedding_model"</span>: <span class="s">"bge-large-zh"</span>,
+  <span class="k">"latency_ms"</span>: <span class="n">82</span>
+}`
+    },
+    {
+      idx: 1, icon: '🧠', name: 'LLM 推理（LLM Reasoning）',
+      time: '00:00.082', dur: '1.24s', state: 'ok',
+      meta: 'gpt-4o-2024-08 · temperature=0.3 · max_tokens=512',
+      kpis: [
+        { l: '耗时', v: '1.24s' },
+        { l: 'Token in', v: '1,824' },
+        { l: 'Token out', v: '286' },
+        { l: '温度', v: '0.3' },
+        { l: '模型', v: 'gpt-4o' }
+      ],
+      input: `<span class="c">// system</span>
+你是推荐 Agent，根据候选商品 + 用户画像给出推荐理由
+
+<span class="c">// user</span>
+{
+  <span class="k">"user_history"</span>: <span class="s">"u_14530871 在过去 7 天浏览过 3 双跑鞋"</span>,
+  <span class="k">"candidates"</span>: [
+    { <span class="k">"sku_id"</span>: <span class="s">"sku_7821"</span>, <span class="k">"title"</span>: <span class="s">"Nike Pegasus 41"</span>, <span class="k">"price"</span>: <span class="n">899</span> },
+    { <span class="k">"sku_id"</span>: <span class="s">"sku_8156"</span>, <span class="k">"title"</span>: <span class="s">"Adidas Boston 12"</span>, <span class="k">"price"</span>: <span class="n">1299</span> }
+  ]
+}`,
+      output: `{
+  <span class="k">"recommendations"</span>: [
+    {
+      <span class="k">"sku_id"</span>: <span class="s">"sku_7821"</span>,
+      <span class="k">"reason"</span>: <span class="s">"与您最近浏览的款式定位一致，缓震适合长距离"</span>,
+      <span class="k">"confidence"</span>: <span class="n">0.92</span>
+    }
+  ],
+  <span class="k">"next_action"</span>: <span class="s">"tool_call:user_profile"</span>
+}`
+    },
+    {
+      idx: 2, icon: '🔧', name: '工具调用（Tool Call）',
+      time: '00:01.322', dur: '240ms', state: 'ok',
+      meta: '3 次工具调用 · 全部成功',
+      kpis: [
+        { l: '耗时', v: '240ms' },
+        { l: '工具数', v: '3 / 3' },
+        { l: '成功', v: '100%' },
+        { l: '重试', v: '0' },
+        { l: '并发', v: '1' }
+      ],
+      input: `<span class="c">// LLM 返回的 next_action</span>
+{
+  <span class="k">"tool"</span>: <span class="s">"user_profile"</span>,
+  <span class="k">"args"</span>: { <span class="k">"user_id"</span>: <span class="s">"u_14530871"</span> }
+}`,
+      output: `{
+  <span class="k">"calls"</span>: [
+    { <span class="k">"name"</span>: <span class="s">"vector_search"</span>, <span class="k">"ok"</span>: <span class="n">true</span>, <span class="k">"ms"</span>: <span class="n">82</span> },
+    { <span class="k">"name"</span>: <span class="s">"user_profile"</span>, <span class="k">"ok"</span>: <span class="n">true</span>, <span class="k">"ms"</span>: <span class="n">38</span> },
+    { <span class="k">"name"</span>: <span class="s">"price_check"</span>, <span class="k">"ok"</span>: <span class="n">true</span>, <span class="k">"ms"</span>: <span class="n">120</span> }
+  ]
+}`
+    },
+    {
+      idx: 3, icon: '✅', name: '结果校验（Result Verify）',
+      time: '00:01.562', dur: '18ms', state: 'ok',
+      meta: '4 条校验规则全通过',
+      kpis: [
+        { l: '耗时', v: '18ms' },
+        { l: '校验项', v: '4 / 4' },
+        { l: '失败', v: '0' },
+        { l: '跳过', v: '0' },
+        { l: '策略', v: 'strict' }
+      ],
+      input: `{
+  <span class="k">"checks"</span>: [
+    <span class="s">"sku_id_valid"</span>,
+    <span class="s">"price_positive"</span>,
+    <span class="s">"in_stock"</span>,
+    <span class="s">"no_pii_leak"</span>
+  ]
+}`,
+      output: `{
+  <span class="k">"passed"</span>: <span class="n">4</span>,
+  <span class="k">"failed"</span>: <span class="n">[]</span>,
+  <span class="k">"summary"</span>: <span class="s">"all checks passed"</span>
+}`
+    },
+    {
+      idx: 4, icon: '📤', name: '应答输出（Response）',
+      time: '00:01.580', dur: '86ms', state: 'warn',
+      meta: '响应渲染 86ms（阈值 ≤ 60ms）⚠️',
+      kpis: [
+        { l: '耗时', v: '86ms' },
+        { l: '渲染', v: '62ms' },
+        { l: '网络', v: '24ms' },
+        { l: '字符数', v: '286' },
+        { l: '组件', v: 'rich-card' }
+      ],
+      input: `<span class="c">// 最终推荐结果</span>
+{
+  <span class="k">"sku_id"</span>: <span class="s">"sku_7821"</span>,
+  <span class="k">"title"</span>: <span class="s">"Nike Pegasus 41"</span>,
+  <span class="k">"reason"</span>: <span class="s">"与您最近浏览的款式定位一致"</span>
+}`,
+      output: `{
+  <span class="k">"rendered_html"</span>: <span class="s">"&lt;card sku=sku_7821 /&gt;"</span>,
+  <span class="k">"render_ms"</span>: <span class="n">62</span>,
+  <span class="k">"network_ms"</span>: <span class="n">24</span>,
+  <span class="k">"warning"</span>: <span class="s">"render_ms > 60ms 阈值"</span>
+}`
+    },
+    {
+      idx: 5, icon: '💾', name: '总结存证（Memory Persist）',
+      time: '00:01.666', dur: '42s', state: 'fail',
+      meta: 'memory_db 写入阻塞，QPS 上限触发熔断',
+      kpis: [
+        { l: '耗时', v: '42.0s' },
+        { l: 'Token', v: '2,110' },
+        { l: '队列', v: '溢出' },
+        { l: '重试', v: '3/3' },
+        { l: '错误', v: 'ETIMEDOUT' }
+      ],
+      input: `<span class="c">// session memory payload</span>
+{
+  <span class="k">"session_id"</span>: <span class="s">"sess_2026_09_06_xxx"</span>,
+  <span class="k">"turns"</span>: <span class="n">14</span>,
+  <span class="k">"recommendations"</span>: [<span class="s">"sku_7821"</span>],
+  <span class="k">"tools_used"</span>: <span class="n">3</span>
+}`,
+      output: `<span class="c">// ERROR: timeout after 42000ms</span>
+{
+  <span class="k">"error"</span>: <span class="s">"ETIMEDOUT"</span>,
+  <span class="k">"retries"</span>: <span class="n">3</span>,
+  <span class="k">"queue_depth"</span>: <span class="n">2148</span>,
+  <span class="k">"db_host"</span>: <span class="s">"memory-db-02.prod"</span>
+}`
+    },
+    {
+      idx: 6, icon: '👆', name: '用户反馈（User Feedback）',
+      time: '—', dur: '缺失', state: 'fail',
+      meta: '本事件未上报用户反馈',
+      kpis: [
+        { l: '耗时', v: '—' },
+        { l: '点击', v: '未触发' },
+        { l: '停留', v: '—' },
+        { l: '转化', v: '—' },
+        { l: '状态', v: '缺失' }
+      ],
+      input: `<span class="c">// 客户端未在 30s 内上报 user_action 事件</span>`,
+      output: `<span class="c">// 推荐反馈闭环缺失：建议在客户端加 evt_agent_user_feedback 事件</span>`
+    }
+  ];
+
+  function renderStep(idx) {
+    const s = STEPS[idx];
+    const ic = document.getElementById('stepDetail');
+    ic.classList.toggle('fail', s.state === 'fail');
+    ic.innerHTML = `
+      <div class="head">
+        <div class="icon ${s.state}">${s.icon}</div>
+        <div style="flex:1">
+          <h3>${s.name}</h3>
+          <div class="meta-line">${s.meta}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="rate" style="font-size:24px;font-weight:700;color:var(--primary)">${s.dur}</div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:2px">⏱ 起点 ${s.time}</div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        ${s.kpis.map(k => `<div class="k"><div class="l">${k.l}</div><div class="v">${k.v}</div></div>`).join('')}
+      </div>
+
+      <div class="s2-trace-io">
+        <div class="panel">
+          <h5>📥 输入 / Input</h5>
+          <pre>${s.input}</pre>
+        </div>
+        <div class="panel">
+          <h5>📤 输出 / Output</h5>
+          <pre>${s.output}</pre>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;padding:10px 14px;background:var(--surface-2);border-radius:var(--r-2);font-size:12px;color:var(--ink-2)">
+        📌 <b>验收结果：</b>
+        <span class="badge ${s.state === 'ok' ? 'ok' : s.state === 'warn' ? 'warn' : 'err'}" style="margin-left:6px">${s.state === 'ok' ? '通过' : s.state === 'warn' ? '关注' : '失败'}</span>
+        &nbsp; 详见「验收工作台」
+      </div>
+    `;
+  }
+
+  document.querySelectorAll('#stepBar .seg').forEach(seg => {
+    seg.addEventListener('click', () => {
+      document.querySelectorAll('#stepBar .seg').forEach(x => x.classList.remove('active'));
+      seg.classList.add('active');
+      renderStep(parseInt(seg.dataset.idx));
+    });
+  });
+
+  renderStep(5); // 默认展开失败步骤
+</script>
+</body>
+</html>

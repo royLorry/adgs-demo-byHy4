@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="QX491SM8mgaZVwWCN2Zo77">
+<head data-page-node-id="MSszFGs58NSvLf8gIhPjZu">
+<meta charset="UTF-8" data-page-node-id="YlPRUDbrk0ts8yzd49LGp0">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="2NWBs1Ik9D6rs7ZmzLFJOF">
+<title>主题域质量聚焦 · 交易域 · S8 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css" data-page-node-id="vM2P5qiEYstpIFXisUCG3R">
+<link rel="stylesheet" href="../../assets/css/app.css" data-page-node-id="P28HxGPZcTPLaFbKNdAiUb">
+<link rel="stylesheet" href="../../assets/css/pages-s8.css" data-page-node-id="YNLq6ffZFedL9jNMQwq8ah">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E" data-page-node-id="5FQPzY53FvUXm3VLJClkh8">
+</head>
+<body data-page-node-id="Fo2ICaYH41y0dd4AM2zZ6M">
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's8';
+  window.PAGE = 'focus';
+  window.SIDEBAR = {
+    section: '运营监控',
+    items: [
+      { id: 'dash',     label: '质量大盘',         icon: '📊', href: 'quality-dash.html' },
+      { id: 'rule',     label: '规则市场',         icon: '📋', href: 'rule-market.html' },
+      { id: 'rule-det', label: '规则详情',         icon: '🔍', href: 'rule-detail.html' },
+      { id: 'anomaly',  label: '异常中心',         icon: '⚠️', href: 'anomaly.html', badge: 7 },
+      { id: 'wb',       label: '异常处置工作台',   icon: '🛠️', href: 'anomaly-workbench.html' },
+      { id: 'focus',    label: '主题域质量聚焦',   icon: '🎯', href: 'domain-focus.html' }
+    ]
+  };
+</script>
+
+<div class="layout" data-page-node-id="zjDioCrAi77tHAfLTZP9Z1">
+  <main class="main" data-page-node-id="8o2wuUvmaeH49GgenYcz3z">
+
+    <div class="breadcrumb" data-page-node-id="flgDkN2DAB4QcAtGXA1uCf">
+      <a href="../../index.html" data-page-node-id="yLH8IH3ihHCY0UwCz0BQuC">首页</a><span class="sep" data-page-node-id="Gc0TGD1dpUzTp0NYPkkNxz">/</span>
+      <a href="quality-dash.html" data-page-node-id="n4aERwPXUNdcS06Ep2Pitu">质量大盘</a><span class="sep" data-page-node-id="gfLWX6BHKCLLFaBJ60qpCC">/</span>
+      <span data-page-node-id="NwgbZwyhTR77zAbL9soOiT">主题域聚焦 · 交易域</span>
+    </div>
+
+    <!-- 域头 -->
+    <div class="row mb-4" style="justify-content:space-between;background:var(--surface);padding:16px 20px;border-radius:var(--r-3);border:1px solid var(--line);box-shadow:var(--sh-1)" data-page-node-id="yMqhu4YCsG04TcmF1ei5nv">
+      <div class="row" data-page-node-id="VIV6JlOKrdBeqTmfwLRUU5">
+        <div style="width:48px;height:48px;border-radius:var(--r-3);background:var(--grad-hero);color:#fff;display:grid;place-items:center;font-size:22px" data-page-node-id="rBrHGe0ZgtBK58JyXBoDEz">💰</div>
+        <div data-page-node-id="fg58UBm52NVWhXr3NA55ss">
+          <h2 style="margin:0;font-size:20px" data-page-node-id="uNfBeiZgulQVtDVlTFeoLx">交易域 <span class="badge primary" data-page-node-id="uOHclGmrrFObCtXaIsYEjI">DWD · DWS · ADS</span></h2>
+          <div class="muted" style="font-size:12px" data-page-node-id="dBb6b1ggNJwvp9srU0vyjV">312 张资产 · 86 项标准 · 156 条规则</div>
+        </div>
+      </div>
+      <div class="row" style="gap:24px" data-page-node-id="BvBjazk89uO45UqeziBhpX">
+        <div class="row gap-2" data-page-node-id="R0Vm2mceTplFLipZOj5aJ5"><span class="muted" style="font-size:12px" data-page-node-id="ErDRd54M9Yf6vMBwwXMCPu">健康分</span><span style="font-size:24px;font-weight:700;color:var(--ok)" data-page-node-id="EvoW1x6VOM5oUwzTTFrAzp">92</span></div>
+        <div class="row gap-2" data-page-node-id="Fo9H7joQjgAPnDVWJzXWEB"><span class="muted" style="font-size:12px" data-page-node-id="vshGPYIyt46KmpWNWZFWPF">异常数</span><span style="font-size:24px;font-weight:700;color:var(--err)" data-page-node-id="Ef7hYnJLiHEeRJySZWMDx7">3</span></div>
+        <div class="row gap-2" data-page-node-id="4CvoSAjZoPTknjOVlp6Xqb"><span class="muted" style="font-size:12px" data-page-node-id="8jw4iPidNQUeU58kG1NxoI">活跃告警</span><span style="font-size:24px;font-weight:700;color:var(--warn)" data-page-node-id="DjF5EiuENojhTpF4rFW4MV">1</span></div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="grid-template-columns: 1fr 1.2fr;gap:16px" data-page-node-id="eGq5rE2o03QHRfWoqbd4u0">
+      <!-- 6 维雷达 -->
+      <div class="card" data-page-node-id="ipC4NyOvD0xPpiHrFsvAHD">
+        <div class="card-hd" data-page-node-id="OuID61HYWB0bzwSw92oSgA"><h3 data-page-node-id="sSaugB9MDQgbsmGwmXK6Pu">六维质量雷达</h3><span class="meta" data-page-node-id="MxsOCytGh42FAeNVdPg4Pu">交易域</span></div>
+        <div id="radarBox" data-page-node-id="te5EHdIFFUkIqsjAXSNve8"></div>
+        <div class="grid grid-3 mt-4" style="gap:12px" data-page-node-id="HmK1KnsFCtJMy6xagwzqbB">
+          <div class="text-center" data-page-node-id="unqgfJxj0WIo2TYS3C9X1Z"><div style="font-size:20px;font-weight:700;color:var(--ok)" data-page-node-id="yGrSOIoe5y504SUvLvZEJO">96</div><div class="muted" style="font-size:11px" data-page-node-id="1V7U8ZdwAL6Vm3G3siHUHd">唯一性</div></div>
+          <div class="text-center" data-page-node-id="ul2Vrbkoom391lBpo4Sd5E"><div style="font-size:20px;font-weight:700;color:var(--ok)" data-page-node-id="O2FMw7bra2l7P7rBpMjftX">94</div><div class="muted" style="font-size:11px" data-page-node-id="5Bsbb29f1XXa8uSCmvqR6A">安全性</div></div>
+          <div class="text-center" data-page-node-id="vf2KfTAEgEjqguQdsB8H21"><div style="font-size:20px;font-weight:700;color:var(--primary)" data-page-node-id="hyP0fhg3iuSzXUEDohRZpt">92</div><div class="muted" style="font-size:11px" data-page-node-id="nldAa4DAffDyH0XlGVbbT6">完整性</div></div>
+          <div class="text-center" data-page-node-id="tq4vTtjFbwr16ogKZgQ46P"><div style="font-size:20px;font-weight:700;color:var(--primary)" data-page-node-id="FtaJQ50rklfGztPCVIgFic">90</div><div class="muted" style="font-size:11px" data-page-node-id="kr6mhDqXRbJhrTgAfBU8MI">准确性</div></div>
+          <div class="text-center" data-page-node-id="PkMXctFTSepcYuGs0bi58N"><div style="font-size:20px;font-weight:700;color:var(--primary)" data-page-node-id="dGjAeKTVzoNz2k8LuEQ1Jv">88</div><div class="muted" style="font-size:11px" data-page-node-id="VCrAxUYwXUgAbbdw5CJwZV">及时性</div></div>
+          <div class="text-center" data-page-node-id="ySpoSTCquoKzbQ8g7L0HDG"><div style="font-size:20px;font-weight:700;color:var(--warn)" data-page-node-id="abrJtIyU6bedutRfNffxIC">84</div><div class="muted" style="font-size:11px" data-page-node-id="OCSeDSwBdRA4HnkykaGHtp">一致性</div></div>
+        </div>
+      </div>
+
+      <!-- 健康分布 + 趋势 -->
+      <div class="col gap-4" data-page-node-id="nb108AKBW9pf251h1vwTQA">
+        <div class="card" data-page-node-id="zOatSyUN8LEsKORWBl43y4">
+          <div class="card-hd" data-page-node-id="tMWkpPR2YVCMyZRFyZGD7T"><h3 data-page-node-id="dS1d4YBbaJ5eRHtPc16te9">资产健康分分布</h3></div>
+          <div class="row" style="gap:20px;align-items:center" data-page-node-id="NfY2DqLDmWfUOuPsucDeW4">
+            <div id="donutBox" data-page-node-id="CWioMIyCFXPDwkcFCTEz4j"></div>
+            <div style="flex:1" data-page-node-id="bGyUw73YUfIjRPJiFyIhMT">
+              <div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line-2);font-size:13px" data-page-node-id="E9N3lRPkDkHaJBFhD3Y7Y8">
+                <span data-page-node-id="qr91C2dhaauKmFAWok9RAA"><span style="display:inline-block;width:10px;height:10px;background:var(--ok);border-radius:2px;margin-right:8px" data-page-node-id="4L2D3Zsd9F9MjcXZ4aftrt"></span>优秀（≥90）</span>
+                <span data-page-node-id="rp5ycuokfo4ffYNrFcaWai"><b data-page-node-id="IPBuIIy3U9IG5ZDA7ThIfC">186</b> 张（59.6%）</span>
+              </div>
+              <div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line-2);font-size:13px" data-page-node-id="dXEXOsvP3l55F175an4akZ">
+                <span data-page-node-id="uTKc7GivcY5rNK1cC89pKe"><span style="display:inline-block;width:10px;height:10px;background:var(--primary);border-radius:2px;margin-right:8px" data-page-node-id="egXctmtxSNOmQq1gFOjOHa"></span>良好（75-89）</span>
+                <span data-page-node-id="QJfQAHG8j9D0GG5dZMKOav"><b data-page-node-id="wUIdm7jX6dH0tui4ggbfuw">82</b> 张（26.3%）</span>
+              </div>
+              <div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line-2);font-size:13px" data-page-node-id="a6d9DQYdk9KDJm6mTj7weT">
+                <span data-page-node-id="syIZnU09ciPktRECs43oC8"><span style="display:inline-block;width:10px;height:10px;background:var(--warn);border-radius:2px;margin-right:8px" data-page-node-id="uwuHFCei6a1s8dKWlubutz"></span>待改进（60-74）</span>
+                <span data-page-node-id="R5adx2YDSVEQpsWALSDNYX"><b data-page-node-id="GbeLOoYKHIM17SuK9H4XJI">32</b> 张（10.3%）</span>
+              </div>
+              <div class="row" style="justify-content:space-between;padding:6px 0;font-size:13px" data-page-node-id="RRlL8M0K4KwioCEhR0iMj3">
+                <span data-page-node-id="hM4PaycVO4nksxdkBZFrcE"><span style="display:inline-block;width:10px;height:10px;background:var(--err);border-radius:2px;margin-right:8px" data-page-node-id="O84hCrPtRRfCxPOvkXgkP9"></span>严重（&lt;60）</span>
+                <span data-page-node-id="JgZuwGxBR388odX52u5Sx7"><b data-page-node-id="vkCskN2OlPPePLfAP3ptZ0">12</b> 张（3.8%）</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" data-page-node-id="lUkdfago46SVuude66bLlF">
+          <div class="card-hd" data-page-node-id="vVWxsz9ub5gDeqyHxskGA2"><h3 data-page-node-id="Qt17p2UTfKVW5Umkf2JjoT">30 天健康分趋势</h3></div>
+          <div id="trendBox" data-page-node-id="aWnM9oHEs3DjB6UH7g2C2c"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 子主题域 -->
+    <div class="card mt-4" data-page-node-id="NE8wYLcTJsaNNVs4wl34Oj">
+      <div class="card-hd" data-page-node-id="nOVl0mE5nZdM0yEZhYRgwk"><h3 data-page-node-id="CsTP8zwnKxGV8tNidkGhuY">子主题域明细</h3></div>
+      <table class="tbl" data-page-node-id="3yAWcM74yb19AXhVu9JJlW">
+        <thead data-page-node-id="RtFoBlE2ohw17EYYEjNiM0"><tr data-page-node-id="WdMZyCZealudIbChJEuSZV"><th data-page-node-id="ZqdiQBBBpipThDkKAFiq3M">子主题</th><th data-page-node-id="gsBi8YToIXGwTL1T47sNjH">资产数</th><th data-page-node-id="1t9qW84VIbmHXeSESOKGBD">健康分</th><th data-page-node-id="XAJSmJqfx7XtYHy25puwc3">异常</th><th data-page-node-id="GXpTnOpRCkvrpMGOKvhz1g">告警</th><th data-page-node-id="G9ep1zdPktmsoyEF8gXSdo">30d 趋势</th><th data-page-node-id="fyRPMxvC5YXZMxdDi0zCRt">Owner</th></tr></thead>
+        <tbody id="subDomainTbl" data-page-node-id="Ngq2vKzX1FV3M7VQtlGoKJ"></tbody>
+      </table>
+    </div>
+
+    <!-- Top 5 异常 -->
+    <div class="card mt-4" data-page-node-id="d2WhIMbTU7dFibXKgj6TaH">
+      <div class="card-hd" data-page-node-id="T6ZdjXFguueGpbwvYGSvJg"><h3 data-page-node-id="Y3cGmDWk0tHq8ZGGzwZeOd">本域 Top 5 异常</h3><a class="badge primary" href="anomaly.html" data-page-node-id="UmFXKdEPUhniRsI32bBMru">查看全部 →</a></div>
+      <table class="tbl" data-page-node-id="cmLGOrP9q0Ly1oGDFn8mKM">
+        <thead data-page-node-id="LoaEqFnb2zzOsZPDjOmDWH"><tr data-page-node-id="KOA1b2P9VdY9QDKDMOULYN"><th data-page-node-id="qNkoO8eK28MvItcUXbqbh1">异常 ID</th><th data-page-node-id="N6yuNIpCfJgSqTwHR0hB1f">标题</th><th data-page-node-id="WEDyxPVbU7p3QRceX5RM6Q">资产</th><th data-page-node-id="Wr4D1Fk8xFEYTzbMPpMFrK">严重度</th><th data-page-node-id="VBTXjLGaDrQb9FDCLVwbqC">命中数</th><th data-page-node-id="GmrQ6gndKnWFTAYcXuyZYq">状态</th></tr></thead>
+        <tbody data-page-node-id="gU8kcFaP5HCtOjAdi2VhKW">
+          <tr data-page-node-id="vRgtW0AQQlqMyyAljjY1fB"><td data-page-node-id="MECSeUsR5RlLp8whOe3U1w"><span class="mono" data-page-node-id="85PZlu1thXpfP5pprMf1DN">AN-20260906-001</span></td><td data-page-node-id="67pOtCrm6TvEalgbJ9m5eU">order_id 主键为空</td><td data-page-node-id="3onvuMt0VTG8nz2xVWP276"><span class="mono" data-page-node-id="QmUFJBDFnGsrbSOS5mXIxL">dwd_trade_order_di</span></td><td data-page-node-id="X1FV1Uf0vj9agUovUow46e"><span class="badge err" data-page-node-id="GJMTwHqAPfaC9Wss2XhOom">P0</span></td><td data-page-node-id="Z0MGQQEzaK8VEWkQmXChxJ">1,240</td><td data-page-node-id="2E8TcwxIwAOEZs2UJK6GNU"><span class="badge warn" data-page-node-id="qSynhPfSW2pSbSHqPrkRfc">处理中</span></td></tr>
+          <tr data-page-node-id="DDCN2DLd6ZKMY976vBL2gS"><td data-page-node-id="0aTmEsUKgRYN1D9NgsEhr0"><span class="mono" data-page-node-id="p0D4OzyNcO6sIbq5Nk6FsZ">AN-20260906-005</span></td><td data-page-node-id="jief6JKmllxmIxLI1bqOzD">身份证字段未脱敏</td><td data-page-node-id="AgxBLrQtTMU9kju8fUVTSr"><span class="mono" data-page-node-id="DwR5vdcOlUBiuN8ebUfEEb">dwd_user_identity_df</span></td><td data-page-node-id="B85BpHSYbFRspFkDCnCys6"><span class="badge err" data-page-node-id="W5I0AkcwVVLGcRA5tBqGJt">P0</span></td><td data-page-node-id="zMPTwGc17RdBwwnLRYsM8p">3,204</td><td data-page-node-id="P2QjP2xZs4kjAE4ty3PnPR"><span class="badge warn" data-page-node-id="uu6hdw8h5qMvMCaSZ3mwQq">紧急处理</span></td></tr>
+          <tr data-page-node-id="QmJYIUSSBKTXb8wHoorKA1"><td data-page-node-id="0IXFXGhyiEpCMVY0U37cXo"><span class="mono" data-page-node-id="sKHrIFvGGhl8f5FrFbOFRv">AN-20260906-003</span></td><td data-page-node-id="s8eqH1FeA5n1Out1SkLGvD">金额字段精度漂移</td><td data-page-node-id="a8lACCGpt8FbSKfhb1iy1p"><span class="mono" data-page-node-id="9DTv60aIemD3ctRlIMYgyu">ads_gmv_summary_di</span></td><td data-page-node-id="eW9YZPE3tZo0wh59spEmT5"><span class="badge warn" data-page-node-id="ty0sbmyK8SUpok4RHWp5Vt">P1</span></td><td data-page-node-id="Y3Gtq4OEfyUCtP0Y8B3Fau">12</td><td data-page-node-id="YQAedZMHf9aFUrsDM9Jopc"><span class="badge info" data-page-node-id="sboYkvPN7zyFg0q9dI1Qg2">已派单</span></td></tr>
+          <tr data-page-node-id="XSe4Lzy1i3MrGoB1wKmTDw"><td data-page-node-id="bBODk1gcieNjb2kGvhaokI"><span class="mono" data-page-node-id="fZlB6isKmCJXNk2XjEh5AA">AN-20260905-008</span></td><td data-page-node-id="wV4CMig1GxVFU7Y56prQxH">支付状态枚举出现未知值</td><td data-page-node-id="Qjj1Ji75A9MYqHw5dZiEuU"><span class="mono" data-page-node-id="1nGQAcMXx7L3PaLfM7A7Jq">dwd_trade_order_di</span></td><td data-page-node-id="uL33Gi3WWkGK6P3pDdyzCo"><span class="badge warn" data-page-node-id="JNnNamEPQDFSUBuSSAyrvu">P2</span></td><td data-page-node-id="HR22SA3tbmdK9rmbRZsKCi">86</td><td data-page-node-id="TQNTqz6lREJFUIc7uhcDuW"><span class="badge" data-page-node-id="rHsQqmXHxwTS2dlAWF1vNV">待认领</span></td></tr>
+          <tr data-page-node-id="FQbaZ2RPewMdi92ma4TzMK"><td data-page-node-id="fmEr5QzUKHbJMskw2UMka7"><span class="mono" data-page-node-id="yQlPICm1OQil7CBr9uYgQ5">AN-20260905-006</span></td><td data-page-node-id="AOdCbfFZKDYNm9BhADMGm8">GMV 指标环比下跌超阈值</td><td data-page-node-id="CIbYLaxMpObXm2zVo1VUZR"><span class="mono" data-page-node-id="UCRwUxPLEgwumMfGwRKbjV">ads_gmv_summary_di</span></td><td data-page-node-id="CFtWoaNUUGnJTOH6LVg0SE"><span class="badge warn" data-page-node-id="pSrkZHru91WmyFIqKDihkh">P2</span></td><td data-page-node-id="8JE3AQcc1BJKFolzjhOCei">1</td><td data-page-node-id="CExLfoe86Mm1BqKGen8GfS"><span class="badge info" data-page-node-id="XVQZfwXK9ENMwjluaez4HE">分析中</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  // sparkline HTML 助手
+  function sparklineHTML(data, kind) {
+    const color = kind === 'ok' ? 'var(--ok)' : kind === 'warn' ? 'var(--warn)' : 'var(--primary)';
+    return window.sparkline(data, { w: 120, h: 28, color });
+  }
+
+  // 子主题域
+  const subs = [
+    { name: '订单主题', cnt: 128, health: 94, anom: 1, alert: 0, kind: 'ok',      owner: '张磊' },
+    { name: '支付主题', cnt: 86,  health: 92, anom: 1, alert: 0, kind: 'ok',      owner: '王皓' },
+    { name: '退款主题', cnt: 42,  health: 76, anom: 2, alert: 1, kind: 'warn',    owner: '张磊' },
+    { name: '结算主题', cnt: 56,  health: 88, anom: 0, alert: 0, kind: 'primary', owner: '陈薇' }
+  ];
+  document.getElementById('subDomainTbl').innerHTML = subs.map(s => `
+    <tr>
+      <td>${s.name}</td>
+      <td>${s.cnt}</td>
+      <td><span class="badge ${s.health >= 90 ? 'ok' : s.health >= 75 ? 'primary' : 'warn'}">${s.health}</span></td>
+      <td>${s.anom}</td>
+      <td>${s.alert}</td>
+      <td>${sparklineHTML(M.sparkline, s.kind)}</td>
+      <td>${s.owner}</td>
+    </tr>`).join('');
+
+  // 雷达
+  document.getElementById('radarBox').innerHTML = radar(M.radarDims, M.radarData, { color: 'var(--primary)' });
+
+  // donut
+  document.getElementById('donutBox').innerHTML = donut([
+    { pct: 59.6, color: 'var(--ok)' },
+    { pct: 26.3, color: 'var(--primary)' },
+    { pct: 10.3, color: 'var(--warn)' },
+    { pct: 3.8,  color: 'var(--err)' }
+  ], { center: '92', label: '健康分' });
+
+  // 30d 趋势
+  document.getElementById('trendBox').innerHTML = `
+    <svg viewBox="0 0 600 120" preserveAspectRatio="none" style="width:100%;height:120px">
+      ${(() => {
+        const data = M.sparkline.map(v => v);
+        const min = 50, max = 100;
+        const range = max - min;
+        const pts = data.map((v, i) => [i / (data.length - 1) * 600, 120 - (v - min) / range * 100 - 10]);
+        const d = 'M ' + pts.map(p => p.join(',')).join(' L ');
+        const area = d + ` L 600,120 L 0,120 Z`;
+        return `<path d="${area}" fill="var(--ok)" opacity=".10"/>
+                <path d="${d}" fill="none" stroke="var(--ok)" stroke-width="2.5"/>`;
+      })()}
+    </svg>`;
+</script>
+</body>
+</html>

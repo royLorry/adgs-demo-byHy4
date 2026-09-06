@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案 Diff 比对 · S2 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s2.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230891b2%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2314b8a6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3ES2%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS  = 's2';
+  window.PAGE = 'plan-diff';
+  window.SIDEBAR = {
+    section: '事件治理',
+    items: [
+      { id: 'event-dict',  label: '事件字典首页',   icon: '📑', href: 'event-dict.html' },
+      { id: 'event-detail',label: '事件详情',       icon: '🔍', href: 'event-detail.html' },
+      { id: 'plan-list',   label: '方案列表',       icon: '📋', href: 'plan-list.html' },
+      { id: 'designer',    label: '方案设计器',     icon: '✏️',  href: 'plan-designer.html' },
+      { id: 'diff',        label: '方案 Diff',      icon: '🔁', href: 'plan-diff.html' },
+      { id: 'live',        label: '实时观测',       icon: '📡', href: 'live-tap.html', badge: 2 },
+      { id: 'acceptance',  label: '验收工作台',     icon: '✅', href: 'acceptance.html', badge: 3 },
+      { id: 'report',      label: '验收报告导出',   icon: '📥', href: 'acceptance-report.html' },
+      { id: 'agent-trace', label: '智能体步骤钻取', icon: '🤖', href: 'agent-trace.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <a href="plan-list.html">方案列表</a><span class="sep">/</span>
+      <span>方案 Diff 比对</span>
+    </div>
+
+    <!-- Hero -->
+    <section class="s2-hero">
+      <h1>🔁 方案 Diff 比对</h1>
+      <p>左选基线 / 右选目标，一键识别事件 / 属性 / Schema / 接入应用的差异与影响面</p>
+      <div class="kpi-row">
+        <div class="item"><div class="num">5</div><div class="lab">新增事件</div><div class="delta up">▲ 在画布</div></div>
+        <div class="item"><div class="num">2</div><div class="lab">删除事件</div><div class="delta down">▼ 需归档</div></div>
+        <div class="item"><div class="num">11</div><div class="lab">修改字段</div><div class="delta">v3.1→v3.2</div></div>
+        <div class="item"><div class="num">P1</div><div class="lab">风险等级</div><div class="delta">含破坏性变更</div></div>
+      </div>
+    </section>
+
+    <!-- 选择工具栏 -->
+    <div class="s2-diff-toolbar">
+      <span style="font-size:12px;color:var(--ink-3);font-weight:600">📋 基线</span>
+      <select id="leftPlan" style="flex:1">
+        <option value="v31">plan_recommend_2026Q3 · v3.1</option>
+        <option value="v32" selected>plan_recommend_2026Q3 · v3.2</option>
+        <option value="v40">plan_recommend_2026Q3 · v4.0-beta</option>
+      </select>
+      <div class="swap" onclick="swapPlans()" title="左右互换">⇄</div>
+      <select id="rightPlan" style="flex:1">
+        <option value="v31">plan_recommend_2026Q3 · v3.1</option>
+        <option value="v32">plan_recommend_2026Q3 · v3.2</option>
+        <option value="v40" selected>plan_recommend_2026Q3 · v4.0-beta</option>
+      </select>
+      <span style="font-size:12px;color:var(--ink-3);font-weight:600">🎯 对比维度</span>
+      <label style="font-size:12px"><input type="checkbox" checked> 事件清单</label>
+      <label style="font-size:12px"><input type="checkbox" checked> 公共属性组</label>
+      <label style="font-size:12px"><input type="checkbox" checked> Schema 字段</label>
+      <label style="font-size:12px"><input type="checkbox" checked> 接入应用</label>
+      <div class="right">
+        <button class="btn sm">📥 导出差异报告</button>
+        <button class="btn sm primary">📤 提交评审</button>
+      </div>
+    </div>
+
+    <!-- 影响面摘要 -->
+    <div class="s2-diff-summary">
+      <div class="item add">
+        <div class="v">+5</div>
+        <div class="l">新增事件</div>
+        <div class="desc">evt_agent_tool_call、evt_agent_memory_persist、evt_rag_recall、evt_pay_retry、evt_cart_remove</div>
+      </div>
+      <div class="item del">
+        <div class="v">−2</div>
+        <div class="l">删除事件</div>
+        <div class="desc">evt_pay_init（合并入 evt_order_pay_success）、evt_share_link_click（移出本方案）</div>
+      </div>
+      <div class="item mod">
+        <div class="v">~11</div>
+        <div class="l">修改字段</div>
+        <div class="desc">evt_order_pay_success 新增 channel_sub、retry_count；coupon_id 改为必填；pay_status 枚举扩展</div>
+      </div>
+      <div class="item risk">
+        <div class="v">P1</div>
+        <div class="l">风险等级</div>
+        <div class="desc">coupon_id 改为必填会引发 7.4% 兼容期事件丢失；建议先发 v3.2 灰度观察 14 天再上 v4</div>
+      </div>
+    </div>
+
+    <!-- 兼容性 + 影响应用 -->
+    <div class="card mb-4">
+      <div class="card-hd">
+        <h3>📊 兼容性矩阵</h3>
+        <span class="meta">SDK 版本在 v4.0 的适配情况</span>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>应用</th><th>端类型</th><th>SDK 版本</th><th>v3.1 兼容</th><th>v3.2 兼容</th><th>v4.0 兼容</th><th>建议</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">app_trade_web</td><td>Web</td><td class="mono">track-sdk-js@2.4.1</td><td><span class="badge ok">✅</span></td><td><span class="badge ok">✅</span></td><td><span class="badge warn">⚠️ 需升 3.0</span></td><td>本周升 SDK</td></tr>
+          <tr><td class="mono">app_trade_ios</td><td>iOS</td><td class="mono">track-sdk-ios@3.1.0</td><td><span class="badge ok">✅</span></td><td><span class="badge ok">✅</span></td><td><span class="badge err">❌ 旧版缺失</span></td><td>需发版重打包</td></tr>
+          <tr><td class="mono">app_trade_mini</td><td>小程序</td><td class="mono">track-sdk-mp@1.6.2</td><td><span class="badge ok">✅</span></td><td><span class="badge warn">⚠️ channel_sub 缺失</span></td><td><span class="badge warn">⚠️</span></td><td>需升级 1.7.0</td></tr>
+          <tr><td class="mono">app_recommend_web</td><td>Web</td><td class="mono">track-sdk-js@2.3.0</td><td><span class="badge warn">⚠️ session_id 缺失</span></td><td><span class="badge warn">⚠️</span></td><td><span class="badge err">❌</span></td><td>需升级 2.4.1+</td></tr>
+          <tr><td class="mono">app_user_center</td><td>Web</td><td class="mono">track-sdk-js@2.3.0</td><td><span class="badge warn">⚠️</span></td><td><span class="badge err">❌</span></td><td><span class="badge err">❌</span></td><td>需主动适配</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 左右两栏对比 -->
+    <div class="s2-diff-cols">
+      <!-- 左：基线 -->
+      <div class="s2-diff-col left">
+        <div class="hd">
+          <div class="title">📋 基线方案：plan_recommend_2026Q3 · v3.1</div>
+          <div class="meta">已发布 · 2026-05-08 上线 · 王皓（推荐域）</div>
+          <div class="stats">
+            <div><span class="k">事件：</span><span class="v">28</span></div>
+            <div><span class="k">属性组：</span><span class="v">5</span></div>
+            <div><span class="k">字段：</span><span class="v">142</span></div>
+            <div><span class="k">应用：</span><span class="v">12</span></div>
+          </div>
+        </div>
+
+        <div class="s2-diff-section">
+          <h4>① 事件清单（28）</h4>
+          <ul>
+            <li class="same">evt_pay_init <span class="badge" style="background:var(--surface-2);color:var(--ink-3)">同</span></li>
+            <li class="same">evt_pay_complete <span class="badge" style="background:var(--surface-2);color:var(--ink-3)">同</span></li>
+            <li class="same">evt_order_pay_success <span class="badge" style="background:var(--warn-bg);color:var(--warn)">改</span></li>
+            <li class="same">evt_cart_add <span class="badge" style="background:var(--surface-2);color:var(--ink-3)">同</span></li>
+            <li class="same">evt_share_link_click <span class="badge" style="background:var(--surface-2);color:var(--ink-3)">同</span></li>
+            <li class="same">evt_view_recommend <span class="badge" style="background:var(--surface-2);color:var(--ink-3)">同</span></li>
+          </ul>
+        </div>
+
+        <div class="s2-diff-section">
+          <h4>② 公共属性组（5）</h4>
+          <ul>
+            <li class="same">PG-STD-001 · 标准属性组（8 字段）</li>
+            <li class="same">PG-LOC-002 · 位置属性组（3 字段）</li>
+            <li class="same">PG-TRD-005 · 交易属性组（4 字段）</li>
+            <li class="same">PG-DEV-007 · 设备属性组（5 字段）</li>
+            <li class="same">PG-USR-008 · 用户属性组（6 字段）</li>
+          </ul>
+        </div>
+
+        <div class="s2-diff-section">
+          <h4>③ Schema 关键字段</h4>
+          <ul>
+            <li class="same">evt_order_pay_success / order_amt · DECIMAL(18,2)</li>
+            <li class="same">evt_order_pay_success / pay_channel · ENUM[alipay,wechat,unionpay]</li>
+            <li class="same">evt_order_pay_success / coupon_id · STRING · 可选</li>
+            <li class="same">evt_order_pay_success / pay_status · ENUM[success,partial,refund]</li>
+            <li class="same">evt_cart_add / sku_id · STRING · 必填</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 中间 -->
+      <div class="s2-diff-mid">
+        <span class="vs">VS</span>
+        <span class="arrow">→</span>
+        <span class="vs">DIFF</span>
+        <span class="arrow">←</span>
+        <span class="vs">P1</span>
+      </div>
+
+      <!-- 右：目标 -->
+      <div class="s2-diff-col right">
+        <div class="hd">
+          <div class="title">🎯 目标方案：plan_recommend_2026Q3 · v4.0-beta</div>
+          <div class="meta">评审中 · 待提交委员会 · 王皓 + 赵欣（智能体域）</div>
+          <div class="stats">
+            <div><span class="k">事件：</span><span class="v" style="color:var(--ok)">31 (+5 / -2)</span></div>
+            <div><span class="k">属性组：</span><span class="v" style="color:var(--ok)">7 (+2)</span></div>
+            <div><span class="k">字段：</span><span class="v" style="color:var(--warn)">153 (+11)</span></div>
+            <div><span class="k">应用：</span><span class="v" style="color:var(--ok)">14 (+2)</span></div>
+          </div>
+        </div>
+
+        <div class="s2-diff-section">
+          <h4>① 事件清单（31）</h4>
+          <ul>
+            <li class="removed">evt_pay_init <span class="badge err">删除</span></li>
+            <li class="same">evt_pay_complete <span class="badge" style="background:var(--surface-2);color:var(--ink-3)">同</span></li>
+            <li class="modified">evt_order_pay_success <span class="badge warn">+2 字段</span></li>
+            <li class="same">evt_cart_add <span class="badge" style="background:var(--surface-2);color:var(--ink-3)">同</span></li>
+            <li class="removed">evt_share_link_click <span class="badge err">删除</span></li>
+            <li class="same">evt_view_recommend <span class="badge" style="background:var(--surface-2);color:var(--ink-3)">同</span></li>
+            <li class="added">evt_agent_tool_call <span class="badge ok">新增</span></li>
+            <li class="added">evt_agent_memory_persist <span class="badge ok">新增</span></li>
+            <li class="added">evt_rag_recall <span class="badge ok">新增</span></li>
+            <li class="added">evt_pay_retry <span class="badge ok">新增</span></li>
+            <li class="added">evt_cart_remove <span class="badge ok">新增</span></li>
+          </ul>
+        </div>
+
+        <div class="s2-diff-section">
+          <h4>② 公共属性组（7）</h4>
+          <ul>
+            <li class="same">PG-STD-001 · 标准属性组</li>
+            <li class="same">PG-LOC-002 · 位置属性组</li>
+            <li class="same">PG-TRD-005 · 交易属性组</li>
+            <li class="same">PG-DEV-007 · 设备属性组</li>
+            <li class="same">PG-USR-008 · 用户属性组</li>
+            <li class="added">PG-AGT-012 · 智能体属性组（7 字段）<span class="badge ok">新增</span></li>
+            <li class="added">PG-CFG-013 · 配置属性组（4 字段）<span class="badge ok">新增</span></li>
+          </ul>
+        </div>
+
+        <div class="s2-diff-section">
+          <h4>③ Schema 关键字段</h4>
+          <ul>
+            <li class="same">evt_order_pay_success / order_amt · DECIMAL(18,2)</li>
+            <li class="modified">evt_order_pay_success / pay_channel · +balance</li>
+            <li class="modified">evt_order_pay_success / coupon_id · 必填 ⚠️</li>
+            <li class="modified">evt_order_pay_success / pay_status · +pending</li>
+            <li class="added">evt_order_pay_success / channel_sub · STRING</li>
+            <li class="added">evt_order_pay_success / retry_count · INT</li>
+            <li class="added">evt_agent_tool_call / agent_id · STRING</li>
+            <li class="added">evt_agent_tool_call / tool_name · STRING</li>
+            <li class="added">evt_agent_tool_call / token_in/out · INT</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 影响应用 + 风险等级 -->
+    <div class="grid grid-2 mt-4">
+      <div class="card">
+        <div class="card-hd"><h3>📱 影响应用（14）</h3></div>
+        <div class="row" style="flex-wrap:wrap;gap:6px">
+          <span class="s2-app-chip"><span class="dot"></span>app_trade_web（v3.1 兼容）</span>
+          <span class="s2-app-chip"><span class="dot"></span>app_trade_h5（v3.1 兼容）</span>
+          <span class="s2-app-chip"><span class="dot"></span>app_trade_mini（需升 SDK）</span>
+          <span class="s2-app-chip" style="background:var(--warn-bg);color:var(--warn)"><span class="dot"></span>app_trade_ios（需重打包）</span>
+          <span class="s2-app-chip" style="background:var(--warn-bg);color:var(--warn)"><span class="dot"></span>app_trade_android（需重打包）</span>
+          <span class="s2-app-chip"><span class="dot"></span>app_recommend_web（需升 SDK）</span>
+          <span class="s2-app-chip"><span class="dot"></span>app_recommend_h5</span>
+          <span class="s2-app-chip" style="background:var(--ok-bg);color:var(--ok)"><span class="dot"></span>app_agent_studio_web（新接入）</span>
+          <span class="s2-app-chip" style="background:var(--ok-bg);color:var(--ok)"><span class="dot"></span>app_agent_chat_mini（新接入）</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>⚠️ 风险评估</h3></div>
+        <div class="col gap-2">
+          <div class="row" style="justify-content:space-between"><span>兼容性</span><b style="color:var(--err)">2/5 应用需重打包</b></div>
+          <div class="bar"><i class="err" style="width:60%"></i></div>
+          <div class="row" style="justify-content:space-between"><span>必填字段</span><b style="color:var(--warn)">coupon_id 必填变化</b></div>
+          <div class="bar"><i class="warn" style="width:75%"></i></div>
+          <div class="row" style="justify-content:space-between"><span>智能体域新增</span><b style="color:var(--ok)">链路完整</b></div>
+          <div class="bar"><i class="ok" style="width:90%"></i></div>
+          <div style="margin-top:8px;padding:10px;background:var(--err-bg);border-left:3px solid var(--err);border-radius:var(--r-2);font-size:12px;color:#991b1b">
+            <b>⛔ 阻断点：</b>coupon_id 从「可选」改「必填」，3 个小程序在 1.6.x SDK 无法兼容，需先发 v3.2 灰度补 SDK 才能上 v4
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 评审操作 -->
+    <div class="card mt-4">
+      <div class="card-hd">
+        <h3>📤 评审操作</h3>
+        <span class="meta">基于差异自动生成评审材料</span>
+      </div>
+      <div class="row" style="flex-wrap:wrap;gap:8px">
+        <button class="btn">📋 生成评审清单</button>
+        <button class="btn">📊 影响面分析 PDF</button>
+        <button class="btn">📨 通知 Owner 升级</button>
+        <button class="btn primary">🗓️ 创建灰度计划</button>
+        <button class="btn" style="background:var(--err-bg);color:var(--err);border-color:var(--err-border)">⛔ 驳回 v4.0</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  function swapPlans() {
+    const L = document.getElementById('leftPlan');
+    const R = document.getElementById('rightPlan');
+    const t = L.value;
+    L.value = R.value;
+    R.value = t;
+    flash('🔄 已左右互换方案');
+  }
+
+  function flash(msg) {
+    const tip = document.createElement('div');
+    tip.textContent = msg;
+    Object.assign(tip.style, {
+      position:'fixed', top:'80px', right:'24px', zIndex:9999,
+      background:'var(--primary)', color:'#fff',
+      padding:'10px 18px', borderRadius:'var(--r-3)',
+      boxShadow:'var(--sh-3)', fontSize:'13px', fontWeight:'600'
+    });
+    document.body.appendChild(tip);
+    setTimeout(() => tip.remove(), 1800);
+  }
+</script>
+</body>
+</html>

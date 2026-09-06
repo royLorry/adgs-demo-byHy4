@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>异常处置工作台 · S8 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s8.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's8';
+  window.PAGE = 'wb';
+  window.SIDEBAR = {
+    section: '运营监控',
+    items: [
+      { id: 'dash',     label: '质量大盘',         icon: '📊', href: 'quality-dash.html' },
+      { id: 'rule',     label: '规则市场',         icon: '📋', href: 'rule-market.html' },
+      { id: 'rule-det', label: '规则详情',         icon: '🔍', href: 'rule-detail.html' },
+      { id: 'anomaly',  label: '异常中心',         icon: '⚠️', href: 'anomaly.html', badge: 7 },
+      { id: 'wb',       label: '异常处置工作台',   icon: '🛠️', href: 'anomaly-workbench.html' },
+      { id: 'focus',    label: '主题域质量聚焦',   icon: '🎯', href: 'domain-focus.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <a href="anomaly.html">异常中心</a><span class="sep">/</span>
+      <span>AN-2026-0906-001 · 处置工作台</span>
+    </div>
+
+    <!-- 异常头 -->
+    <div class="ds-head">
+      <div class="left">
+        <h2>⚠️ order_id 主键为空 <span class="badge err">P0</span> <span class="badge warn">需立即处置</span></h2>
+        <div class="path">AN-2026-0906-001 · 触发规则 R-N01 主键非空校验 · 关联资产 dwd_trade_order_di</div>
+        <div class="desc">检测到 1,240 行 order_id 字段为空或为非法字符串。规则自 06:30 起自动开始阻断，并通过 IM/邮件双通道通知 Owner。</div>
+        <div class="tags">
+          <span class="badge err">P0</span>
+          <span class="badge primary">交易域</span>
+          <span class="badge warn">影响 5 张下游</span>
+          <span class="badge">已认领 · 张磊</span>
+          <span class="badge">创建于 2 小时前</span>
+        </div>
+      </div>
+      <div class="right">
+        <button class="btn">转派</button>
+        <button class="btn">升级</button>
+        <button class="btn primary">标记解决</button>
+      </div>
+    </div>
+
+    <div class="wb-grid">
+      <!-- 侧栏 -->
+      <aside class="wb-side">
+        <h4>异常属性</h4>
+        <div class="item"><span class="k">异常 ID</span><span class="v"><span class="mono">AN-20260906-001</span></span></div>
+        <div class="item"><span class="k">异常类型</span><span class="v">完整性</span></div>
+        <div class="item"><span class="k">触发规则</span><span class="v"><a href="rule-detail.html">R-N01</a></span></div>
+        <div class="item"><span class="k">关联资产</span><span class="v"><a href="#">dwd_trade_order_di</a></span></div>
+        <div class="item"><span class="k">命中行数</span><span class="v" style="color:var(--err)">1,240</span></div>
+        <div class="item"><span class="k">影响分</span><span class="v">86/100</span></div>
+
+        <h4>时间线</h4>
+        <div class="item"><span class="k">触发</span><span class="v">06:30</span></div>
+        <div class="item"><span class="k">认领</span><span class="v">06:42</span></div>
+        <div class="item"><span class="k">影响分析</span><span class="v">07:15</span></div>
+        <div class="item"><span class="k">根因定位</span><span class="v">进行中</span></div>
+
+        <h4>关联人员</h4>
+        <div class="item"><span class="k">Owner</span><span class="v">张磊</span></div>
+        <div class="item"><span class="k">开发</span><span class="v">李婷, 王皓</span></div>
+        <div class="item"><span class="k">DBA</span><span class="v">陈薇</span></div>
+      </aside>
+
+      <!-- 主区 -->
+      <div>
+        <!-- Tabs -->
+        <div class="tabs" data-tabs="wb">
+          <div class="tab active" data-target="p-ov">概览</div>
+          <div class="tab" data-target="p-imp">影响面 <span class="ct">5 层</span></div>
+          <div class="tab" data-target="p-tk">工单</div>
+          <div class="tab" data-target="p-bf">回溯 <span class="ct">4/6</span></div>
+          <div class="tab" data-target="p-ps">复盘</div>
+        </div>
+
+        <!-- 概览 -->
+        <div class="tab-panel active" id="p-ov">
+          <div class="card mb-4">
+            <div class="card-hd"><h3>异常样本</h3><span class="meta">前 5 行</span></div>
+            <table class="tbl">
+              <thead><tr><th>行号</th><th>order_id</th><th>user_id</th><th>create_time</th><th>channel</th></tr></thead>
+              <tbody>
+                <tr><td>1,283,491</td><td><span class="badge err">NULL</span></td><td>U88291</td><td>2026-09-06 03:12:18</td><td>app</td></tr>
+                <tr><td>1,283,492</td><td><span class="badge err">''</span></td><td>U88292</td><td>2026-09-06 03:12:19</td><td>web</td></tr>
+                <tr><td>1,283,493</td><td><span class="badge err">'unknown'</span></td><td>U88293</td><td>2026-09-06 03:12:20</td><td>h5</td></tr>
+                <tr><td>1,283,494</td><td><span class="badge err">NULL</span></td><td>U88294</td><td>2026-09-06 03:12:21</td><td>app</td></tr>
+                <tr><td class="muted" colspan="5" style="text-align:center">+ 1,236 行</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-hd"><h3>初步诊断</h3></div>
+            <div style="font-size:13px;color:var(--ink-2);line-height:1.7">
+              通过对样本行分析，<b>98%</b> 的空值出现在 channel 为 <code>app</code> 或 <code>h5</code> 的移动端渠道，且集中在凌晨 03:00-04:00。怀疑上游 <code>ods_trade_order_raw</code> 在该时段存在数据写入异常。
+            </div>
+          </div>
+        </div>
+
+        <!-- 影响面 -->
+        <div class="tab-panel" id="p-imp">
+          <div class="card">
+            <div class="card-hd"><h3>影响面分析（5 层血缘）</h3><span class="meta">影响分 86/100</span></div>
+            <table class="tbl">
+              <thead><tr><th style="width:80px">层级</th><th>类型</th><th>名称</th><th>角色</th><th>影响</th></tr></thead>
+              <tbody id="impactTbl"></tbody>
+            </table>
+            <div class="muted mt-2" style="font-size:12px">⚠️ 已识别 5 层下游依赖，最深可达外部 BI 看板。建议立即派单处理。</div>
+          </div>
+        </div>
+
+        <!-- 工单 -->
+        <div class="tab-panel" id="p-tk">
+          <div class="card">
+            <div class="card-hd"><h3>工单生命周期</h3><span class="meta">5 节点</span></div>
+            <div class="dag">
+              <div class="node done">✓ 创建 06:42</div>
+              <span class="arrow">→</span>
+              <div class="node done">✓ 派单 06:45</div>
+              <span class="arrow">→</span>
+              <div class="node done">✓ 认领 06:50</div>
+              <span class="arrow">→</span>
+              <div class="node curr">▶ 根因定位</div>
+              <span class="arrow">→</span>
+              <div class="node">修复</div>
+              <span class="arrow">→</span>
+              <div class="node">关闭</div>
+            </div>
+            <hr class="hr">
+            <h4 style="margin:0 0 8px;font-size:14px">协作记录</h4>
+            <div class="timeline">
+              <div class="ev"><b>张磊</b> <span class="ts">06:50 · 认领</span><div>已认领工单，正在分析上游 ODS 数据。</div></div>
+              <div class="ev"><b>李婷</b> <span class="ts">07:00 · 评论</span><div>03:00-04:00 的数据看似有特定模式，建议检查上游写入脚本变更记录。</div></div>
+              <div class="ev"><b>陈薇</b> <span class="ts">07:15 · 评论</span><div>已查上游任务日志，03:02 有一条重试异常。</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 回溯 -->
+        <div class="tab-panel" id="p-bf">
+          <div class="card">
+            <div class="card-hd"><h3>回溯 DAG</h3><span class="meta">进度 4/6</span></div>
+            <div class="dag" id="dagNodes"></div>
+            <hr class="hr">
+            <h4 style="margin:0 0 8px;font-size:14px">回溯计划</h4>
+            <table class="tbl">
+              <thead><tr><th>步骤</th><th>任务</th><th>负责人</th><th>状态</th><th>预计耗时</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>锁定上游异常时段（03:00-04:00）</td><td>陈薇</td><td><span class="badge ok">✓ 已完成</span></td><td>15 min</td></tr>
+                <tr><td>2</td><td>回滚上游写入脚本</td><td>王皓</td><td><span class="badge warn">⏳ 进行中</span></td><td>30 min</td></tr>
+                <tr><td>3</td><td>重跑该时段数据</td><td>陈薇</td><td><span class="badge">未开始</span></td><td>45 min</td></tr>
+                <tr><td>4</td><td>下游重算（5 张资产）</td><td>李婷</td><td><span class="badge">未开始</span></td><td>60 min</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 复盘 -->
+        <div class="tab-panel" id="p-ps">
+          <div class="card">
+            <div class="card-hd"><h3>复盘 checklist</h3></div>
+            <ul class="checklist">
+              <li>根因已明确定位</li>
+              <li class="done">修复方案已制定</li>
+              <li class="done">影响面已通知</li>
+              <li class="partial">回溯执行完成</li>
+              <li>是否需要沉淀新规则到规则市场？</li>
+              <li>Owner 是否需更新应急响应 SOP？</li>
+            </ul>
+
+            <hr class="hr">
+            <h4 style="margin:0 0 8px;font-size:14px">候选沉淀规则</h4>
+            <div style="background:var(--surface-2);padding:12px;border-radius:var(--r-2);font-size:13px">
+              <div><b>R-N08 主键格式合规（建议）</b></div>
+              <div class="muted mt-2">增加正则表达式校验：order_id 必须匹配 <code>^[A-Z0-9]{32}$</code>。由张磊提报。</div>
+              <button class="btn sm primary mt-2">提交规则市场评审</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  // 影响面表
+  document.getElementById('impactTbl').innerHTML = M.impactList.map(it => `
+    <tr>
+      <td><span class="badge ${it.depth === 0 ? 'err' : ''}">L${it.depth}</span></td>
+      <td>${it.type}</td>
+      <td><span class="mono">${it.name}</span></td>
+      <td class="muted">${it.role}</td>
+      <td>${it.depth === 0 ? '<span class="badge err">本表</span>' : it.depth >= 4 ? '<span class="badge warn">影响外部</span>' : '<span class="badge info">数据链路</span>'}</td>
+    </tr>`).join('');
+
+  // 回溯 DAG
+  document.getElementById('dagNodes').innerHTML = M.dagNodes.map((n, i, arr) => {
+    const node = `<div class="node ${n.state}">${n.state === 'done' ? '✓' : n.state === 'curr' ? '▶' : n.state === 'fail' ? '✗' : '○'} ${n.label}</div>`;
+    if (i === arr.length - 1) return node;
+    return node + '<span class="arrow">→</span>';
+  }).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+/* ========================================================================
+   tokens.css — 设计变量（颜色 / 字体 / 间距 / 阴影 / 圆角）
+   由具体页面通过 :root 或 .theme-* 类切换主题（S1 默认；body.theme-s8 切到 S8）
+   ======================================================================== */
+
+:root {
+  /* ---------- 中性 ---------- */
+  --ink-1: #0f172a;          /* 主文字 */
+  --ink-2: #475569;          /* 次文字 */
+  --ink-3: #94a3b8;          /* 三级文字 / 占位 */
+  --ink-4: #cbd5e1;          /* 极弱文字 / 分隔 */
+
+  --bg:    #f6f8fb;          /* 页面底色 */
+  --surface: #ffffff;        /* 卡片底 */
+  --surface-2: #fafbfd;      /* 卡片 hover / 次级面 */
+  --line:  #e6e9ee;          /* 描边 */
+  --line-2: #eef0f4;        /* 弱描边 */
+
+  /* ---------- 状态色 ---------- */
+  --ok:    #10b981;
+  --ok-bg: #ecfdf5;
+  --ok-border: #a7f3d0;
+  --warn:  #f59e0b;
+  --warn-bg: #fff7ed;
+  --warn-border: #fed7aa;
+  --err:   #ef4444;
+  --err-bg: #fef2f2;
+  --err-border: #fecaca;
+  --info:  #3b82f6;
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+
+  /* ---------- 主题色 (默认 S1) ---------- */
+  --primary:        #2563eb;      /* 靛蓝 */
+  --primary-bg:     #eff6ff;
+  --primary-border: #93b4f7;
+  --primary-hover:  #1d4ed8;
+  --primary-tint:   #dbeafe;
+
+  --accent:        #10b981;        /* 翠绿 */
+  --accent-bg:    #ecfdf5;
+  --accent-tint:  #d1fae5;
+
+  --grad-hero: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+  --grad-card:  linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+  --grad-row:   linear-gradient(90deg, transparent 0%, rgba(37,99,235,.04) 100%);
+
+  /* 数据流 / 链路色（与架构图 SVG 保持一致） */
+  --f-data:  #2563eb;             /* 数据流 */
+  --f-ctrl:  #f59e0b;             /* 管控流 */
+  --f-back:  #06b6d4;             /* 回流流 */
+  --f-self:  #8b5cf6;             /* 内部闭环 */
+
+  /* ---------- 字体 ---------- */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+               "Hiragino Sans GB", "Microsoft YaHei", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Consolas, "Liberation Mono", monospace;
+  --fs-12: 12px;
+  --fs-13: 13px;
+  --fs-14: 14px;
+  --fs-16: 16px;
+  --fs-18: 18px;
+  --fs-20: 20px;
+  --fs-24: 24px;
+  --fs-32: 32px;
+  --fs-40: 40px;
+
+  /* ---------- 间距 ---------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* ---------- 圆角 ---------- */
+  --r-1: 4px;
+  --r-2: 6px;
+  --r-3: 8px;
+  --r-4: 12px;
+  --r-pill: 999px;
+
+  /* ---------- 阴影 ---------- */
+  --sh-1: 0 1px 2px rgba(15,23,42,.04), 0 1px 1px rgba(15,23,42,.03);
+  --sh-2: 0 2px 6px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --sh-3: 0 10px 24px rgba(15,23,42,.08), 0 4px 8px rgba(15,23,42,.04);
+  --sh-4: 0 20px 40px rgba(15,23,42,.12);
+
+  /* ---------- 布局尺寸 ---------- */
+  --topbar-h: 60px;
+  --sidebar-w: 232px;
+}
+
+/* =========================================================================
+   S8 主题（紫色 + 橙红）
+   ========================================================================= */
+body.theme-s8 {
+  --primary:        #6d4cff;
+  --primary-bg:     #f3f0ff;
+  --primary-border: #b6a4ff;
+  --primary-hover:  #5836e0;
+  --primary-tint:   #e3daff;
+
+  --accent:        #f43f5e;
+  --accent-bg:    #fff1f3;
+  --accent-tint:  #fde2e8;
+
+  --grad-hero: linear-gradient(135deg, #4f2dd6 0%, #6d4cff 50%, #9d7dff 100%);
+  --grad-card:  linear-gradient(135deg, #f3f0ff 0%, #ffffff 100%);
+  --grad-row:   linear-gradient(90deg, transparent 0%, rgba(109,76,255,.05) 100%);
+
+  --f-data:  #6d4cff;
+  --f-ctrl:  #f59e0b;
+  --f-back:  #06b6d4;
+  --f-self:  #8b5cf6;
+}
+
+/* =========================================================================
+   S2 主题（青色 #0891b2 + 翠绿 #14b8a6）— 埋点与事件治理
+   ========================================================================= */
+body.theme-s2 {
+  --primary:        #0891b2;
+  --primary-bg:     #ecfeff;
+  --primary-border: #67e8f9;
+  --primary-hover:  #0e7490;
+  --primary-tint:   #cffafe;
+
+  --accent:        #14b8a6;
+  --accent-bg:     #ecfdf5;
+  --accent-tint:   #ccfbf1;
+
+  --grad-hero: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #14b8a6 100%);
+  --grad-card:  linear-gradient(135deg, #ecfeff 0%, #ffffff 100%);
+  --grad-row:   linear-gradient(90deg, transparent 0%, rgba(8,145,178,.06) 100%);
+
+  --f-data:  #0891b2;             /* 事件上报流 */
+  --f-ctrl:  #f59e0b;             /* 管控/验收 */
+  --f-back:  #14b8a6;             /* 回算/对账 */
+  --f-self:  #6366f1;             /* 自检闭环 */
+}
+
+/* =========================================================================
+   S1 主题显式声明（S1 为默认，可省略；显式化便于切换/调试）
+   ========================================================================= */
+body.theme-s1 {
+  --primary:        #2563eb;
+  --primary-bg:     #eff6ff;
+  --primary-border: #93b4f7;
+  --primary-hover:  #1d4ed8;
+  --primary-tint:   #dbeafe;
+  --accent:         #10b981;
+  --accent-bg:      #ecfdf5;
+  --accent-tint:    #d1fae5;
+  --f-data:         #2563eb;
+}

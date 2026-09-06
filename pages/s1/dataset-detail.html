@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dwd_trade_order_di · 数据集详情 · S1 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s1.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's1';
+  window.PAGE = 'dataset';
+  window.SIDEBAR = {
+    section: '核心功能',
+    items: [
+      { id: 'catalog',    label: '资产目录',     icon: '📚', href: 'catalog.html' },
+      { id: 'dataset',    label: '数据集详情',   icon: '📄', href: 'dataset-detail.html' },
+      { id: 'domain',     label: '主题域浏览',   icon: '🗂️', href: 'domain.html' },
+      { id: 'standards',  label: '数据标准库',   icon: '📐', href: 'standards.html' },
+      { id: 'std-detail', label: '标准详情',     icon: '🏷️', href: 'standard-detail.html' },
+      { id: 'change',     label: '变更影响分析', icon: '🔄', href: 'change-impact.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <a href="catalog.html">资产目录</a><span class="sep">/</span>
+      <span>数据集详情</span>
+    </div>
+
+    <!-- 头部信息 -->
+    <div class="ds-head">
+      <div class="left">
+        <h2>dwd_trade_order_di <span class="badge primary">DWD</span> <span class="badge ok">✅ 已落标</span></h2>
+        <div class="path">/ods/oms/order/dwd_trade_order_di</div>
+        <div class="desc">订单域 DWD 明细表。记录每一笔下单的完整生命周期事实（含订单创建、支付、发货、退款等状态变迁），是交易域下游汇总表与上层指标的源数据。日增量约 200w 行。</div>
+        <div class="tags">
+          <span class="badge primary">交易域</span>
+          <span class="badge">DWD</span>
+          <span class="badge info">增量任务</span>
+          <span class="badge">Owner: 张磊</span>
+          <span class="badge">最近更新 2026-09-06 06:00</span>
+        </div>
+      </div>
+      <div class="right">
+        <div id="ring"></div>
+        <div class="muted mt-2" style="font-size:11px">综合健康分</div>
+        <button class="btn primary sm mt-2" style="margin-top:8px">订阅变更</button>
+      </div>
+    </div>
+
+    <!-- 6 维健康分 -->
+    <div class="card mb-4">
+      <div class="card-hd"><h3>六维健康分</h3>
+        <span class="meta">基于近 30 天自动评估</span>
+      </div>
+      <div class="grid grid-6" id="dimGrid"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" data-tabs="ds">
+      <div class="tab active" data-target="p-fields">📑 字段（8）</div>
+      <div class="tab" data-target="p-lineage">🌳 血缘</div>
+      <div class="tab" data-target="p-quality">📊 质量</div>
+      <div class="tab" data-target="p-std">📐 数据标准</div>
+      <div class="tab" data-target="p-sub">🔔 订阅（24）</div>
+      <div class="tab" data-target="p-disc">💬 评论（12）</div>
+      <div class="tab" data-target="p-version">🕐 版本（v12）</div>
+    </div>
+
+    <div class="tab-panel active" id="p-fields">
+      <div class="card">
+        <table class="tbl">
+          <thead>
+            <tr><th>#</th><th>字段名</th><th>类型</th><th>PK</th><th>数据标准</th><th>说明</th><th>操作</th></tr>
+          </thead>
+          <tbody id="fieldsTbl"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-lineage">
+      <div class="card">
+        <div class="card-hd"><h3>血缘关系</h3><span class="meta">上游 3 / 下游 18</span></div>
+        <div style="background:var(--surface-2);padding:20px;border-radius:var(--r-2);font-family:var(--font-mono);font-size:13px;line-height:2">
+          <div>📥 上游：ods_trade_order_raw → <b style="color:var(--primary)">dwd_trade_order_di</b></div>
+          <div>📤 下游：dws_user_order_30d_df · dws_gmv_daily_df · ads_gmv_summary_di · dwd_trade_refund_di · ...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-quality">
+      <div class="card">
+        <div class="card-hd"><h3>质量稽核</h3><span class="meta">最近一次运行：今日 06:30</span></div>
+        <div class="grid grid-3">
+          <div class="kpi"><span class="label">已绑定规则</span><span class="value">14</span><span class="delta up">▲ 2 本周新增</span></div>
+          <div class="kpi"><span class="label">命中异常</span><span class="value">3</span><span class="delta down">▼ 较昨日 -1</span></div>
+          <div class="kpi"><span class="label">规则完成率</span><span class="value">100%</span><span class="delta">连续 30 天</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-std">
+      <div class="card">
+        <div class="card-hd"><h3>字段-标准映射</h3></div>
+        <div class="mb-2 muted" style="font-size:13px">本表 8 个字段中，7 个字段已挂载数据标准（87.5%）。剩余 1 个字段（pay_status）尚未落标。</div>
+        <a href="change-impact.html" class="btn sm">查看落标影响 →</a>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-sub">
+      <div class="card"><div class="muted">订阅本表变更的成员：24 人（含开发 8、Owner 4、上游团队 6、下游消费者 6）。变更将通过 IM / 邮件双通道通知。</div></div>
+    </div>
+
+    <div class="tab-panel" id="p-disc">
+      <div class="card"><div class="muted">本表共有 12 条评论。最热话题：order_amt 是否应该改为 (20,4) 以支持跨境业务的高精度汇率计算。</div></div>
+    </div>
+
+    <div class="tab-panel" id="p-version">
+      <div class="card">
+        <div class="card-hd"><h3>版本历史</h3></div>
+        <div class="timeline">
+          <div class="ev"><b>v12</b> <span class="ts">2026-09-05 18:00 · 张磊</span><div>新增字段 order_channel_sub（子渠道）</div></div>
+          <div class="ev"><b>v11</b> <span class="ts">2026-08-21 14:00 · 李婷</span><div>字段类型变更 pay_status：STRING → TINYINT</div></div>
+          <div class="ev"><b>v10</b> <span class="ts">2026-08-10 10:00 · 张磊</span><div>落标字段 province_code 至 ST-402 行政区划主数据</div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  document.getElementById('ring').innerHTML = ring(92, { r: 50, size: 120 });
+
+  // 6 维
+  const dims = [
+    { k: '完整性', v: 95 }, { k: '准确性', v: 90 }, { k: '一致性', v: 88 },
+    { k: '及时性', v: 96 }, { k: '唯一性', v: 100 }, { k: '安全性', v: 82 }
+  ];
+  document.getElementById('dimGrid').innerHTML = dims.map(d => `
+    <div style="text-align:center">
+      <div style="font-size:24px;font-weight:700;color:${d.v >= 90 ? 'var(--ok)' : d.v >= 75 ? 'var(--primary)' : 'var(--warn)'}">${d.v}</div>
+      <div class="muted" style="font-size:11px;margin-top:2px">${d.k}</div>
+      <div class="bar thin mt-2"><i class="${d.v >= 90 ? 'ok' : ''}" style="width:${d.v}%"></i></div>
+    </div>`).join('');
+
+  // 字段表
+  document.getElementById('fieldsTbl').innerHTML = M.dsFields.map(f => `
+    <tr>
+      <td>${f.no}</td>
+      <td><span class="mono">${f.name}</span></td>
+      <td><span class="badge">${f.type}</span></td>
+      <td>${f.pk ? '<span class="badge primary">PK</span>' : ''}</td>
+      <td><span class="badge ${f.std.indexOf('未落标') < 0 ? 'accent' : 'warn'}">${f.std}</span></td>
+      <td><span class="muted">${f.desc}</span></td>
+      <td><a href="standard-detail.html" class="btn sm">详情</a></td>
+    </tr>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>验收工作台 · S2 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s2.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230891b2%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2314b8a6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3ES2%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS  = 's2';
+  window.PAGE = 'acceptance';
+  window.SIDEBAR = {
+    section: '事件治理',
+    items: [
+      { id: 'event-dict',  label: '事件字典首页',   icon: '📑', href: 'event-dict.html' },
+      { id: 'event-detail',label: '事件详情',       icon: '🔍', href: 'event-detail.html' },
+      { id: 'plan-list',   label: '方案列表',       icon: '📋', href: 'plan-list.html' },
+      { id: 'designer',    label: '方案设计器',     icon: '✏️',  href: 'plan-designer.html' },
+      { id: 'live',        label: '实时观测',       icon: '📡', href: 'live-tap.html', badge: 2 },
+      { id: 'acceptance',  label: '验收工作台',     icon: '✅', href: 'acceptance.html', badge: 3 }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <span>S2 埋点与事件治理平台 · 验收工作台</span>
+    </div>
+
+    <!-- 头部：当前验收方案摘要 -->
+    <section class="card" style="background:var(--grad-card);border-color:var(--primary-border)">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="row gap-2 mb-2">
+            <h2 style="margin:0;font-size:20px">📦 推荐业务 2026Q3 方案验收</h2>
+            <span class="badge err">3 项失败</span>
+            <span class="badge warn">2 项需关注</span>
+          </div>
+          <div class="meta-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div><span class="k">方案</span><span class="v mono">plan_recommend_2026Q3</span></div>
+            <div><span class="k">版本</span><span class="v">v3.2</span></div>
+            <div><span class="k">验收窗口</span><span class="v">9 月 1 - 7 日</span></div>
+            <div><span class="k">关联发布</span><span class="v"><span class="badge primary">REL-2026Q3-001</span></span></div>
+          </div>
+        </div>
+        <div class="row gap-2">
+          <button class="btn">📥 验收报告</button>
+          <button class="btn">📨 通知 Owner</button>
+          <button class="btn primary" style="background:var(--ok);border-color:var(--ok)">✅ 确认验收通过</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 类自动验收总体进度 -->
+    <h3 style="margin:24px 0 12px;font-size:16px">📊 4 类自动验收 · 总体进度</h3>
+    <div class="s2-acc-bar">
+      <div class="item pass">
+        <div class="hd">📡 端到端覆盖率</div>
+        <div class="v">94.6%</div>
+        <div style="font-size:11px;color:var(--ink-3)">阈值 ≥ 95% · 差 0.4%</div>
+        <div class="bar"><i class="warn" style="width:94.6%"></i></div>
+      </div>
+      <div class="item fail">
+        <div class="hd">📋 字段完整率</div>
+        <div class="v">97.8%</div>
+        <div style="font-size:11px;color:var(--ink-3)">阈值 = 100% · 差 2.2%</div>
+        <div class="bar"><i class="err" style="width:97.8%"></i></div>
+      </div>
+      <div class="item pass">
+        <div class="hd">⏱️ 端到端时效 P99</div>
+        <div class="v">24<span style="font-size:14px;font-weight:400">s</span></div>
+        <div style="font-size:11px;color:var(--ink-3)">阈值 ≤ 30s · 通过</div>
+        <div class="bar"><i class="ok" style="width:80%"></i></div>
+      </div>
+      <div class="item pass">
+        <div class="hd">⚖️ 跨端对账差异率</div>
+        <div class="v">0.04%</div>
+        <div style="font-size:11px;color:var(--ink-3)">阈值 < 0.1% · 通过</div>
+        <div class="bar"><i class="ok" style="width:99.6%"></i></div>
+      </div>
+    </div>
+
+    <!-- 验收任务详情表 -->
+    <div class="card mt-4">
+      <div class="card-hd">
+        <h3>🧪 验收任务详情</h3>
+        <div class="row gap-2">
+          <select style="padding:5px 10px;border:1px solid var(--line);border-radius:var(--r-2);background:var(--surface);font-size:12px">
+            <option>全部类型</option><option>覆盖率</option><option>完整率</option><option>时序</option><option>对账</option>
+          </select>
+          <select style="padding:5px 10px;border:1px solid var(--line);border-radius:var(--r-2);background:var(--surface);font-size:12px">
+            <option>全部状态</option><option>pass</option><option>warn</option><option>fail</option>
+          </select>
+        </div>
+      </div>
+      <table class="tbl s2-acc-table">
+        <thead>
+          <tr>
+            <th style="width:40px">序</th>
+            <th>任务 ID</th>
+            <th>事件</th>
+            <th>数据集</th>
+            <th>验收类型</th>
+            <th>规则阈值</th>
+            <th>期望值</th>
+            <th>实际值</th>
+            <th>差异</th>
+            <th>状态</th>
+            <th>采集时间</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="accTbl"></tbody>
+      </table>
+    </div>
+
+    <!-- 不通过项详情 / 处置 DAG -->
+    <div class="grid grid-2 mt-4" style="grid-template-columns:1.3fr 1fr">
+      <div class="card">
+        <div class="card-hd"><h3>⚠️ 不通过项根因 · Top 3</h3></div>
+        <div class="col gap-2">
+          <div style="border:1px solid var(--err-border);background:var(--err-bg);border-radius:var(--r-2);padding:12px">
+            <div class="row" style="justify-content:space-between;margin-bottom:6px">
+              <b>① evt_cart_add · 完整率 96.4% 未达 100%</b>
+              <span class="badge err">P0</span>
+            </div>
+            <div style="font-size:12px;color:#991b1b">
+              <b>根因：</b>app_recommend_web 在 SDK 2.3.0 中未携带公共属性组 PG-STD-001 的 <code>session_id</code> 字段。
+              <br><b>影响：</b>主键缺失导致 3.6% 事件去重失败（agent 多次点击同 SKU 时被错误聚合）。
+              <br><b>建议：</b>推动 app_recommend_web 升级 SDK 至 2.4.1，预计 24h 内可恢复。
+            </div>
+          </div>
+          <div style="border:1px solid var(--err-border);background:var(--err-bg);border-radius:var(--r-2);padding:12px">
+            <div class="row" style="justify-content:space-between;margin-bottom:6px">
+              <b>② evt_order_pay_success · 完整率 99.4%</b>
+              <span class="badge err">P0</span>
+            </div>
+            <div style="font-size:12px;color:#991b1b">
+              <b>根因：</b>APP 端 0.6% 的订单在离线缓存后未及时补发，疑似 app_trade_ios 网络抖动；<code>trace_id</code> 缺失导致无法定位。
+              <br><b>建议：</b>联系 iOS 端将失败缓存立即重试，必要时开启强制批量补发。
+            </div>
+          </div>
+          <div style="border:1px solid var(--err-border);background:var(--err-bg);border-radius:var(--r-2);padding:12px">
+            <div class="row" style="justify-content:space-between;margin-bottom:6px">
+              <b>③ evt_cart_add · 覆盖率 92.1% 未达 95%</b>
+              <span class="badge err">P0</span>
+            </div>
+            <div style="font-size:12px;color:#991b1b">
+              <b>根因：</b>方案 v3.2 新加的 <code>channel_sub</code> 字段在小程序端 SDK 1.5.x 不支持，未被上报。
+              <br><b>建议：</b>回滚至方案 v3.1，或推动小程序 SDK 升级到 1.6.2。
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>🛠️ 处置工作流</h3></div>
+        <div class="dag">
+          <div class="node done"><span>✓</span> 异常发现</div>
+          <span class="arrow">→</span>
+          <div class="node done"><span>✓</span> 影响面分析</div>
+          <span class="arrow">→</span>
+          <div class="node done"><span>✓</span> 工单创建</div>
+          <span class="arrow">→</span>
+          <div class="node curr"><span>●</span> 根因定位</div>
+          <span class="arrow">→</span>
+          <div class="node"><span>5</span> 回溯执行</div>
+          <span class="arrow">→</span>
+          <div class="node"><span>6</span> 复盘归档</div>
+        </div>
+
+        <div style="margin-top:20px">
+          <div class="bold mb-2" style="font-size:13px">📋 待 Owner 处理</div>
+          <ul class="checklist">
+            <li class="done">SDK 升级方案评审</li>
+            <li class="done">影响应用清单生成</li>
+            <li class="done">回溯范围确认（7 日窗口）</li>
+            <li class="partial">灰度放行比例决策</li>
+            <li>回溯执行（DAG step 5）</li>
+            <li>复盘报告归档</li>
+          </ul>
+        </div>
+
+        <div style="margin-top:20px;padding:12px;background:var(--primary-bg);border-radius:var(--r-2);font-size:12px;color:var(--ink-2)">
+          <b>⏰ 自动联动：</b>验收不通过 → 触发 S1 数据资产异常标签 / S8 质量规则 R-T01 升级工单。
+        </div>
+      </div>
+    </div>
+
+    <!-- 智能体事件步骤时间线 -->
+    <div class="card mt-4">
+      <div class="card-hd">
+        <h3>🤖 智能体事件 · 步骤级验收（evt_agent_tool_call）</h3>
+        <span class="meta">对每一步骤独立做 4 类验收</span>
+      </div>
+      <div class="s2-step-timeline">
+        <div class="step">
+          <div>00:00.00</div>
+          <div class="name">① RAG 召回 (RAG Recall)</div>
+          <div class="dur">82ms</div>
+          <div><span class="st ok">通过</span></div>
+        </div>
+        <div class="step">
+          <div>00:00.08</div>
+          <div class="name">② LLM 推理 (LLM Reasoning)</div>
+          <div class="dur">1.24s</div>
+          <div><span class="st ok">通过</span></div>
+        </div>
+        <div class="step">
+          <div>00:01.32</div>
+          <div class="name">③ 工具调用 (Tool Call)</div>
+          <div class="dur">240ms</div>
+          <div><span class="st ok">通过</span></div>
+        </div>
+        <div class="step">
+          <div>00:01.56</div>
+          <div class="name">④ 结果校验 (Result Verify)</div>
+          <div class="dur">18ms</div>
+          <div><span class="st ok">通过</span></div>
+        </div>
+        <div class="step">
+          <div>00:01.58</div>
+          <div class="name">⑤ 应答输出 (Response)</div>
+          <div class="dur">86ms</div>
+          <div><span class="st slow">慢 28ms</span></div>
+        </div>
+        <div class="step" style="background:var(--err-bg);border-radius:4px;padding:8px;margin:4px 0">
+          <div>00:02.44</div>
+          <div class="name">⑥ 总结存证 (Memory Persist)</div>
+          <div class="dur">42s</div>
+          <div><span class="st fail">超时</span></div>
+        </div>
+      </div>
+
+      <div class="row mt-4 gap-2">
+        <a class="btn primary" href="agent-trace.html">🤖 查看完整步骤级可视化</a>
+        <button class="btn">📊 智能体质量评分</button>
+        <a class="btn" href="event-detail.html">查看事件详情</a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  document.getElementById('accTbl').innerHTML = M.s2.acceptance.map((a, i) => {
+    const stCls = a.state === 'pass' ? 'ok' : a.state === 'warn' ? 'warn' : 'err';
+    const stLab = a.state === 'pass' ? '通过' : a.state === 'warn' ? '关注' : '失败';
+    // 计算差异（百分比类）
+    let delta = '';
+    if (typeof a.actual === 'number') {
+      const d = (a.actual - a.expected).toFixed(2);
+      delta = `${d > 0 ? '+' : ''}${d}`;
+    }
+    return `
+      <tr class="${a.state}">
+        <td>${i + 1}</td>
+        <td class="mono">${a.id}</td>
+        <td class="mono">${a.event}</td>
+        <td class="mono" style="font-size:11px">${a.ds}</td>
+        <td><span class="badge ${a.type === '覆盖率' ? 'primary' : a.type === '完整率' ? 'info' : a.type === '时序' ? 'warn' : 'accent'}">${a.type}</span></td>
+        <td><span class="mono">${a.rule}</span></td>
+        <td>${a.expected}</td>
+        <td><b>${a.actual}</b></td>
+        <td>${delta}</td>
+        <td><span class="badge ${stCls}">${stLab}</span></td>
+        <td style="font-size:11px;color:var(--ink-3)">${a.ts}</td>
+        <td><button class="btn sm">查看</button></td>
+      </tr>`;
+  }).join('');
+</script>
+</body>
+</html>

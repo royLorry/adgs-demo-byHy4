@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ST-202 支付状态枚举 · 标准详情 · S1 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s1.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's1';
+  window.PAGE = 'std-detail';
+  window.SIDEBAR = {
+    section: '核心功能',
+    items: [
+      { id: 'catalog',    label: '资产目录',     icon: '📚', href: 'catalog.html' },
+      { id: 'dataset',    label: '数据集详情',   icon: '📄', href: 'dataset-detail.html' },
+      { id: 'domain',     label: '主题域浏览',   icon: '🗂️', href: 'domain.html' },
+      { id: 'standards',  label: '数据标准库',   icon: '📐', href: 'standards.html' },
+      { id: 'std-detail', label: '标准详情',     icon: '🏷️', href: 'standard-detail.html' },
+      { id: 'change',     label: '变更影响分析', icon: '🔄', href: 'change-impact.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <a href="standards.html">数据标准库</a><span class="sep">/</span>
+      <span>ST-202 支付状态枚举</span>
+    </div>
+
+    <!-- 头部信息 -->
+    <div class="ds-head">
+      <div class="left">
+        <h2>ST-202 支付状态枚举 <span class="badge primary">值域标准</span> <span class="badge ok">v1.5 · 已发布</span></h2>
+        <div class="path">category: 值域 · type: ENUM · owner: 王皓</div>
+        <div class="desc">支付状态的取值范围。覆盖待支付、已支付、已取消、已退款 4 种状态，所有支付相关字段必须严格遵循本枚举。变更时需联动通知引用本标准的资产 Owner。</div>
+        <div class="tags">
+          <span class="badge primary">引用字段 12</span>
+          <span class="badge">Owner: 王皓</span>
+          <span class="badge">最近更新 2026-08-12</span>
+          <span class="badge accent">已落标 12 / 12</span>
+        </div>
+      </div>
+      <div class="right">
+        <div id="ring"></div>
+        <div class="muted mt-2" style="font-size:11px">落标率</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" data-tabs="std">
+      <div class="tab active" data-target="p-vals">枚举值（4）</div>
+      <div class="tab" data-target="p-ref">引用字段（12）</div>
+      <div class="tab" data-target="p-ver">版本历史</div>
+      <div class="tab" data-target="p-stats">落标分析</div>
+    </div>
+
+    <div class="tab-panel active" id="p-vals">
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th>代码</th><th>名称</th><th>样本占比</th><th>说明</th><th>操作</th></tr></thead>
+          <tbody id="valsTbl"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-ref">
+      <div class="card">
+        <div class="card-hd"><h3>引用本标准的字段</h3><span class="meta">12 个字段已挂载</span></div>
+        <table class="tbl">
+          <thead><tr><th>所属资产</th><th>字段名</th><th>类型</th><th>主题域</th></tr></thead>
+          <tbody>
+            <tr><td><a href="dataset-detail.html"><span class="mono">dwd_trade_order_di</span></a></td><td><span class="mono">pay_status</span></td><td><span class="badge">TINYINT</span></td><td>交易域</td></tr>
+            <tr><td><span class="mono">dwd_trade_refund_di</span></td><td><span class="mono">refund_status</span></td><td><span class="badge">TINYINT</span></td><td>交易域</td></tr>
+            <tr><td><span class="mono">dws_user_payment_30d_df</span></td><td><span class="mono">last_pay_status</span></td><td><span class="badge">TINYINT</span></td><td>用户域</td></tr>
+            <tr><td class="muted" colspan="4" style="text-align:center">+ 9 个其他字段</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-ver">
+      <div class="card">
+        <div class="card-hd"><h3>版本历史</h3></div>
+        <div class="timeline">
+          <div class="ev"><b>v1.5 · 当前</b> <span class="ts">2026-08-12 · 王皓</span><div>说明字段补充「已取消」与「已退款」的业务区分</div></div>
+          <div class="ev"><b>v1.4</b> <span class="ts">2026-05-30 · 王皓</span><div>删除已被业务废弃的「已拒付」枚举值</div></div>
+          <div class="ev"><b>v1.3</b> <span class="ts">2026-02-15 · 王皓</span><div>新增「已退款」状态以适配新业务</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-stats">
+      <div class="card">
+        <div class="card-hd"><h3>落标分析</h3></div>
+        <div class="grid grid-3">
+          <div class="kpi"><span class="label">已落标字段</span><span class="value">12</span></div>
+          <div class="kpi"><span class="label">未落标字段</span><span class="value">0</span></div>
+          <div class="kpi"><span class="label">疑似冲突</span><span class="value">0</span></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  document.getElementById('ring').innerHTML = ring(100, { r: 50, size: 120 });
+  document.getElementById('valsTbl').innerHTML = M.enumValues.map(v => `
+    <tr>
+      <td><span class="mono">${v.code}</span></td>
+      <td>${v.label}</td>
+      <td>
+        <div class="bar" style="width:200px"><i style="width:${v.pct * 2}px"></i></div>
+        <span class="muted" style="font-size:11px;margin-left:6px">${v.pct}%</span>
+      </td>
+      <td class="muted">${v.code === 'INIT' ? '下单后未支付' : v.code === 'ACTIVE' ? '支付成功且未退款' : v.code === 'PAUSED' ? '用户主动取消或超时关闭' : '已发起退款流程'}</td>
+      <td><button class="btn sm">编辑</button></td>
+    </tr>`).join('');
+</script>
+</body>
+</html>

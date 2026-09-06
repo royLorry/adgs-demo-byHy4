@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R-N01 主键非空校验 · 规则详情 · S8 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s8.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's8';
+  window.PAGE = 'rule-det';
+  window.SIDEBAR = {
+    section: '运营监控',
+    items: [
+      { id: 'dash',     label: '质量大盘',         icon: '📊', href: 'quality-dash.html' },
+      { id: 'rule',     label: '规则市场',         icon: '📋', href: 'rule-market.html' },
+      { id: 'rule-det', label: '规则详情',         icon: '🔍', href: 'rule-detail.html' },
+      { id: 'anomaly',  label: '异常中心',         icon: '⚠️', href: 'anomaly.html', badge: 7 },
+      { id: 'wb',       label: '异常处置工作台',   icon: '🛠️', href: 'anomaly-workbench.html' },
+      { id: 'focus',    label: '主题域质量聚焦',   icon: '🎯', href: 'domain-focus.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <a href="rule-market.html">规则市场</a><span class="sep">/</span>
+      <span>R-N01 主键非空校验</span>
+    </div>
+
+    <!-- 头部 -->
+    <div class="ds-head">
+      <div class="left">
+        <h2>R-N01 主键非空校验 <span class="badge primary">完整性</span> <span class="badge err">P0</span> <span class="badge ok">v3.2 · 已发布</span></h2>
+        <div class="path">category: 完整性 · type: NOT_NULL · owner: 张磊 / 李婷 · 引用次数: 18</div>
+        <div class="desc">主键字段不允许为空，命中任一空值即视为异常。是数据集成链路最常见的卡点规则，几乎适用于所有业务主键字段。</div>
+        <div class="tags">
+          <span class="badge primary">实时</span>
+          <span class="badge">离线</span>
+          <span class="badge accent">有效性 92%</span>
+          <span class="badge">1,248 资产</span>
+        </div>
+      </div>
+      <div class="right">
+        <div id="ring"></div>
+        <div class="muted mt-2" style="font-size:11px">有效性评分</div>
+        <button class="btn primary sm" style="margin-top:8px">引用本规则</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" data-tabs="rd">
+      <div class="tab active" data-target="p-def">定义</div>
+      <div class="tab" data-target="p-apply">适用资产 <span class="ct">1,248</span></div>
+      <div class="tab" data-target="p-ref">规则引用 <span class="ct">18</span></div>
+      <div class="tab" data-target="p-sim">模拟执行</div>
+      <div class="tab" data-target="p-rel">引用本规则的资产 <span class="ct">312</span></div>
+      <div class="tab" data-target="p-ver">版本</div>
+      <div class="tab" data-target="p-disc">评论 <span class="ct">24</span></div>
+    </div>
+
+    <div class="tab-panel active" id="p-def">
+      <div class="card mb-4">
+        <div class="card-hd"><h3>规则定义（DSL）</h3><span class="meta">YAML</span></div>
+        <pre style="background:var(--surface-2);padding:16px;border-radius:var(--r-2);font-size:12px;font-family:var(--font-mono);line-height:1.7;overflow-x:auto"><code>id: R-N01
+name: 主键非空校验
+category: 完整性
+severity: P0
+version: 3.2
+owner: 张磊, 李婷
+
+trigger:
+  type: schedule | stream
+  schedule: "0 */5 * * * *"   # 每 5 分钟
+  stream: kafka.dq.events
+
+scope:
+  - field: order_id
+    in: ["dwd_trade_order_di", "dwd_trade_refund_di", ...]
+  - field: user_id
+    in: ["dwd_user_register_di", ...]
+
+condition: |
+  SELECT COUNT(*) AS null_cnt
+  FROM &lt;scope_table&gt;
+  WHERE &lt;pk_field&gt; IS NULL
+    OR TRIM(&lt;pk_field&gt;) = ''
+
+threshold:
+  fail_if_null_cnt_gt: 0
+
+actions:
+  on_fail:
+    - emit_anomaly: severity=P0
+    - block_writing: strategy=card_point
+    - notify: [owner, dba]
+  on_pass:
+    - update_health_score: +1</code></pre>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>规则元信息</h3></div>
+        <div class="meta-grid">
+          <div><div class="k">规则 ID</div><div class="v"><span class="mono">R-N01</span></div></div>
+          <div><div class="k">规则类别</div><div class="v">完整性 / NOT_NULL</div></div>
+          <div><div class="k">严重度</div><div class="v">P0（阻塞）</div></div>
+          <div><div class="k">触发方式</div><div class="v">定时 + 实时双触发</div></div>
+          <div><div class="k">卡点策略</div><div class="v">直接阻塞写入</div></div>
+          <div><div class="k">通知渠道</div><div class="v">IM + 邮件 + 短信</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-apply">
+      <div class="card">
+        <div class="card-hd"><h3>本规则适用的资产（节选）</h3><span class="meta">1,248 张 · 仅展示前 12</span></div>
+        <table class="tbl">
+          <thead><tr><th>资产</th><th>主题域</th><th>字段</th><th>Owner</th><th>状态</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mono">dwd_trade_order_di</span></td><td>交易域</td><td><span class="mono">order_id</span></td><td>张磊</td><td><span class="badge ok">生效中</span></td></tr>
+            <tr><td><span class="mono">dwd_user_register_di</span></td><td>用户域</td><td><span class="mono">user_id</span></td><td>李婷</td><td><span class="badge ok">生效中</span></td></tr>
+            <tr><td><span class="mono">dwd_log_click_di</span></td><td>日志域</td><td><span class="mono">event_id</span></td><td>陈薇</td><td><span class="badge warn">告警中</span></td></tr>
+            <tr><td class="muted" colspan="5" style="text-align:center">+ 1,245 张其他资产</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-ref">
+      <div class="card">
+        <div class="card-hd"><h3>被引用于（其他规则依赖本规则）</h3><span class="meta">18 条规则</span></div>
+        <table class="tbl">
+          <thead><tr><th>规则</th><th>名称</th><th>类别</th><th>组合方式</th></tr></thead>
+          <tbody>
+            <tr><td><span class="mono">R-N02</span></td><td>外键引用完整性</td><td>完整性</td><td><span class="badge info">前置依赖</span></td></tr>
+            <tr><td><span class="mono">R-U01</span></td><td>业务主键全局唯一</td><td>唯一性</td><td><span class="badge info">前置依赖</span></td></tr>
+            <tr><td><span class="mono">R-N08</span></td><td>主键格式合规</td><td>完整性</td><td><span class="badge primary">组合校验</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-sim">
+      <div class="card">
+        <div class="card-hd"><h3>模拟执行</h3></div>
+        <div class="row mb-2" style="gap:8px">
+          <select class="btn sm"><option>dwd_trade_order_di</option><option>dwd_user_register_di</option></select>
+          <select class="btn sm"><option>order_id</option><option>user_id</option></select>
+          <button class="btn sm primary">▶ 模拟执行</button>
+        </div>
+        <div style="background:var(--surface-2);padding:16px;border-radius:var(--r-2);font-family:var(--font-mono);font-size:12px;line-height:1.7">
+          <div>⏱ 耗时 1.2s</div>
+          <div>📊 扫描行数 <b>2,183,442</b></div>
+          <div>⚠ 命中空值 <b style="color:var(--err)">1,240</b></div>
+          <div>📍 命中位置：order_id IN (NULL, '', 'unknown')</div>
+          <div class="mt-2"><span class="badge err">🔴 失败 · 触发异常 #AN-2026-0906-001</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-rel">
+      <div class="card">
+        <div class="card-hd"><h3>引用本规则的资产</h3><span class="meta">312 张</span></div>
+        <p class="muted">本规则被 312 张资产作为前置校验条件引用，集中在交易域（156 张）与用户域（86 张）。</p>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-ver">
+      <div class="card">
+        <div class="card-hd"><h3>版本历史</h3></div>
+        <div class="timeline">
+          <div class="ev"><b>v3.2 · 当前</b> <span class="ts">2026-08-15 · 张磊</span><div>支持多字段组合校验</div></div>
+          <div class="ev"><b>v3.1</b> <span class="ts">2026-05-20 · 张磊</span><div>优化为空字符串 + null 双匹配</div></div>
+          <div class="ev"><b>v3.0</b> <span class="ts">2026-02-01 · 张磊</span><div>升级至 V2 规则引擎，支持复杂表达式</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="p-disc">
+      <div class="card"><div class="muted">本规则共有 24 条评论，热议话题：「是否应该增加 'unknown' 字符串作为隐式空值的判定」。</div></div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  document.getElementById('ring').innerHTML = ring(92, { r: 50, size: 120 });
+</script>
+</body>
+</html>

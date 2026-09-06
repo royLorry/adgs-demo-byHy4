@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>方案列表 · S2 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s2.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230891b2%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2314b8a6%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3ES2%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS  = 's2';
+  window.PAGE = 'plan-list';
+  window.SIDEBAR = {
+    section: '事件治理',
+    items: [
+      { id: 'event-dict',  label: '事件字典首页',   icon: '📑', href: 'event-dict.html' },
+      { id: 'event-detail',label: '事件详情',       icon: '🔍', href: 'event-detail.html' },
+      { id: 'plan-list',   label: '方案列表',       icon: '📋', href: 'plan-list.html' },
+      { id: 'designer',    label: '方案设计器',     icon: '✏️',  href: 'plan-designer.html' },
+      { id: 'live',        label: '实时观测',       icon: '📡', href: 'live-tap.html', badge: 2 },
+      { id: 'acceptance',  label: '验收工作台',     icon: '✅', href: 'acceptance.html', badge: 3 }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <span>S2 埋点与事件治理平台 · 方案列表</span>
+    </div>
+
+    <!-- Hero -->
+    <section class="s2-hero">
+      <h1>埋点方案</h1>
+      <p>按业务 / 应用维度组织的埋点全集：定义 → 评审 → 灰度 → 全量，下发契约到端侧 SDK</p>
+      <div class="kpi-row">
+        <div class="item"><div class="num">26</div><div class="lab">在管方案</div><div class="delta up">▲ 2 本月新增</div></div>
+        <div class="item"><div class="num">5</div><div class="lab">灰度中</div><div class="delta">待放量</div></div>
+        <div class="item"><div class="num">3</div><div class="lab">评审中</div><div class="delta">本周委员会</div></div>
+        <div class="item"><div class="num">18</div><div class="lab">已发布</div><div class="delta up">▲ 1 本周</div></div>
+      </div>
+    </section>
+
+    <!-- 操作栏 -->
+    <div class="s2-action-bar">
+      <input type="text" placeholder="🔍 搜索方案名 / Owner / scope" style="flex:1;max-width:360px;padding:7px 14px;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--surface)">
+      <select style="padding:7px 12px;border:1px solid var(--line);border-radius:var(--r-2);background:var(--surface)">
+        <option>全部状态</option><option>published</option><option>gray</option><option>review</option><option>draft</option>
+      </select>
+      <select style="padding:7px 12px;border:1px solid var(--line);border-radius:var(--r-2);background:var(--surface)">
+        <option>全部 scope</option><option>推荐 / 交易</option><option>用户域</option><option>智能体域</option><option>全端</option>
+      </select>
+      <div class="right">
+        <button class="btn">📥 导出全部</button>
+        <a class="btn primary" href="plan-diff.html">📊 对比方案</a>
+        <a class="btn primary" href="plan-designer.html">＋ 新建方案</a>
+      </div>
+    </div>
+
+    <!-- 状态 Tabs -->
+    <div class="tabs" style="margin-bottom:16px">
+      <div class="tab active" data-target="p_all">全部 <span class="ct">26</span></div>
+      <div class="tab" data-target="p_pub">已发布 <span class="ct">18</span></div>
+      <div class="tab" data-target="p_gray">灰度中 <span class="ct">5</span></div>
+      <div class="tab" data-target="p_rev">评审中 <span class="ct">3</span></div>
+      <div class="tab" data-target="p_draft">草案 <span class="ct">8</span></div>
+    </div>
+
+    <!-- 方案卡片网格 -->
+    <div class="grid grid-3" id="planGrid"></div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  const statusMap = {
+    published: { label: '已发布', badge: 'ok' },
+    gray:      { label: '灰度中', badge: 'primary' },
+    review:    { label: '评审中', badge: 'warn' },
+    draft:     { label: '草案',   badge: 'info' }
+  };
+  document.getElementById('planGrid').innerHTML = M.s2.plans.map(p => {
+    const st = statusMap[p.status] || statusMap.draft;
+    return `
+      <article class="s2-plan" onclick="location.href='plan-designer.html'">
+        <div class="hd">
+          <div class="title">${p.name}</div>
+          <span class="badge ${st.badge}">${st.label}</span>
+        </div>
+        <div class="meta">
+          <div><span class="k">编码</span><span class="mono" style="font-size:11px">${p.id}</span></div>
+          <div><span class="k">Owner</span><b>${p.owner}</b></div>
+          <div><span class="k">Scope</span>${p.scope}</div>
+          <div><span class="k">版本</span><span class="mono">${p.version}</span></div>
+          <div><span class="k">事件数</span><b>${p.events}</b></div>
+          <div><span class="k">接入应用</span><b>${p.apps}</b></div>
+        </div>
+        <div class="ft">
+          <span>📡 契约下发：<span class="muted">${p.synced}</span></span>
+          <span class="ct"><a href="acceptance.html">验收 →</a></span>
+        </div>
+      </article>`;
+  }).join('');
+
+  // Tab 切换
+  document.querySelectorAll('.tabs .tab').forEach(t => {
+    t.addEventListener('click', () => {
+      t.parentElement.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

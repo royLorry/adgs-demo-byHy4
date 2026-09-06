@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据标准库 · S1 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s1.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's1';
+  window.PAGE = 'standards';
+  window.SIDEBAR = {
+    section: '核心功能',
+    items: [
+      { id: 'catalog',    label: '资产目录',     icon: '📚', href: 'catalog.html' },
+      { id: 'dataset',    label: '数据集详情',   icon: '📄', href: 'dataset-detail.html' },
+      { id: 'domain',     label: '主题域浏览',   icon: '🗂️', href: 'domain.html' },
+      { id: 'standards',  label: '数据标准库',   icon: '📐', href: 'standards.html' },
+      { id: 'std-detail', label: '标准详情',     icon: '🏷️', href: 'standard-detail.html' },
+      { id: 'change',     label: '变更影响分析', icon: '🔄', href: 'change-impact.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <a href="catalog.html">S1 元数据与资产中心</a><span class="sep">/</span>
+      <span>数据标准库</span>
+    </div>
+
+    <div class="page-head">
+      <h1>数据标准库</h1>
+      <p>6 大类数据标准：命名 / 字段 / 值域 / 编码 / 度量 / 主数据。是字段级元数据"有据可依"的唯一权威来源。</p>
+    </div>
+
+    <!-- 6 大类卡片 -->
+    <div class="grid grid-6 mb-4">
+      <div class="domain-card">
+        <div class="name"><span class="icon">🅰️</span><span>命名规范</span></div>
+        <div class="desc">业务对象、字段、枚举的命名约定</div>
+        <div class="row1"><span class="l">标准数</span><span class="v">42</span></div>
+      </div>
+      <div class="domain-card">
+        <div class="name"><span class="icon">📑</span><span>字段标准</span></div>
+        <div class="desc">字段类型、长度、精度、约束</div>
+        <div class="row1"><span class="l">标准数</span><span class="v">68</span></div>
+      </div>
+      <div class="domain-card">
+        <div class="name"><span class="icon">📋</span><span>值域标准</span></div>
+        <div class="desc">枚举值、范围、正则表达式</div>
+        <div class="row1"><span class="l">标准数</span><span class="v">56</span></div>
+      </div>
+      <div class="domain-card">
+        <div class="name"><span class="icon">🔣</span><span>编码标准</span></div>
+        <div class="desc">行业/内部编码集与对照表</div>
+        <div class="row1"><span class="l">标准数</span><span class="v">22</span></div>
+      </div>
+      <div class="domain-card">
+        <div class="name"><span class="icon">📏</span><span>度量标准</span></div>
+        <div class="desc">业务口径、单位、计算公式</div>
+        <div class="row1"><span class="l">标准数</span><span class="v">28</span></div>
+      </div>
+      <div class="domain-card">
+        <div class="name"><span class="icon">🏛️</span><span>主数据</span></div>
+        <div class="desc">共享引用主数据（行政区划、组织等）</div>
+        <div class="row1"><span class="l">标准数</span><span class="v">30</span></div>
+      </div>
+    </div>
+
+    <!-- 检索 + 列表 -->
+    <div class="card">
+      <div class="card-hd">
+        <h3>标准列表</h3>
+        <div class="right">
+          <input type="text" placeholder="🔍 标准 ID / 名称" style="padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-2);font-size:13px">
+          <select style="padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-2);font-size:13px">
+            <option>全部类别</option><option>命名</option><option>字段</option><option>值域</option>
+          </select>
+          <select style="padding:6px 12px;border:1px solid var(--line);border-radius:var(--r-2);font-size:13px">
+            <option>全部状态</option><option>已发布</option><option>起草中</option>
+          </select>
+        </div>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>标准 ID</th><th>类别</th><th>名称</th><th>版本</th><th>引用字段数</th><th>状态</th><th>Owner</th><th>操作</th></tr></thead>
+        <tbody id="stdTbl"></tbody>
+      </table>
+      <div class="row mt-4" style="justify-content:space-between">
+        <div class="muted" style="font-size:12px">共 246 条 · 当前 1-8</div>
+        <div class="row"><button class="btn sm">‹ 上一页</button><button class="btn sm primary">1</button><button class="btn sm">2</button><button class="btn sm">3</button><button class="btn sm">下一页 ›</button></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  document.getElementById('stdTbl').innerHTML = M.standards.map(s => `
+    <tr>
+      <td><a href="standard-detail.html"><span class="mono">${s.id}</span></a></td>
+      <td><span class="badge primary">${s.cat}</span></td>
+      <td><a href="standard-detail.html">${s.name}</a></td>
+      <td><span class="badge">${s.version}</span></td>
+      <td><b>${s.apply}</b></td>
+      <td><span class="badge ${s.status === 'active' ? 'ok' : 'warn'}">${s.status === 'active' ? '已发布' : '起草中'}</span></td>
+      <td>${s.owner}</td>
+      <td><a href="standard-detail.html" class="btn sm">查看</a> <a href="change-impact.html" class="btn sm">影响</a></td>
+    </tr>`).join('');
+</script>
+</body>
+</html>

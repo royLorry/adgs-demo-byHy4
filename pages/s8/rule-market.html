@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>规则市场 · S8 · ADGS Demo</title>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/pages-s8.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20x2%3D%221%22%20y1%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%231d4ed8%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%236d4cff%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22url(%23g)%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2221%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%22%20font-weight%3D%22700%22%20font-size%3D%2216%22%20fill%3D%22white%22%3EAD%3C%2Ftext%3E%3C%2Fsvg%3E">
+</head>
+<body>
+
+<script>
+  window.BASE = '../../assets/';
+  window.SYS = 's8';
+  window.PAGE = 'rule';
+  window.SIDEBAR = {
+    section: '运营监控',
+    items: [
+      { id: 'dash',     label: '质量大盘',         icon: '📊', href: 'quality-dash.html' },
+      { id: 'rule',     label: '规则市场',         icon: '📋', href: 'rule-market.html' },
+      { id: 'rule-det', label: '规则详情',         icon: '🔍', href: 'rule-detail.html' },
+      { id: 'anomaly',  label: '异常中心',         icon: '⚠️', href: 'anomaly.html', badge: 7 },
+      { id: 'wb',       label: '异常处置工作台',   icon: '🛠️', href: 'anomaly-workbench.html' },
+      { id: 'focus',    label: '主题域质量聚焦',   icon: '🎯', href: 'domain-focus.html' }
+    ]
+  };
+</script>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="breadcrumb">
+      <a href="../../index.html">首页</a><span class="sep">/</span>
+      <span>S8 数据质量治理中心 · 规则市场</span>
+    </div>
+
+    <div class="page-head">
+      <h1>规则市场</h1>
+      <p>沉淀全企业可复用质量规则的标准市场，支持浏览 / 引用 / 复用 / 二次定制。所有规则均与 S8 规则引擎一一对应。</p>
+    </div>
+
+    <!-- 检索 + 分类 -->
+    <div class="card mb-4">
+      <div class="row" style="justify-content:space-between">
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <input type="text" placeholder="🔍 规则 ID / 名称 / 关键字" style="padding:7px 14px;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--surface);min-width:300px">
+          <select style="padding:7px 12px;border:1px solid var(--line);border-radius:var(--r-2);background:var(--surface)">
+            <option>全部维度</option><option>完整性</option><option>准确性</option><option>一致性</option>
+          </select>
+          <select style="padding:7px 12px;border:1px solid var(--line);border-radius:var(--r-2);background:var(--surface)">
+            <option>全部场景</option><option>实时</option><option>离线</option>
+          </select>
+          <select style="padding:7px 12px;border:1px solid var(--line);border-radius:var(--r-2);background:var(--surface)">
+            <option>全部严重度</option><option>P0</option><option>P1</option><option>P2</option>
+          </select>
+        </div>
+        <button class="btn primary">＋ 提报新规则</button>
+      </div>
+    </div>
+
+    <!-- 分类导航（数字徽标） -->
+    <div class="row mb-4" style="gap:6px;flex-wrap:wrap">
+      <button class="btn primary sm">全部 1248</button>
+      <button class="btn sm">完整性 312</button>
+      <button class="btn sm">准确性 248</button>
+      <button class="btn sm">一致性 142</button>
+      <button class="btn sm">及时性 188</button>
+      <button class="btn sm">唯一性 86</button>
+      <button class="btn sm">值域 156</button>
+      <button class="btn sm">安全 64</button>
+      <button class="btn sm">自定义 52</button>
+    </div>
+
+    <!-- 规则卡片网格 -->
+    <h3 style="margin:0 0 12px;font-size:16px">推荐规则 <span class="muted" style="font-weight:400;font-size:12px">· 按有效性评分排序</span></h3>
+    <div class="grid grid-3" id="ruleGrid"></div>
+
+  </main>
+</div>
+
+<script src="../../assets/js/nav.js"></script>
+<script src="../../assets/js/mock.js"></script>
+<script src="../../assets/js/render.js"></script>
+<script>
+  document.getElementById('ruleGrid').innerHTML = M.rules.map(r => {
+    const sevBadge = r.sever === 'P0' ? 'err' : r.sever === 'P1' ? 'warn' : 'info';
+    return `
+      <div class="rule-card" onclick="location.href='rule-detail.html'">
+        <div class="hd">
+          <span class="id">${r.id}</span>
+          <span class="title">${r.title}</span>
+        </div>
+        <div class="desc">${r.desc}</div>
+        <div class="row" style="font-size:11px;color:var(--ink-3);margin-bottom:8px;gap:6px;flex-wrap:wrap">
+          <span class="badge primary">${r.cat}</span>
+          <span class="badge ${sevBadge}">${r.sever}</span>
+        </div>
+        <div class="ft">
+          <span>📐 ${r.apply} 资产</span>
+          <span>⭐ ${r.eff}%</span>
+          <span class="ct">→</span>
+        </div>
+      </div>`;
+  }).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+[
+  {
+    "page": "index.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\index.png"
+  },
+  {
+    "page": "pages/s1/catalog.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s1_catalog.png"
+  },
+  {
+    "page": "pages/s1/dataset-detail.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s1_dataset-detail.png"
+  },
+  {
+    "page": "pages/s1/domain.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s1_domain.png"
+  },
+  {
+    "page": "pages/s1/standards.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s1_standards.png"
+  },
+  {
+    "page": "pages/s1/standard-detail.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s1_standard-detail.png"
+  },
+  {
+    "page": "pages/s1/change-impact.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s1_change-impact.png"
+  },
+  {
+    "page": "pages/s2/event-dict.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s2_event-dict.png"
+  },
+  {
+    "page": "pages/s2/event-detail.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s2_event-detail.png"
+  },
+  {
+    "page": "pages/s2/plan-list.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s2_plan-list.png"
+  },
+  {
+    "page": "pages/s2/plan-designer.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s2_plan-designer.png"
+  },
+  {
+    "page": "pages/s2/live-tap.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s2_live-tap.png"
+  },
+  {
+    "page": "pages/s2/acceptance.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s2_acceptance.png"
+  },
+  {
+    "page": "pages/s8/quality-dash.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s8_quality-dash.png"
+  },
+  {
+    "page": "pages/s8/rule-market.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s8_rule-market.png"
+  },
+  {
+    "page": "pages/s8/rule-detail.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s8_rule-detail.png"
+  },
+  {
+    "page": "pages/s8/anomaly.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s8_anomaly.png"
+  },
+  {
+    "page": "pages/s8/anomaly-workbench.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s8_anomaly-workbench.png"
+  },
+  {
+    "page": "pages/s8/domain-focus.html",
+    "status": 200,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "requestFailed": 0,
+    "out": "C:\\Users\\14530\\OneDrive\\Documents\\进击WorkBuddy\\Hy4\\adgs-demo\\screenshots\\pages_s8_domain-focus.png"
+  }
+]
