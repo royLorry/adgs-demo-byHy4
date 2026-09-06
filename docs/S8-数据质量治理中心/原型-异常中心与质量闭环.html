@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="zh-CN" data-page-node-id="TrvXCZ5rz3KXGblCPJn8MV">
+<head data-page-node-id="tRDE2YSzXbBG1Bom4HG4yV">
+<meta charset="utf-8" data-page-node-id="RHIKYE1OgfvOwVQCUaq5wG">
+<meta name="viewport" content="width=device-width,initial-scale=1" data-page-node-id="2RAFVEtBYo0kAVjYygNKHr">
+<title>S8 数据质量治理 · 软件原型 v0.1</title>
+<style>
+:root{
+  --bg:#f5f6fa;
+  --panel:#ffffff;
+  --panel-2:#fafbff;
+  --line:#e6e8ef;
+  --line-2:#eef0f7;
+  --ink:#1d2330;
+  --ink-2:#3a4358;
+  --muted:#8089a0;
+  --primary:#6d4cff;        /* S8 主色：紫 */
+  --primary-2:#5a3ee8;
+  --primary-soft:#efeaff;
+  --danger:#e03854;          /* 阻塞红 */
+  --warn:#d97706;            /* 警告橙 */
+  --ok:#16a085;              /* 健康绿 */
+  --info:#2563eb;            /* 信息蓝 */
+  --block:#b91c1c;
+  --shield:#6b7280;
+  --spark-1:#6d4cff;
+  --spark-2:#e03854;
+  --spark-3:#16a085;
+  --spark-4:#d97706;
+  --shadow:0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.04);
+  --shadow-lg:0 4px 14px rgba(15,23,42,.08), 0 24px 60px rgba(15,23,42,.08);
+  --radius:10px;
+  --radius-sm:6px;
+  --font:"PingFang SC","Microsoft YaHei","Source Han Sans SC",system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.6}
+a{color:var(--primary-2);text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:transparent}
+input,select,textarea{font-family:inherit;font-size:13px}
+
+/* ====== 布局 ====== */
+.app{display:flex;min-height:100vh}
+.side{width:200px;background:#1c1f2e;color:#cbd2e6;flex-shrink:0;padding:18px 0;position:sticky;top:0;height:100vh;overflow:auto}
+.side h2{margin:0 18px 18px;font-size:18px;color:#fff;display:flex;gap:8px;align-items:center;letter-spacing:.5px}
+.side .nav-list{list-style:none;padding:0;margin:0}
+.side .nav-list .group{padding:6px 18px;font-size:11px;color:#7c859f;text-transform:uppercase;letter-spacing:1px;margin-top:14px}
+.side .nav-list li a{display:flex;align-items:center;gap:8px;padding:8px 18px;color:#cbd2e6;font-size:13.5px;border-left:3px solid transparent}
+.side .nav-list li a:hover{background:#272a3a;color:#fff}
+.side .nav-list li a.active{background:#2c2f42;color:#fff;border-left-color:var(--primary)}
+.side .nav-list li .ic{width:14px;height:14px;display:inline-block;border-radius:3px;background:#4a5070}
+.side .nav-list li a.active .ic{background:var(--primary)}
+.side .nav-list .sub a{padding-left:36px;font-size:13px;color:#9aa3bf}
+.side .nav-list .sub a.active{color:#fff;background:#2c2f42;border-left-color:var(--primary)}
+
+.main{flex:1;min-width:0;padding:18px 24px 60px}
+.topbar{display:flex;align-items:center;justify-content:space-between;background:var(--panel);padding:10px 16px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;border:1px solid var(--line-2)}
+.topbar .crumbs{font-size:13px;color:var(--muted)}
+.topbar .crumbs b{color:var(--ink)}
+.topbar .user{display:flex;align-items:center;gap:12px;font-size:13px}
+.topbar .user .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--danger));color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+
+.btn{padding:6px 14px;border-radius:var(--radius-sm);font-size:13px;border:1px solid var(--line);background:#fff;color:var(--ink-2)}
+.btn:hover{border-color:var(--primary);color:var(--primary-2)}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.primary:hover{background:var(--primary-2);border-color:var(--primary-2);color:#fff}
+.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn.warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+.btn.sm{padding:4px 10px;font-size:12px}
+
+/* ====== 视图切换 ====== */
+.view{display:none}
+.view.active{display:block}
+
+/* ====== Hero 看板 ====== */
+.hero{background:linear-gradient(120deg,#6d4cff 0%,#8770ff 60%,#a18aff 100%);color:#fff;border-radius:var(--radius);padding:22px 26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.08)}
+.hero::before{content:"";position:absolute;right:80px;top:80px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.06)}
+.hero h1{margin:0 0 4px;font-size:22px;letter-spacing:.5px}
+.hero p.sub{margin:0;opacity:.85;font-size:13px}
+.hero-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:18px;position:relative;z-index:1}
+.hero-card{background:rgba(255,255,255,.12);padding:14px;border-radius:var(--radius-sm);backdrop-filter:blur(6px)}
+.hero-card .label{font-size:12px;opacity:.85}
+.hero-card .value{font-size:26px;font-weight:700;margin-top:4px;letter-spacing:.5px}
+.hero-card .delta{font-size:12px;margin-top:2px}
+.hero-card .delta.up{color:#ffea00}
+.hero-card .delta.down{color:#79ffb7}
+
+/* ====== 通用卡片 ====== */
+.card{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card + .card{margin-top:14px}
+.card h3{margin:0 0 14px;font-size:15px;color:var(--ink);display:flex;align-items:center;justify-content:space-between}
+.card h3 .more{font-size:12px;color:var(--muted);font-weight:400}
+
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+
+/* ====== 主题域卡片 ====== */
+.domains{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.domain{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--radius);padding:14px;cursor:pointer;transition:.18s}
+.domain:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:var(--primary)}
+.domain .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.domain .head .name{font-size:14px;font-weight:600}
+.domain .head .badge{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--primary-soft);color:var(--primary-2)}
+.domain .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.domain .stats .item{font-size:11px;color:var(--muted)}
+.domain .stats .item b{color:var(--ink);font-size:14px;display:block}
+.domain .spark{height:30px;display:block}
+
+/* ====== 待办 ====== */
+.todo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.todo-card{padding:14px;border-radius:var(--radius);border:1px solid var(--line-2);background:var(--panel);position:relative;overflow:hidden}
+.todo-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--info)}
+.todo-card.block::before{background:var(--block)}
+.todo-card.warn::before{background:var(--warn)}
+.todo-card.ok::before{background:var(--ok)}
+.todo-card .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+.todo-card .num{font-size:30px;font-weight:700;color:var(--ink)}
+.todo-card .desc{font-size:12px;color:var(--muted);margin-top:4px}
+.todo-card .act{margin-top:10px;font-size:12px;color:var(--primary-2)}
+
+/* ====== 趋势图区 ====== */
+.trend-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+
+/* ====== 表格 ====== */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{padding:9px 10px;border-bottom:1px solid var(--line-2);text-align:left}
+.tbl th{background:var(--panel-2);color:var(--muted);font-weight:600;font-size:12px}
+.tbl tbody tr:hover{background:var(--panel-2)}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* ====== 徽标 ====== */
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11.5px;font-weight:600;background:#eef0f7;color:#5a6378}
+.badge.block{background:#fdebee;color:#b91c1c}
+.badge.warn{background:#fef3e0;color:#b45309}
+.badge.info{background:#e6efff;color:#1d4ed8}
+.badge.ok{background:#e7faf3;color:#0f7a5b}
+.badge.shield{background:#eef0f7;color:#6b7280}
+.badge.aggr{background:#f3eaff;color:#6d4cff}
+.badge.trend{background:#fce8d4;color:#c2410c}
+
+/* ====== 健康分环 ====== */
+.health{display:inline-flex;align-items:center;gap:8px}
+.health .ring{width:36px;height:36px;border-radius:50%;background:conic-gradient(var(--ok) calc(var(--p)*1%),var(--line) 0);display:grid;place-items:center;color:var(--ink);font-weight:700;font-size:13px;position:relative}
+.health .ring::before{content:"";position:absolute;inset:4px;background:#fff;border-radius:50%}
+.health .ring b{position:relative;z-index:1;font-variant-numeric:tabular-nums}
+.health.block .ring{background:conic-gradient(var(--block) calc(var(--p)*1%),var(--line) 0)}
+.health.warn .ring{background:conic-gradient(var(--warn) calc(var(--p)*1%),var(--line) 0)}
+
+/* ====== Tab ====== */
+.tabs{display:flex;border-bottom:1px solid var(--line);gap:0;margin-bottom:18px}
+.tabs .tab{padding:10px 16px;font-size:13.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;font-weight:500}
+.tabs .tab:hover{color:var(--ink)}
+.tabs .tab.active{color:var(--primary-2);border-bottom-color:var(--primary);font-weight:700}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ====== 规则市场 ====== */
+.market-head{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.market-head .search{flex:1;min-width:240px;display:flex;gap:8px}
+.market-head .search input{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff}
+.market-head .search select{padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;color:var(--ink-2)}
+
+.cat-tree{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:16px}
+.cat-tree .cat{padding:10px;border:1px solid var(--line-2);border-radius:var(--radius-sm);text-align:center;background:var(--panel);cursor:pointer;font-size:12.5px;color:var(--ink-2)}
+.cat-tree .cat:hover{border-color:var(--primary);color:var(--primary-2)}
+.cat-tree .cat.on{border-color:var(--primary);background:var(--primary-soft);color:var(--primary-2);font-weight:700}
+.cat-tree .cat small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+
+.rule-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.rule-card{border:1px solid var(--line-2);border-radius:var(--radius);background:#fff;padding:14px;transition:.15s;cursor:pointer}
+.rule-card:hover{border-color:var(--primary);box-shadow:var(--shadow);transform:translateY(-1px)}
+.rule-card .title{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
+.rule-card .title .name{font-weight:700;font-size:14px;color:var(--ink)}
+.rule-card .meta{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.rule-card .meta .tag{font-size:11px;padding:2px 8px;border-radius:8px;background:var(--panel-2);color:var(--ink-2)}
+.rule-card .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.rule-card .stats div{font-size:11px;color:var(--muted)}
+.rule-card .stats div b{color:var(--ink);font-size:14px;display:block}
+
+/* ====== 规则详情 ====== */
+.detail-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line-2);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.detail-head .left h1{margin:0 0 6px;font-size:20px;letter-spacing:.5px}
+.detail-head .left .meta{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.detail-head .left .meta code{background:var(--panel-2);padding:2px 6px;border-radius:4px;font-size:11.5px}
+.detail-head .actions{display:flex;gap:8px;flex-shrink:0}
+
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px 18px;font-size:13px;background:var(--panel-2);padding:14px;border-radius:var(--radius-sm)}
+.kv .k{color:var(--muted);font-size:12px}
+.kv .v{color:var(--ink);font-weight:600}
+
+/* SQL/规则代码块 */
+.code-block{background:#1c1f2e;color:#d4d7e3;padding:14px;border-radius:var(--radius-sm);font-family:Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;overflow:auto;border:1px solid #1c1f2e}
+.code-block .kw{color:#ff8ab2}
+.code-block .str{color:#9de6a3}
+.code-block .num{color:#f7c97c}
+.code-block .cmt{color:#7c859f;font-style:italic}
+
+/* 模拟执行结果 */
+.sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sim-result{background:var(--panel-2);border-radius:var(--radius-sm);padding:14px}
+.sim-result .label{color:var(--muted);font-size:12px;margin-bottom:6px}
+.sim-result .big{font-size:38px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink)}
+.sim-result .sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* 失败样本 */
+.fail-row{background:#fff8f9;border-left:3px solid var(--danger);padding:8px 10px;border-radius:4px;font-family:Menlo,Consolas,monospace;font-size:12px;margin-bottom:6px;color:#5b172a}
+.fail-row .reason{color:var(--block);font-weight:600}
+
+/* 枚举值列表 */
+.enum-list .enum-row{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border:1px solid var(--line-2);border-radius:6px;margin-bottom:5px;font-size:12.5px}
+.enum-list .enum-row .code{font-family:Menlo,Consolas,monospace;color:var(--primary-2);font-weight:600}
+.enum-list .enum-row .bar{flex:1;margin:0 12px;height:6px;background:var(--line-2);border-radius:3px;overflow:hidden;max-width:160px}
+.enum-list .enum-row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ok),var(--primary))}
+.enum-list .enum-row .pct{font-variant-numeric:tabular-nums;color:var(--ink-2);font-weight:600}
+
+/* ====== 异常中心 ====== */
+.agg-card{background:#fff;border:1px solid var(--line-2);border-radius:var(--radius);padding:14px;margin-bottom:10px;transition:.15s;cursor:pointer;border-left:4px solid var(--block)}
+.agg-card:hover{box-shadow:var(--shadow);border-color:var(--primary)}
+.agg-card.warn{border-left-color:var(--warn)}
+.agg-card.info{border-left-color:var(--info)}
+.agg-card.ok{border-left-color:var(--ok)}
+.agg-card .top{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+.agg-card .top .id{font-family:Menlo,Consolas,monospace;color:var(--muted);font-size:12px;margin-bottom:4px}
+.agg-card .top h4{margin:0 0 4px;font-size:14.5px}
+.agg-card .top .badges{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;align-items:center}
+.agg-card .meta{display:flex;gap:18px;font-size:12px;color:var(--muted);margin-top:6px}
+.agg-card .meta b{color:var(--ink);font-weight:600}
+.agg-card .trend-mini{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.agg-card .actions{display:flex;gap:6px;margin-top:10px}
+
+/* ====== 工作台 ====== */
+.workbench-head{display:flex;justify-content:space-between;align-items:flex-start;background:#fff;border:1px solid var(--line-2);border-radius:var(--radius);padding:18px;margin-bottom:14px}
+.workbench-head .left h1{margin:0 0 6px;font-size:18px}
+.workbench-head .left .badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+
+/* 影响面表格 */
+.impact-table .depth-1{font-weight:700}
+.impact-table .depth-2{padding-left:14px}
+.impact-table .depth-3{padding-left:28px;color:var(--muted)}
+.impact-table .depth-4{padding-left:42px;color:var(--muted)}
+
+/* 回溯 DAG */
+.dag{background:var(--panel-2);padding:22px;border-radius:var(--radius);min-height:320px;overflow:auto;position:relative}
+.dag .node{display:inline-flex;flex-direction:column;align-items:center;padding:10px 12px;border-radius:8px;background:#fff;border:2px solid var(--line);font-size:12.5px;margin:6px;min-width:120px;text-align:center;position:relative;z-index:2}
+.dag .node.done{background:#f0fdf4;border-color:var(--ok)}
+.dag .node.curr{background:var(--primary-soft);border-color:var(--primary);font-weight:700;box-shadow:0 0 0 4px rgba(109,76,255,.12)}
+.dag .node.fail{background:#fef2f2;border-color:var(--block)}
+.dag .node .icon{font-size:18px;margin-bottom:4px}
+.dag .node .id{font-family:Menlo,Consolas,monospace;font-size:11px;color:var(--muted);margin-top:2px}
+.dag .arrow{display:inline-block;font-size:20px;color:var(--muted);padding:0 6px;vertical-align:middle}
+
+/* 复盘表单 */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:12px;color:var(--muted);font-weight:600}
+.field input,.field textarea,.field select{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:#fff}
+.field textarea{min-height:70px;font-family:inherit}
+.checklist{display:grid;gap:6px}
+.checklist label{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--ink-2)}
+.checklist input{margin-top:3px}
+
+/* ====== 主题域聚焦 ====== */
+.drill-head{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line-2);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+.drill-head h2{margin:0 0 4px;font-size:18px}
+.drill-head .meta{font-size:12px;color:var(--muted)}
+
+.radar-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.radial-bars{display:grid;gap:10px}
+.radial-bar{display:flex;align-items:center;gap:10px;font-size:13px}
+.radial-bar .nm{width:80px;color:var(--ink-2)}
+.radial-bar .track{flex:1;height:8px;background:var(--line-2);border-radius:4px;overflow:hidden;position:relative}
+.radial-bar .track i{display:block;height:100%;background:linear-gradient(90deg,var(--info),var(--primary))}
+.radial-bar .val{width:54px;text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+
+/* ==== 工具栏 ==== */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.toolbar .pill{padding:6px 10px;border-radius:16px;background:#fff;border:1px solid var(--line);font-size:12.5px;cursor:pointer;color:var(--ink-2)}
+.toolbar .pill.on{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-2);font-weight:700}
+.toolbar .spacer{flex:1}
+.toolbar select{padding:6px 10px;border:1px solid var(--line);border-radius:16px;font-size:12.5px;background:#fff;color:var(--ink-2)}
+
+/* 公共KV */
+.bordered{border:1px solid var(--line-2);border-radius:8px;padding:10px 12px;background:#fff}
+
+/* 数据对比 diff */
+.diff{padding:10px;border-radius:6px;font-family:Menlo,Consolas,monospace;font-size:13px;line-height:1.6}
+.diff .line{padding:1px 6px}
+.diff .add{background:#e7faf3;color:#0f7a5b}
+.diff .del{background:#fdebee;color:#b91c1c}
+.diff .ctx{color:var(--muted)}
+
+textarea,input,select{font-family:inherit}
+
+.view-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.view-title h2{margin:0;font-size:18px;display:flex;gap:10px;align-items:center}
+.view-title .tt-tag{font-size:11px;padding:3px 10px;background:var(--primary-soft);color:var(--primary-2);border-radius:10px;font-weight:600}
+
+@media (max-width:980px){
+  .side{width:170px}
+  .hero-grid{grid-template-columns:repeat(3,1fr)}
+  .todo-grid{grid-template-columns:repeat(2,1fr)}
+  .trend-grid,.radar-grid,.sim-grid,.form-grid{grid-template-columns:1fr}
+  .cat-tree{grid-template-columns:repeat(3,1fr)}
+  .kv{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body data-page-node-id="z7ShK1bEre3tYFk7xQjoN7">
+<div class="app" data-page-node-id="TMc8oGbs6KvaZFy7266HXe">
+  <!-- ============== 侧导航 ============== -->
+  <aside class="side" data-page-node-id="tggQU4IZtkJ97xcA11eHA6">
+    <h2 data-page-node-id="HtBxqI2JYM8mG99tFuISr7">🛡️ S8 质量治理</h2>
+    <ul class="nav-list" data-page-node-id="cZyjt0MFFgaElZWFHrgxYN">
+      <li data-page-node-id="blHzr0dnC0vTcoTX5sMa6m"><a data-view="quality-dash" class="active" data-page-node-id="scZAE71Xsze2P9B77gcn2C">📊 质量大盘</a></li>
+      <li data-page-node-id="gwKLmTlnO4opf171ofzBMs"><a data-view="anomaly" data-page-node-id="ELCB5aZH4TidHQLweKkGLO">⚠️ 异常中心 <small style="background:#e03854;color:#fff;border-radius:10px;padding:0 6px;margin-left:auto;font-size:10px" data-page-node-id="RP0eLGdYENUEGVtId4Yo2Z">12</small></a></li>
+      <li class="group" data-page-node-id="1A58jI2IviACrlh2Tuu9RQ">— 规则治理 —</li>
+      <li class="sub" data-page-node-id="t4TSUNHk10Jr1IfbXASo4v"><a data-view="rule-market" data-page-node-id="v78LmmMUYC1Nx5HWi0U0zp">📚 规则市场</a></li>
+      <li class="sub" data-page-node-id="Hwp5Sgc0wedVjxZYg8a4FF"><a data-view="rule-detail" data-page-node-id="9MaEdxSU5dZSdYv99aZYuF">📄 规则详情</a></li>
+      <li class="group" data-page-node-id="DzDVGaPrDSqu8FrOk6ivul">— 闭环运营 —</li>
+      <li class="sub" data-page-node-id="XTwRgd0zdtBkmHzDE3azFz"><a data-view="workbench" data-page-node-id="RDWHlVEoOSM9A7cjCEfaMV">🔧 异常处置工作台</a></li>
+      <li class="sub" data-page-node-id="b7H5QKkOzylb5w9IwFGWkQ"><a data-view="domain-focus" data-page-node-id="W3nhc1ohAPBFFHRDMC5lIk">🧭 主题域聚焦</a></li>
+      <li class="group" data-page-node-id="qa9bVVmf2pTHpAGLZAItK5">— 我的 —</li>
+      <li class="sub" data-page-node-id="UajA5GV00EkTudkjP5OKDC"><a data-page-node-id="mV348haoe9Sbf0k0yiPbc7">⚙️ 我的规则</a></li>
+      <li class="sub" data-page-node-id="pVCodio4gvIHueUC7a8QQU"><a data-page-node-id="WHqV8G4xMtLbjlZacHw0ut">✅ 待我审批</a></li>
+      <li class="sub" data-page-node-id="R541B9VaIFW0SvTKqqbMnw"><a data-page-node-id="xEdf0oeezLEecnnHzPOewZ">📥 待复盘</a></li>
+    </ul>
+  </aside>
+
+  <!-- ============== 主区 ============== -->
+  <main class="main" data-page-node-id="8EzBosK76BW4gf9jrzrCBf">
+    <!-- 顶栏 -->
+    <div class="topbar" data-page-node-id="AqmfuiOpq6oRFLSijEqZYv">
+      <div class="crumbs" data-page-node-id="1eZoR3h8Be13Aob1G9rDWo"><b data-page-node-id="zvDKwSchuxuOjLJLEBiFLb">智能体数据治理系统</b> · <span style="color:var(--primary-2)" data-page-node-id="1cUuXjw9olukeiEBEo3XAk">S8 数据质量治理中心</span></div>
+      <div class="user" data-page-node-id="noe9DEqyZQ20AJG6aoTBpD">
+        <span class="badge warn" data-page-node-id="YFzifFByqWL00W23LKZOtF">⚠️ 12 条阻塞异常</span>
+        <select style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-size:12px;background:#fff" data-page-node-id="CcvU8H6UgvuOCcTHH1U07J">
+          <option data-page-node-id="YWvlYO3ewfkYK6gCoBmcjC">全局视图</option>
+          <option data-page-node-id="nefZIix3iSoxBm6tHfAyOx">我负责的</option>
+        </select>
+        <div class="avatar" data-page-node-id="bzueERYhchcqLb98mqMRF9">CY</div>
+        <span data-page-node-id="h7NKQLwRHiSuLjRuPFy5BL">陈勇 · 数据治理组</span>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 1 · 质量大盘                                                -->
+    <!-- ============================================================== -->
+    <section class="view active" id="view-quality-dash" data-page-node-id="2ne8vQDFqleow6aJmmUpea">
+      <div class="view-title" data-page-node-id="r9bqyYpJRX0SrD76x7GW1N">
+        <h2 data-page-node-id="s4CZjQfYZjYN9OCEShd61h">📊 质量大盘 <span class="tt-tag" data-page-node-id="RQAa4lhaUVoOuPxlBif8YC">VIEW 1 / 6</span></h2>
+        <div style="display:flex;gap:8px" data-page-node-id="4rDnK6MZtI34as2AU12TY2">
+          <select style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;background:#fff" data-page-node-id="X6fTpVfsyfqImMhb0N8HcO">
+            <option data-page-node-id="vSIUimB6yS2it0Z3F0GyH1">近 7 天</option><option data-page-node-id="FHdAFsG2F3ZAwEcaCdxlLJ">近 30 天</option><option data-page-node-id="Zmfifeh37VAnjJp7Cx5hit">近 90 天</option>
+          </select>
+          <button class="btn" data-page-node-id="vYJy6vSeRDBMumfHkKsV06">导出报表</button>
+        </div>
+      </div>
+
+      <!-- Hero 看板 -->
+      <div class="hero" data-page-node-id="FJAVw5PHVRHvA7HzsjK8TE">
+        <h1 data-page-node-id="st8FKCJSciBAilK1Gt0De7">当前平台质量态势 · 健康资产占比 <b style="color:#79ffb7" data-page-node-id="pgUjBOGiMJ750JyPXV15jv">86.3%</b></h1>
+        <p class="sub" data-page-node-id="kh16i2n0AP1ZeOOvwgxcCh">数据更新于 2026-09-06 16:30 · 共 2,348 个被治理资产，1,041 条质量规则在运行</p>
+        <div class="hero-grid" data-page-node-id="KyKTtpkiMuYDiswjufwcvI">
+          <div class="hero-card" data-page-node-id="VRQ3p7ch6WZtr6psqrJZic"><div class="label" data-page-node-id="6Eyt5wkrAZBUeuiR91pr5c">被治理资产数</div><div class="value" data-page-node-id="g1oiNpgpfzCaEO5aBjojwG">2,348</div><div class="delta up" data-page-node-id="bi0PfTgOySE72JTgDC2lO1">↑ 12 本周</div></div>
+          <div class="hero-card" data-page-node-id="jjC3tWnnp8feS5c5AM1Qmj"><div class="label" data-page-node-id="tfSl9uYy4S2ni9SpYbgh90">健康资产占比</div><div class="value" data-page-node-id="M5ZYYrRBOHxlai1WiQtsw7">86.3%</div><div class="delta up" data-page-node-id="8mebk1K9sRa49EZe3YUnzk">↑ 1.2% WoW</div></div>
+          <div class="hero-card" data-page-node-id="aAmmbv0Hsh9lVd2xAMGnnc"><div class="label" data-page-node-id="bEvwPQmFZnQRq8KAKTfGC0">运行中规则</div><div class="value" data-page-node-id="IYiTyQf68McmcnNB4kl6c4">1,041</div><div class="delta up" data-page-node-id="In35I9pKzQz0X6cpvxPY54">↑ 34</div></div>
+          <div class="hero-card" data-page-node-id="tfEEQUwRDRrfdI2lzbYbZ0"><div class="label" data-page-node-id="Bmd9Mx8ofQXptzq7psNflk">阻塞异常数</div><div class="value" data-page-node-id="WE2DBAvZmRVW2kEu8TRgFO">12</div><div class="delta down" data-page-node-id="SJjwNfwf30UmQAHfldkV1g">↓ 5 DoD</div></div>
+          <div class="hero-card" data-page-node-id="jkuBymAVvMCNRAIUeyQIZj"><div class="label" data-page-node-id="KNdm5cVKidsazLkq0xcYlf">平均质量分</div><div class="value" data-page-node-id="p6nxBM48hdJ4ygACef9b4i">84.7</div><div class="delta up" data-page-node-id="PhsFK6w3xWJtnfsb6aXwe9">↑ 0.6 WoW</div></div>
+          <div class="hero-card" data-page-node-id="nalCCRhDblPdFW3Ky7Wp7v"><div class="label" data-page-node-id="0hGmgXB18BfAmd1JlTMK1Q">今日 SLA 风险</div><div class="value" data-page-node-id="yleYDUAe1Op3vghtvtXkZO">3</div><div class="delta down" data-page-node-id="jtMpA5EMLxZECYSif1jbs3">↓ 2</div></div>
+        </div>
+      </div>
+
+      <!-- 主题域切片 -->
+      <div class="card" style="margin-top:14px" data-page-node-id="rHFS7TlONvAQmV7FuuX9Su">
+        <h3 data-page-node-id="FCDgUnT6zDnq3DzFtPMXdW">主题域切片 <span class="more" data-page-node-id="nrzCsnkwn5EPGBYp2C6SJD">共 12 个主题域 · 按健康分降序</span></h3>
+        <div class="domains" id="domainCards" data-page-node-id="sS78RibvmBbrGdDGxJQhGA"></div>
+      </div>
+
+      <!-- 待办中心 -->
+      <div class="card" data-page-node-id="VnPlY2mfmqdbphKKMp1orG">
+        <h3 data-page-node-id="P9wOocX8rzku1ZXT5grXe9">待办中心 <span class="more" data-page-node-id="EJZb3sPZAriK3Ah20p8y5M">登录用户 @陈勇 · 数据治理组</span></h3>
+        <div class="todo-grid" data-page-node-id="gO6S2MJqu6AnYEG6yg9GrB">
+          <div class="todo-card block" data-page-node-id="5Bypo3aBEJRdB9QoQ39AqY">
+            <div class="label" data-page-node-id="aMn44R2fKTwx7HaEZbfDMQ">我负责的阻塞异常</div>
+            <div class="num" data-page-node-id="F1GKe2FBSfjHJYU7idoEKB">7</div>
+            <div class="desc" data-page-node-id="jXiQqheAFYRmVZqT1vgtHv">4 条已超 SLA，2 条今日到期</div>
+            <div class="act" data-page-node-id="lq1Hw5boOeb12hr7eWW9tq">前往异常中心 →</div>
+          </div>
+          <div class="todo-card warn" data-page-node-id="4WihHoy3pCgbkZG8YhDSR8">
+            <div class="label" data-page-node-id="ddahHCZVh1qAb6a8wEMAcj">待我审批的规则</div>
+            <div class="num" data-page-node-id="fjnOa251SOFbY88yKZ62TY">3</div>
+            <div class="desc" data-page-node-id="9KJUduSCqnnHUJQyiphX48">自定义 SQL 规则 2 条，阈值变更 1 条</div>
+            <div class="act" data-page-node-id="cHp1V1q9fQIBKyIPsVqjfB">前往审批 →</div>
+          </div>
+          <div class="todo-card ok" data-page-node-id="B6vyvrWoTQqLTiqAubzsEY">
+            <div class="label" data-page-node-id="rOpfRgmRPXbQfJejsVvO89">待复盘任务</div>
+            <div class="num" data-page-node-id="bvDTXoU4oHTEduzImBchGf">5</div>
+            <div class="desc" data-page-node-id="tSYBGVHHxi4RlYGZh08w5e">已闭环异常 5 条待复盘</div>
+            <div class="act" data-page-node-id="oA8Asl3BHhHEb3u0uMFgTm">前往复盘 →</div>
+          </div>
+          <div class="todo-card" style="--info:var(--info)" data-page-node-id="7ZBCyvX1RdTUcXa2P54Jih">
+            <div class="label" data-page-node-id="0MiqiGZbIS1bra82MbtDXy">今日 SLA 风险</div>
+            <div class="num" data-page-node-id="UIQhoHwJytJKCPWoBy7E4u">3</div>
+            <div class="desc" data-page-node-id="R0poNWZ7phYywCHYbh1gb6">任务将于 8h 内到期</div>
+            <div class="act" data-page-node-id="2FWAHFYBe6tBQsgQxVHqhv">查看任务详情 →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 趋势图区 -->
+      <div class="trend-grid" data-page-node-id="XGkipUu8JkzGkXbjOjHKXY">
+        <div class="card" data-page-node-id="gZxxMJI1wOD4j5zOsmPFMB">
+          <h3 data-page-node-id="xzlI7hFDORjL1cKVNBY9r6">30 天健康分趋势 vs 全平台均值</h3>
+          <svg viewBox="0 0 600 160" style="width:100%;height:160px" id="trendChart" data-page-node-id="PoFFkRGqrIumFrBahvaIhn">
+            <defs data-page-node-id="Tmf5AtMfSOTcQCnGW29HP6">
+              <linearGradient id="gA" x1="0" x2="0" y1="0" y2="1" data-page-node-id="bkvgYeUxF2lmWg6er43LaL">
+                <stop offset="0" stop-color="#6d4cff" stop-opacity=".4" data-page-node-id="jZLGcABwtcCp76MM71WlsF"/>
+                <stop offset="1" stop-color="#6d4cff" stop-opacity="0" data-page-node-id="C9waEzPrZq9tW9wGw8WgeK"/>
+              </linearGradient>
+              <linearGradient id="gB" x1="0" x2="0" y1="0" y2="1" data-page-node-id="DRUP7nmo4e4jq32rjNTe2v">
+                <stop offset="0" stop-color="#16a085" stop-opacity=".4" data-page-node-id="DdEeukurDtVHqlrb2lGZNC"/>
+                <stop offset="1" stop-color="#16a085" stop-opacity="0" data-page-node-id="lF98OGVjXkZJfnLGBT83ED"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div style="display:flex;gap:18px;font-size:12px;color:var(--muted);margin-top:6px" data-page-node-id="vb3IggwHkqVG9UYWBwdrR4">
+            <span data-page-node-id="V6A3AhOPaPa5incxGBiaTY"><span style="display:inline-block;width:14px;height:3px;background:var(--primary);vertical-align:middle;margin-right:6px" data-page-node-id="XzDg6RXvLHvOWBZ5nxM2lA"></span>本团队质量分</span>
+            <span data-page-node-id="TN7YiWsflHUoVOB6O4eXKW"><span style="display:inline-block;width:14px;height:3px;background:var(--ok);vertical-align:middle;margin-right:6px" data-page-node-id="rBa6QIA7kf6fFoaI7vqSrc"></span>全平台均值</span>
+            <span data-page-node-id="2Q00Q2jbCSjLkxnQzKt5G1"><span style="display:inline-block;width:14px;height:8px;width:8px;background:var(--block);vertical-align:middle;margin-right:6px" data-page-node-id="lzBTzKpwSPGWF1mRZVGsJA"></span>阻塞异常</span>
+          </div>
+        </div>
+        <div class="card" data-page-node-id="qhbCTSaEnxVSPmioZh7FGa">
+          <h3 data-page-node-id="VDHwVH8QExohMxHUNO54le">失败规则 TOP 5</h3>
+          <div id="topFailRules" data-page-node-id="HJq4TmLGJxXF1T3EptDRAb"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 2 · 规则市场                                                -->
+    <!-- ============================================================== -->
+    <section class="view" id="view-rule-market" data-page-node-id="wcG1In9zgg92sUDEFAkEYY">
+      <div class="view-title" data-page-node-id="noanZMVL2OTaEmjzNxYM5L">
+        <h2 data-page-node-id="SHDqKBL66L6JvnW5wUCNi1">📚 规则市场 <span class="tt-tag" data-page-node-id="ZnRZC0LwAHrNDLSE87QDRv">VIEW 2 / 6</span></h2>
+        <div style="display:flex;gap:8px" data-page-node-id="1dfzTLSJajOcoLBw6oKm05">
+          <button class="btn" data-page-node-id="IcVJ1FWSnF9IOXCClwcMMJ">+ 新建规则</button>
+          <button class="btn primary" data-page-node-id="U3AjezWWiMpV0rVhr42dUC">📤 导入规则集</button>
+        </div>
+      </div>
+
+      <div class="market-head" data-page-node-id="uTbUJkOfofoTbOeBPsXtGz">
+        <div class="search" data-page-node-id="TAnjXNUo6DGC8fprQtkmTR">
+          <input placeholder="搜索规则名称、编码、字段..." data-page-node-id="EqgKEMhOKk8ytFDeU2L34b" />
+          <select data-page-node-id="AJflOdya8gFOZF3a0EnHn1"><option data-page-node-id="idohqdun8qCTG0zbKTyjRN">全部维度</option><option data-page-node-id="1RasypZot4CfPFd0cFZHLG">完整性</option><option data-page-node-id="Fmi5ZZtVLTTDhMYtJRrL5R">准确性</option><option data-page-node-id="oZjdHLCsQ60yKbHBW194Kv">一致性</option></select>
+          <select data-page-node-id="nfxyqk0PFtlgfse1xysh7b"><option data-page-node-id="0X0vJ0HuldHP1ibsPTMaeT">全部类型</option><option data-page-node-id="HVNxtnjohTh7QRYNCJTfHj">模板型</option><option data-page-node-id="7zocxMk8tT9oqQOZTCdCui">SQL 型</option><option data-page-node-id="WbO9PW2bYvIzcuETw8yLCM">对比型</option></select>
+          <select data-page-node-id="FhbCnKjgvKk69PCSobjgrK"><option data-page-node-id="AjtDEiOzp5UAbG0efqOqLA">全部严重等级</option><option data-page-node-id="1HQ64sQxPlZy33LsF3Poi7">Block</option><option data-page-node-id="wLHajB785O56TkwgppKVS0">Warn</option><option data-page-node-id="62v01onlh0LQfPn0vfbTuo">Info</option></select>
+        </div>
+        <div class="toolbar" style="margin:0" data-page-node-id="505rxOoESPu1g5d0C4wrOB">
+          <span class="pill on" data-page-node-id="jxd9mnoh9AgBsLXlnjSeTE">🔥 最新</span>
+          <span class="pill" data-page-node-id="5WgAFRBvjbSkpE3gohwMxX">⭐ 收藏最多</span>
+          <span class="pill" data-page-node-id="bvlrnuo2X7Z7olAFy6FiYN">📌 最近更新</span>
+          <span class="pill" data-page-node-id="vZnTID4foBMcmYBfdHMHHF">🎯 高命中率</span>
+        </div>
+      </div>
+
+      <div class="cat-tree" data-page-node-id="cq4gwbyiLwniHbnOZK38bW">
+        <div class="cat on" data-page-node-id="A9CPlaFOI8LT6dQcWtSKpS">全部 <small data-page-node-id="BWGHKlWwOVRudsIejkUJlD">1,041</small></div>
+        <div class="cat" data-page-node-id="8dmXFTxRf7S2C8naQNthpw">完整性 <small data-page-node-id="o7xbkAaLPcw15qenhicyqQ">248</small></div>
+        <div class="cat" data-page-node-id="wqKrbK7oTwRbvr8jGOxiBd">准确性 <small data-page-node-id="75MXBRsDToduhF3oRLhD94">312</small></div>
+        <div class="cat" data-page-node-id="mrf5xhRTZ0FsDEwSGN6zZV">一致性 <small data-page-node-id="IV3P3asGjBbOK3TTUED35P">186</small></div>
+        <div class="cat" data-page-node-id="9C7q4t5CewNcOT3wAXM06D">及时性 <small data-page-node-id="zDpyEumivY2AKkxoeA9nV1">97</small></div>
+        <div class="cat" data-page-node-id="CTE1JslxAHOcY11tIMjB7d">唯一性 <small data-page-node-id="QN5TlRpZ0r1ygj65zZgwqs">72</small></div>
+        <div class="cat" data-page-node-id="sdyZtKICPe6EaD4RrmCGpO">有效性 <small data-page-node-id="B2BbAEMixcH0t3R96p4Cyj">126</small></div>
+      </div>
+
+      <div class="rule-list" id="ruleList" data-page-node-id="UlF3a8pK77tZRBNo1MR2sB"></div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 3 · 规则详情                                                -->
+    <!-- ============================================================== -->
+    <section class="view" id="view-rule-detail" data-page-node-id="A13oG8GtQoeVgkyCBcLM9d">
+      <div class="detail-head" data-page-node-id="kE28u7DH4B3tGur6WO47Sm">
+        <div class="left" data-page-node-id="Zx1CmkFDA7ODUdecDnASP2">
+          <h1 data-page-node-id="K7bMhW74qklgBJvceYd8RG">客户端埋点必填字段非空率校验</h1>
+          <div class="meta" data-page-node-id="tA0HLn8GiswHJIUB1ZgZJx">
+            <code data-page-node-id="kcUxYN0sSuar0PuUD8D0uB">DQ-CLIENT-001</code>
+            <span data-page-node-id="PdOJW8Qtm9quvxxxJaWQtB">·</span><span data-page-node-id="oEEI4Ej9mJ8S3IAREiDKSY">完整性</span><span data-page-node-id="t87l17Tn5E28jsjbAuIB6t">·</span><span data-page-node-id="iTM2WffmgHHF2c3LhT52KQ">模板型</span>
+            <span data-page-node-id="vH2lnKV0uv5sBUcK4lj02Z">·</span><span class="badge block" data-page-node-id="uhu6WAGRUYhug1bMeBaj5E">Block</span>
+            <span data-page-node-id="Bj9ZxvPfrnK59KxhW6Vnz6">·</span><span data-page-node-id="ewq5jBO1oA4CnZU8BRH5H6">当前版本 v5</span>
+            <span data-page-node-id="Xiw2Ced73LseEiBEn20Ul5">·</span><span data-page-node-id="gZap5UPxr5YM7jG6a9UWIh">已启用</span>
+            <span data-page-node-id="SuroWA6Nes5W3DALm4lHn8">·</span><span data-page-node-id="mwfVN5irYGFDZDFr7XEIld">由 @王佳 创建</span>
+          </div>
+        </div>
+        <div class="actions" data-page-node-id="RNH0Jl3nDMxgNEUXGfXXiU">
+          <button class="btn" data-page-node-id="hQ6RAEI8mFpK4GCSNcs6WX">♥ 关注</button>
+          <button class="btn" data-page-node-id="zITCOdnauDFkQTDaUqG2jI">复制规则</button>
+          <button class="btn" data-page-node-id="UQEamIEtcgTMVuhaCGKVT8">申请引用</button>
+          <button class="btn primary" data-page-node-id="xkA6P8fzgQcMScxHNBtaEN">编辑规则</button>
+        </div>
+      </div>
+
+      <div class="tabs" id="ruleTabs" data-page-node-id="1AgKGBbpW0yQ8Tn3bI8Qcd">
+        <div class="tab active" data-rtab="def" data-page-node-id="vrwi0zH4YcIAaYRrirwx3l">① 定义</div>
+        <div class="tab" data-rtab="apply" data-page-node-id="WoLjqEpW7DNO1Oz5BdXgDM">② 适用资产 <span style="font-size:11px;color:var(--muted)" data-page-node-id="Osf8U3FWEmkE7L9G5ME5Dv">128</span></div>
+        <div class="tab" data-rtab="rel" data-page-node-id="ae6f3ptqTgNLmyUA2Bnesd">③ 规则引用</div>
+        <div class="tab" data-rtab="sim" data-page-node-id="sZ1JNC8tMiYDZGCf4BCVaJ">④ 模拟执行</div>
+        <div class="tab" data-rtab="cited" data-page-node-id="zzaUnBEMMOfrc8i7FRpuw7">⑤ 引用本规则的资产 <span style="font-size:11px;color:var(--muted)" data-page-node-id="XnVn3jnsbgKky4faHKM3WZ">42</span></div>
+        <div class="tab" data-rtab="ver" data-page-node-id="F4oRU24z3MdCZeWnA3tgcA">⑥ 版本</div>
+        <div class="tab" data-rtab="cmt" data-page-node-id="VWCUXKFVfymqHGlSeQRq2t">⑦ 评论 <span style="font-size:11px;color:var(--muted)" data-page-node-id="l8EM1cRgLf2TzIKDyhNrdL">18</span></div>
+      </div>
+
+      <!-- Tab 1 定义 -->
+      <div class="tab-pane active" data-rpane="def" data-page-node-id="Hs6F8uH6MDU8bolD23zQL5">
+        <div class="card" data-page-node-id="PkGWWpQfphmzaPJvtdO22p">
+          <h3 data-page-node-id="bIrdJBKyKdrY8JlzMJXznv">规则体（模板型）</h3>
+          <div class="code-block" data-page-node-id="ryGO0gLaKJM4CRGx8LEsiV">
+<span class="cmt" data-page-node-id="LdDTwqEhgwAuokqL3rvgyJ">// 模板：必填字段非空率</span>
+<span class="kw" data-page-node-id="psn3lC7bSHnxyRWbb9TjRC">RULE_TYPE</span>: <span class="str" data-page-node-id="383oTJ5qtuJoeLY9YMSW5z">"FIELD_NOT_NULL_RATE"</span>
+<span class="kw" data-page-node-id="9ilxXAfbXJR2sV36uIGDnS">TARGET</span>: <span class="str" data-page-node-id="uT8vTs9fqDDwYGDCjkaEEp">"event.event_name = 'order_paid'"</span>
+<span class="kw" data-page-node-id="ylA6iY5GRdvYDCodaHRVYx">REQUIRED_FIELDS</span>: [<span class="str" data-page-node-id="HSUUQmyqOsiPBHNTZq9ecD">"order_id"</span>,<span class="str" data-page-node-id="5iFLz7R5Dle4cgT4PoxobU">"amount"</span>,<span class="str" data-page-node-id="NGU7Hh7yWcDMCaRt2YJPVa">"user_id"</span>,<span class="str" data-page-node-id="KKFkG3hmz4JGhaePBUydxq">"timestamp"</span>]
+<span class="kw" data-page-node-id="1NliI4NxaEQhHgr9wjpel3">THRESHOLD</span>: <span class="num" data-page-node-id="Ec8Q2w8ErbIGHsAyCxgB2d">0.99</span>           <span class="cmt" data-page-node-id="juYgnWBnZHKnjrsADjvtCq">// ≥99%</span>
+<span class="kw" data-page-node-id="hCLGEJtKw4fsCRCxCX7VC4">CONSECUTIVE</span>: <span class="num" data-page-node-id="1nU5SAsFi6S4Fkg5T5VKCr">3</span>           <span class="cmt" data-page-node-id="3CrJeKHVHplfoVatt5TiaT">// 连续 3 次触发告警</span>
+<span class="kw" data-page-node-id="Uz0GBy0ZuGmvDAOpvZPSAl">ON_FAIL</span>: <span class="str" data-page-node-id="OQmECECV9e5dF4niBfTzG2">"BLOCK"</span> + <span class="str" data-page-node-id="T0Q6bhMhaZ3AvzYKNx7lVA">"AUTO_BACKFILL"</span>
+          </div>
+        </div>
+        <div class="card" data-page-node-id="GX0BAgo7CHS2Fx8a5YygL8">
+          <h3 data-page-node-id="HHdnr2TaCIBaS4wAG3PMca">阈值与告警配置</h3>
+          <div class="kv" data-page-node-id="RAtkcdZHv805tkn3vEdcaJ">
+            <div data-page-node-id="1E9Nz8MfFlTCLSwUPKUkVd"><div class="k" data-page-node-id="BzVt0Vdny1ypJQiKCrfKYy">触发粒度</div><div class="v" data-page-node-id="fmUw82RVHnmHAGZWOAsFv3">小时级</div></div>
+            <div data-page-node-id="h8IbkH3GySqbAMOBFT0Zny"><div class="k" data-page-node-id="XhaAtN4KQXMVyRtWAFwjfS">连续触发次数</div><div class="v" data-page-node-id="QbK9l9nP34l1F5tRMjkZt2">3</div></div>
+            <div data-page-node-id="czNNk4eMsESqLhwnCra5AH"><div class="k" data-page-node-id="Acrl1lTu0x8Mld9elyxnad">告警接收人</div><div class="v" data-page-node-id="X9qNFKHJm0PCJtpSg6cMYY">客户端团队 + 风控值班</div></div>
+            <div data-page-node-id="euKkDhuvtC7dDoMM69EPlu"><div class="k" data-page-node-id="YKQf2cr1mVlvmPxtlTgW2F">告警渠道</div><div class="v" data-page-node-id="beK0srf5JuwJ05a9q3EwEU">钉钉 + 短信</div></div>
+            <div data-page-node-id="awSaT4B0sL64ftshUHHDTC"><div class="k" data-page-node-id="DATPIsC26BPSTfFDfMgmmo">Quiet Hours</div><div class="v" data-page-node-id="J90YHHy2tfbEE2RNuNv8v0">02:00-06:00</div></div>
+            <div data-page-node-id="aa0CUDQFdPyxGNXapC1QD9"><div class="k" data-page-node-id="pdr5Zip5aMikfTGMHSHC2I">处置策略</div><div class="v" data-page-node-id="sFB2CRZxH4StmONcMKIdq1">阻断下游 + 自动回溯</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2 适用资产 -->
+      <div class="tab-pane" data-rpane="apply" data-page-node-id="DgvterCqMM9y6NssDJbBfi">
+        <div class="card" data-page-node-id="InO6iQY8CkNxLeEBYy3RDP">
+          <h3 data-page-node-id="eSBwWuF6hKPjbeoufmpNwO">已绑定资产（Top 10 / 共 128）</h3>
+          <table class="tbl" data-page-node-id="gW8yCnZrEL9CxyeTxsCe2l">
+            <thead data-page-node-id="CTPn3hqVqMtBky8vF3y7QE"><tr data-page-node-id="sfh4DzDEyEPCqXazeEVXDw"><th data-page-node-id="NvSLBtortIQfoC2kikc6bC">资产</th><th data-page-node-id="rS2odHsySvR1pJkFyAjjER">主题域</th><th data-page-node-id="MHiTIFpEOsJ1Rq6CocvRw9">Owner</th><th data-page-node-id="mywxF2mpkmSeBm1P7KNacY">首次绑定</th><th class="num" data-page-node-id="DDI2s2oG69DmHm0xxnOQ3C">7d 命中</th><th class="num" data-page-node-id="3q8cNLpGFT7dYovMAJwgZW">通过率</th></tr></thead>
+            <tbody data-page-node-id="NhmfXDCDSXJ5HOtOczTHyD">
+              <tr data-page-node-id="VX5BRcs8IBQmxTsczWzvDn"><td data-page-node-id="ssRBmBQ5wwGooEqzkjYfx5">tbl_order_main</td><td data-page-node-id="S3cIp8SwGRGHZ0NUpkyA5G">交易</td><td data-page-node-id="g0CL1ATejnZrHblALUXoqg">@张宇</td><td data-page-node-id="mdwchl1FARK32HNCWRMOew">2026-04-12</td><td class="num" data-page-node-id="frpKSL89myH6CGLhKZJJq8">12</td><td class="num" data-page-node-id="vNfjxPAKj9AVjDczINsBp8"><span class="badge ok" data-page-node-id="dv1thjNREl0Krwi4ExPHeu">99.2%</span></td></tr>
+              <tr data-page-node-id="nnKzK3ma9zWbazbceOJXZK"><td data-page-node-id="B2BIULxyGWdr5LBpSHMC3l">tbl_refund_record</td><td data-page-node-id="M4cmlL5H1xRfPB1hEWqbfo">交易</td><td data-page-node-id="f36XqhUdJYzR4EL1ul6cRP">@张宇</td><td data-page-node-id="F3QMpvfHaqbRdJyqZYInFx">2026-04-12</td><td class="num" data-page-node-id="YHtO7s9uIioOXSCxC1TfB6">8</td><td class="num" data-page-node-id="eEWwTvq38PENtcBt9rnCEf"><span class="badge ok" data-page-node-id="sl25EtxFvSD5VapY9Zzd3w">99.5%</span></td></tr>
+              <tr data-page-node-id="qDdLoq1BJvircYiYXkvD79"><td data-page-node-id="olMEC8qBc0GqfNBBJ7b37C">tbl_user_pay_log</td><td data-page-node-id="grCl8vYlheFJCSU0TNhRHu">用户</td><td data-page-node-id="I6HBirCSWAn6breWz9xh0v">@李娜</td><td data-page-node-id="pp9ucAwTgoQZn7FfqmoJsb">2026-05-03</td><td class="num" data-page-node-id="8PHP1o7NHlO06uvNuo30Jt">5</td><td class="num" data-page-node-id="GyIAHsC82Fqg9WT8ypSEes"><span class="badge warn" data-page-node-id="FQvtnLv5OKl9A1zeD6CImr">98.3%</span></td></tr>
+              <tr data-page-node-id="hH40Nl29OM0vyuDgJtJLcS"><td data-page-node-id="iqBBGwebNWNvVsc13Hkiad">tbl_coupon_used</td><td data-page-node-id="RtEk2d7ohcbeh2KxM7VfSs">营销</td><td data-page-node-id="0MxJLLekzGrzRsw4v4MasE">@陈超</td><td data-page-node-id="B6DX3aXEpCq8yQhwJZF9i0">2026-05-20</td><td class="num" data-page-node-id="vIKJlNIiQOkCf3V8lGjEP8">3</td><td class="num" data-page-node-id="LCb0UsSfBG0Z5LApA1ztk9"><span class="badge ok" data-page-node-id="1iPrtXFGkVDdJcAswLhA4F">99.8%</span></td></tr>
+              <tr data-page-node-id="nM04SAONsCNKZM28Mj2BKs"><td data-page-node-id="aGb5Ksr5S4doLlYSMPbf5r">tbl_cart_event_log</td><td data-page-node-id="CHlMHXzxec3YY7RP6BZbUq">用户</td><td data-page-node-id="aPzcNfmTkzCNESf6Bg3rxJ">@李娜</td><td data-page-node-id="UpiA5QFcHPu5otgkxGrWNe">2026-06-08</td><td class="num" data-page-node-id="DoirNsGbxaTKtsnZSbW9q8">21</td><td class="num" data-page-node-id="S5lGVDJpRYXMahu2SfHcFG"><span class="badge block" data-page-node-id="e29x3fEK0hpW2VJMArawRn">94.1%</span></td></tr>
+              <tr data-page-node-id="6FjM5j5D7zlar0laio1Oqq"><td data-page-node-id="EB8BBm5ZI8EIPafxHaxTvQ">tbl_promo_click</td><td data-page-node-id="KBBYVFOOP2RYPzqUFlnuDl">营销</td><td data-page-node-id="eJ2eP8DGEcemfORuSQzpaP">@陈超</td><td data-page-node-id="zpwH0TxxPhM3H2qh5QHjfk">2026-07-15</td><td class="num" data-page-node-id="r6NRvEWi87fSwexJAHdKxT">0</td><td class="num" data-page-node-id="Mlfs8lDn2fKEAy1oNwhy5i"><span class="badge ok" data-page-node-id="d60Jd5dm67yGHq93FV6j6N">100%</span></td></tr>
+              <tr data-page-node-id="tqGfOY9ak1Fss21lxUyab7"><td data-page-node-id="3XG9cwYpY86kWMx3u8A3eo">tbl_login_event</td><td data-page-node-id="nbR7onGJHWuuLmrz3fn6d5">用户</td><td data-page-node-id="2N0VaDlnwkCV6tfGjKnjP5">@王玥</td><td data-page-node-id="Gcddf88NiPIJZSVShRCElL">2026-08-02</td><td class="num" data-page-node-id="Fsxv6EppeZ8vJip6PZs3yv">1</td><td class="num" data-page-node-id="0F35ZoZ9HkyzTIZzbERWra"><span class="badge ok" data-page-node-id="Vtb3goMK1ADNHpIopFUc7D">99.9%</span></td></tr>
+              <tr data-page-node-id="TbKfJLHQqliLCPO7eS8Kdf"><td data-page-node-id="7QTiukW1g2wpB66lh1qePs">tbl_pay_success</td><td data-page-node-id="E9JiTAmmnytEhC8EmpkojK">交易</td><td data-page-node-id="44bU1whpRW9CeSEIhUvFWU">@张宇</td><td data-page-node-id="cQ7pW7oBBnDLKmygDRUQsL">2026-08-22</td><td class="num" data-page-node-id="3gPdlxcd8UIplLJ0v2e74F">6</td><td class="num" data-page-node-id="DfLwZf66puYEJ0eriICL7z"><span class="badge warn" data-page-node-id="USXNxW47tglgL7IxA5HDgr">98.7%</span></td></tr>
+              <tr data-page-node-id="sUGrlRK3tiRkpmPjE5A4Qg"><td data-page-node-id="XWWZJcQGf3aNgM9oH8JDcO">tbl_app_open</td><td data-page-node-id="qwVbxCRNOt1kgAVCUH4YEH">用户</td><td data-page-node-id="eJT7IpkrDkCXt95ImCLIZZ">@王玥</td><td data-page-node-id="DHCQTOjlJVXGkSwhRLePrW">2026-09-01</td><td class="num" data-page-node-id="Rbu1HZXwmljCuNeQiD6Krw">2</td><td class="num" data-page-node-id="UO7lndNjG1JEqt5YHpQs86"><span class="badge ok" data-page-node-id="83Gs943SSTauMIqGUrMKos">99.4%</span></td></tr>
+              <tr data-page-node-id="DHyIFzlag3eeh7VvEWtQZY"><td data-page-node-id="uKd82ECDWMSiTl5PThSocy">tbl_share_event</td><td data-page-node-id="OsWL6C5iburhZibxHRD2tJ">营销</td><td data-page-node-id="qbE3natO1se7TtKLEBtyE7">@陈超</td><td data-page-node-id="eOBf5dpTSGj9EuIjPRPPKE">2026-09-03</td><td class="num" data-page-node-id="y5RPQvQKzFbOKbsFWFSnGi">0</td><td class="num" data-page-node-id="DWu6c6AONwvGtq5Ida3EzR"><span class="badge ok" data-page-node-id="mSDxzUmu2a2HFA1Wka6asF">100%</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3 规则引用 -->
+      <div class="tab-pane" data-rpane="rel" data-page-node-id="yjyNZ7jHyfX3opZhGIm1Kj">
+        <div class="card" data-page-node-id="1Vd2Lsx1AL1iQQoRM7a9DU">
+          <h3 data-page-node-id="2AazUeB1tNN5v9vBURCMut">上行：依赖的标准 / 字段 / 任务</h3>
+          <table class="tbl" data-page-node-id="hRpJQO68Pi4PUll5wMEVOF">
+            <thead data-page-node-id="aejNJxNlvc02cZTVZW5eNp"><tr data-page-node-id="Whm1cTU5whEoqVzFR7pJ3o"><th data-page-node-id="ABCOAvIcKtlVnlVjf9wZ0O">类型</th><th data-page-node-id="9fIZ52iCXtp1SGHOB6G8d2">对象</th><th data-page-node-id="nDVndZqRNARt3DBsDaKaW2">用途</th></tr></thead>
+            <tbody data-page-node-id="CLGz9e8Vu1zKiGUZW1QoHJ">
+              <tr data-page-node-id="KDAwBLw9JPxUwGdjoCYxkU"><td data-page-node-id="mdwDTPZxxTibFqOGMX4Yff"><span class="badge info" data-page-node-id="0GAggPv80lLGrTO3p4OjAv">字段标准</span></td><td data-page-node-id="MtZWB61sRBGP0tvy7Cuqp1">order_id 格式</td><td data-page-node-id="jCFimdKoUHz3nGhGUBuOhy">作为必填字段之一</td></tr>
+              <tr data-page-node-id="poQ2vSw5j0Ry4otUTwTSdu"><td data-page-node-id="TNJOrR5O5pKL5iVot35IA7"><span class="badge info" data-page-node-id="09rEKztvrBWmjrBVDWTMRk">字段标准</span></td><td data-page-node-id="7zDvTfxktfK0WlIaWeGal7">amount 数值范围</td><td data-page-node-id="u7q1sGpFYtr0EhRuSG248l">与值域校验联动</td></tr>
+              <tr data-page-node-id="bLDkdHAAVhvbmTJRkZ4Fll"><td data-page-node-id="85V2iFdgbJWXQFBGCCvYeo"><span class="badge info" data-page-node-id="s4tNHUChcWYSgcmoQm9ePj">枚举标准</span></td><td data-page-node-id="o3swoymn3dNCXi0Qnm1ek4">currency_code ∈ {CNY, USD, EUR}</td><td data-page-node-id="a05MD5VZq3ZG2YcdkPtOHn">字段枚举</td></tr>
+              <tr data-page-node-id="7ImhXthtT9yBAuL5BBvmun"><td data-page-node-id="NMjIUZT4so3qBDdxA4vyDX"><span class="badge warn" data-page-node-id="TKjOr9zYp5aQSvG1KLas3q">任务模板</span></td><td data-page-node-id="0z9WBqf6EOgJf9w13xcWNG">ods_client_event_log_sync</td><td data-page-node-id="0QtfNlYhjv9KMTIZ3z2jXe">依赖 S4 任务产出事件触发</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" data-page-node-id="i8PvEqSLf4RaWq0DfFV4gf">
+          <h3 data-page-node-id="b9K3TsWrUeOU9uEgfjMbYx">下行：被哪些规则 / 规则集 / 资产引用</h3>
+          <table class="tbl" data-page-node-id="4wWBGgA449Pue5uS5Hgv4t">
+            <thead data-page-node-id="Z671VIpRBc8XIxEuokDjMl"><tr data-page-node-id="oMFkgiYr8sXnnDIBXInZBf"><th data-page-node-id="fNipTkBIafr9yMzQebxdLu">类型</th><th data-page-node-id="dV9GfJPgAcWNUJ0MddBRI4">对象</th><th data-page-node-id="6zVzbQFY6sYbPYMmELFGts">引用方式</th></tr></thead>
+            <tbody data-page-node-id="poDXDdG3ORG8OhhF4hCzD2">
+              <tr data-page-node-id="42NAxd7TrYZ7M8oFFO2neD"><td data-page-node-id="s7N8zvI5OAN93SuAxDO1wK"><span class="badge shield" data-page-node-id="KfYCAj966g15Um3Xt6CJEq">规则引用</span></td><td data-page-node-id="iPSVLfyFNIDUaCOKwgVE9x">DQ-CORE-007 交易核心规则集</td><td data-page-node-id="1HjFOhnn2u4bkVluicWvB8">作为子规则纳入</td></tr>
+              <tr data-page-node-id="2cp5avNw7nSERCvZUKPVI6"><td data-page-node-id="OqaNyFS9PrFC0lItYxqJK7"><span class="badge shield" data-page-node-id="3TuUDI98DkI3vB8uB2Emdf">工单模板</span></td><td data-page-node-id="Lu96nKHAfIQlYu6FLuRtXW">S9-FT-OBS-01 数据缺失工单</td><td data-page-node-id="nErxnhREkHYhgvSGyjReZT">异常工单自动带入此规则</td></tr>
+              <tr data-page-node-id="ECh0qzNwHOVadqn4PBrSfE"><td data-page-node-id="yzJadzwFDrpo2ELGkAmCrn"><span class="badge info" data-page-node-id="TrZnrnRoKth2lqGz7ZZBoC">资产</span></td><td data-page-node-id="O7WAXXXR2SEuo80i37XDMM">tbl_real_time_order_metric</td><td data-page-node-id="bSKpjwT880sLvkl25hAxHX">该 ADS 引用本规则作为卡点</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 4 模拟执行 -->
+      <div class="tab-pane" data-rpane="sim" data-page-node-id="PUBXHVIf76dpU6FSgn3Gyr">
+        <div class="card" data-page-node-id="HrUEyrI3WSYKrZam0XFgJR">
+          <h3 data-page-node-id="krHoUublJY0I6NQgkDl57r">模拟执行 · 输入参数</h3>
+          <div class="form-grid" style="grid-template-columns:repeat(4,1fr)" data-page-node-id="IXpMUmSiW7Tv3WLrgE30Aj">
+            <div class="field" data-page-node-id="fOHVU6yTGT2vmTOeSLabIY"><label data-page-node-id="UgGvpM9ZldQ7ssLTRCmdCV">资产</label><select data-page-node-id="Js2VUIqfTWAxCCvYdud2DO"><option data-page-node-id="ddJKX1Av0OvXWucuIpRfON">tbl_order_main</option></select></div>
+            <div class="field" data-page-node-id="bHG4hpHwpweWeo4n2A8Zcb"><label data-page-node-id="NSpiksZJBDW8yuJF615uyG">分区</label><select data-page-node-id="bWU0Ba2Pw4dsB3r0e3VCmw"><option data-page-node-id="F7EybFksntyDvz9ZIVrvWR">2026-09-05</option></select></div>
+            <div class="field" data-page-node-id="WsNEc3es8UZzhH9nptbfFj"><label data-page-node-id="F4RAaPqfZFNJe3YsuYcz7B">抽样数</label><input value="10000" data-page-node-id="OmRcEhSzMLpK72dzVoM5mP"/></div>
+            <div class="field" data-page-node-id="XVQhfCXWpfNXLFfyjhIdW4"><label data-page-node-id="vDzn24PL8zXks4N5pUb4dP">使用缓存结果</label><select data-page-node-id="1gbGgQ00v2QAgWExeoMK44"><option data-page-node-id="W8QHp5SFllUMcFQlBGOcou">否</option></select></div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px" data-page-node-id="DWlHELtrPjfn1B5pPhheX7"><button class="btn primary" data-page-node-id="mkAAhXTFnDAYmRlVb3TrP8">▶ 立即执行</button><button class="btn" data-page-node-id="mLPR3AViTHBpbNdxHmufn6">下载上轮结果 CSV</button></div>
+        </div>
+        <div class="sim-grid" data-page-node-id="d4wFVl1lN29aUfS1doIV1o">
+          <div class="sim-result" data-page-node-id="akrH6RZGGz6xqY698gQDco">
+            <div class="label" data-page-node-id="EOFN2CRdxYHc4ABCqFGwEb">通过率</div>
+            <div class="big" style="color:var(--ok)" data-page-node-id="U7ExZTK8vqTicZu2lfRKfO">98.76%</div>
+            <div class="sub" data-page-node-id="gjMOlbBEIPlJgZ0D3y8xWG">阈值 99% · 命中失败 <b style="color:var(--block)" data-page-node-id="Tj5V4Kjb0ZuGDTCPBuKC2b">不通过</b></div>
+          </div>
+          <div class="sim-result" data-page-node-id="rMuvLho4OmuKcImnFmR4Hj">
+            <div class="label" data-page-node-id="iJNtnrbQLrzjNPUW5XRjMb">样本失败明细（Top 5 / 124）</div>
+            <div class="fail-row" data-page-node-id="lyiofStv4Qok7UAjQuFfYQ"><b data-page-node-id="O1B9twU4qltfD0PBr9yqCY">#1024</b> amount 字段为空，期望值 0.01~999999 <span class="reason" data-page-node-id="tBSYyZlxu0j4TfcwkXOMvU">NULL_NOT_ALLOWED</span></div>
+            <div class="fail-row" data-page-node-id="Jf4bJtS7sYPi8gi7aQbWam"><b data-page-node-id="5OvYesjlxY78bOJCuVABi0">#3507</b> amount 字段为空 <span class="reason" data-page-node-id="7BZFDFYcfquWEgTrevxcIE">NULL_NOT_ALLOWED</span></div>
+            <div class="fail-row" data-page-node-id="4VPRTQIWUu3hqTyMn9B6Jj"><b data-page-node-id="ynkCslsSsQvarGfrpQRXZ1">#8921</b> order_id 字段为空 <span class="reason" data-page-node-id="acaMRBb8bi8ifVfjROdMKU">NULL_NOT_ALLOWED</span></div>
+            <div class="fail-row" data-page-node-id="mJ6Hy4znIznJARBpG2iKxw"><b data-page-node-id="tVqvyxgyCxeBcHVddUvyvy">#12030</b> user_id 字段为空 <span class="reason" data-page-node-id="SZPWC6bhQltf2RLFUQKicD">NULL_NOT_ALLOWED</span></div>
+            <div class="fail-row" data-page-node-id="aCS9XfCCF8DMVwQ2Glj2Qa"><b data-page-node-id="xIOozg1sMBibQGwwbq9bkD">#15002</b> order_id="null"（字符串） <span class="reason" data-page-node-id="LLNXBKjHO9yvypLQmY0xxL">NULL_NOT_ALLOWED</span></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px" data-page-node-id="QMLi7mvf9sCRP4E0CPHtP2">
+          <h3 data-page-node-id="j7CSh6KSvLTBUpL2kP1ZsS">预计全量执行</h3>
+          <div class="kv" data-page-node-id="eGWfZCnGLNMMKElP214xE5">
+            <div data-page-node-id="EN82zVc1Ec77ABygmrO6Da"><div class="k" data-page-node-id="uAc63dVwV21I1DcDd2Br30">预计耗时</div><div class="v" data-page-node-id="WdTwxP4BiTkmUPT04cbcUw">1,240 ms</div></div>
+            <div data-page-node-id="DHGKfCDYpPqi6K9HOXwvKS"><div class="k" data-page-node-id="xd6GHvaQjnG5DRgs0eysiS">预计失败行数</div><div class="v" style="color:var(--block)" data-page-node-id="bJ59XwVdM0UkYc3fYITKne">~1,856</div></div>
+            <div data-page-node-id="MXgIxBuGA2PrdPXxFtZW9Y"><div class="k" data-page-node-id="HKxZETp0NKAzUoi0RFedf4">运行时资源</div><div class="v" data-page-node-id="yktQGJ04xtA5ErmXPPr52N">2 Core / 4 GB</div></div>
+            <div data-page-node-id="90FVMNKAuQJZJOCoZanejv"><div class="k" data-page-node-id="8OBCpVKr3IMMkI3WraDEYg">告警样本</div><div class="v" data-page-node-id="Cws6uhQFef9cz5O2isHh04">将发送给客户端团队 + 风控值班</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 5 引用本规则的资产 -->
+      <div class="tab-pane" data-rpane="cited" data-page-node-id="x8Wl162IwQ7qBLofI1qi1y">
+        <div class="card" data-page-node-id="VZUvUg5gh8bxKenxCFf3Zb">
+          <h3 data-page-node-id="8PSDk9w5wMGyPXnvInrTUa">反向引用视图（被哪些资产/规则间接影响）</h3>
+          <table class="tbl" data-page-node-id="iqm5ZQEMneUhyH7Jhv5xbf">
+            <thead data-page-node-id="9AyexFVdrdPnVFkCw24dNk"><tr data-page-node-id="Zm6JbMUdvY1A3nIFKIItWj"><th data-page-node-id="Xmww6ZPCeAufxIW3xmhEsL">资产 / 规则</th><th data-page-node-id="ZBe4gJOLq09LqKiHbLsd22">关联规则（反向）</th><th data-page-node-id="jD3fcqT3rP5fsxDAbf1Wtl">影响等级</th><th data-page-node-id="87xCEcMMN9lS1r8ofMcG3M">说明</th></tr></thead>
+            <tbody data-page-node-id="jpYBiAWfNSYTCRoXK00i23">
+              <tr data-page-node-id="drBEAa8SegJHrY0QJxx9Oi"><td data-page-node-id="5VQlbphQMYCUnn9LFDxDFV">tbl_real_time_order_metric</td><td data-page-node-id="bSYoPqxFjVus6ydXjc8LeR">—</td><td data-page-node-id="TylxZa1WXtBXHH0Q3RNJ5B"><span class="badge block" data-page-node-id="SBCu1z1jJAAY2ouVJW0vAa">高</span></td><td data-page-node-id="TYNn1KSdSfitAedanND4Gl">直接引用本规则作为 ADS 校验卡点</td></tr>
+              <tr data-page-node-id="hWeggWRsQXrg8ikalXqe9K"><td data-page-node-id="gzBxeE7KRJQEBd7Av9Q0Xn">report_daily_revenue</td><td data-page-node-id="5hhZhfe51l7E04BQ7kj1OV">tbl_real_time_order_metric</td><td data-page-node-id="QltxeWpTgNQBtT7Q71g0bc"><span class="badge warn" data-page-node-id="JsRIiuC7BNnm9JFACPv1VE">中</span></td><td data-page-node-id="PtFTzYhELiiaqGstilIKmK">报表依赖 ADS，间接依赖</td></tr>
+              <tr data-page-node-id="gQzNxZqXU6rMyMksdNBh7C"><td data-page-node-id="O4V66DD1Z7Tlz6eKFuvt9v">dash_marketing_realtime</td><td data-page-node-id="Fxr8DUO3rOrDO2rOSW0hSa">tbl_cart_event_log</td><td data-page-node-id="kSJwprtqpQCmvj2WRtFaXt"><span class="badge warn" data-page-node-id="QDVwGHKGuDeZVTWJ0KKgUR">中</span></td><td data-page-node-id="tlWcNGpi7utblH6v7L5nM0">同主题域相似规则且阈值接近</td></tr>
+              <tr data-page-node-id="HSZZf7wQfab0KsaOWcaKrg"><td data-page-node-id="ECz8Rdntjn2y3RMLEEltuE">DQ-CORE-007 交易核心规则集</td><td data-page-node-id="vI9DITKk0BszfyLATOAc6M">—</td><td data-page-node-id="VlTXlajXR1zbq3AKoIiLop"><span class="badge info" data-page-node-id="BcMfjwDeUsJBFJOcgARA6M">中</span></td><td data-page-node-id="3tJLllKRnIrvMpbMw80tpj">本规则为子规则</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 6 版本时间线 -->
+      <div class="tab-pane" data-rpane="ver" data-page-node-id="5PSppPseddO0MYXfvBj6r6">
+        <div class="card" data-page-node-id="TxKwT2PXvlEp8sIqrbrKqn">
+          <h3 data-page-node-id="RBKFlAXVx5L7fIOByq9z9V">版本时间线</h3>
+          <table class="tbl" data-page-node-id="GS2plZuJUl51wn7Rwtk1xR">
+            <thead data-page-node-id="A47XJcBUSEJI5YrI10jNmB"><tr data-page-node-id="AZ5TARwcjotgLgOhZFMMLv"><th data-page-node-id="zniErwEmvs5jgmzhGRWgEP">版本</th><th data-page-node-id="Flw5dINLd4NRXGBo1XglPl">时间</th><th data-page-node-id="l7clfbNZWzaxGo8Z56FN9e">作者</th><th data-page-node-id="QkVuAPiNC7gKirkPR8uZaC">变更摘要</th><th data-page-node-id="ZUjmuVmhs1PPtavr4KR4im">状态</th><th data-page-node-id="tBz3J7IYR7gh3ZbubZBP4w">操作</th></tr></thead>
+            <tbody data-page-node-id="QIvVrafIxAzj9XbuQXoGqu">
+              <tr data-page-node-id="VkZHRHJQ3s9fdr9S1T3YbA"><td data-page-node-id="N0ErEwG85NeSdHfNGfmT2e"><b data-page-node-id="Cdghc6ZUauqSHb6ZvkrqkS">v5</b></td><td data-page-node-id="QybqtaiWg7XZvhVhOKQyL2">2026-09-01 14:23</td><td data-page-node-id="oG8tXPSgnMO1FIjKwAd8zs">张三</td><td data-page-node-id="FhYlFGDfgyFrye8Wr7yzF2">阈值 99.5% → 99.0%</td><td data-page-node-id="9wvGVg6fMRxFyy7MFenvai"><span class="badge ok" data-page-node-id="HoJQvLejtp5wfSsEgaXXCI">启用中</span></td><td data-page-node-id="XRhXHdrJW31sEH6Fn1YCaN">[回滚] [对比 v4]</td></tr>
+              <tr data-page-node-id="hiM7ozqv1N1hRhESApecoB"><td data-page-node-id="Gd6IRSE3MGTCIjtz758Mxj">v4</td><td data-page-node-id="r2HOvEuwDyQ87kroHqLOte">2026-07-12 10:14</td><td data-page-node-id="o1SBzk4F59zrXQ39TLXQvb">李四</td><td data-page-node-id="O0GzT1oLcrPu5NmqPPFuZ0">新增必填字段 order_status</td><td data-page-node-id="0EaAiGDs5obfUkwW8WAgfd"><span class="badge shield" data-page-node-id="kv1joEV0HXlbfa4oZd7OGw">已停用</span></td><td data-page-node-id="t1LyddtLCJdwlmXv4sAerd">[查看]</td></tr>
+              <tr data-page-node-id="S7h4z4j5I2loqAr5e4xVCA"><td data-page-node-id="V9IHDRKed5b27W9STU9EAO">v3</td><td data-page-node-id="f7p67adaS7WSzPf3aldNl2">2026-05-30 16:48</td><td data-page-node-id="hP3FwmM22NRxVjQaELsOjs">王五</td><td data-page-node-id="LLrz5qy4bjIIPvjvGLhsA8">告警接收人调整为团队</td><td data-page-node-id="eLnF6HNsG0oQNo3Aa17LuU"><span class="badge shield" data-page-node-id="fHRooFXQvEW0D2betMQNO9">已停用</span></td><td data-page-node-id="FAnB9QKT7BgO9aLxixvUqz">[查看]</td></tr>
+              <tr data-page-node-id="2NtUeehtWtv102799CW2AJ"><td data-page-node-id="BRBG9wQag8eVqsrnG88HZQ">v2</td><td data-page-node-id="5MXZLsoIf6rvGKY06ZrpA1">2026-05-03 09:20</td><td data-page-node-id="7QkX6NiNltaAzp0wNK0dTP">王五</td><td data-page-node-id="DEmA05kwoy8XaDgjrYHpJp">新增 timestamp 必填</td><td data-page-node-id="uFd1eF2nZwjOYP0Cd5A0ce"><span class="badge shield" data-page-node-id="79D0vu7ic6t3FWVJ5IMPyQ">已停用</span></td><td data-page-node-id="6kO3hkAdITDBefMXcwnGYA">[查看]</td></tr>
+              <tr data-page-node-id="iLTtKWaxtHk5mh2LeRqAGI"><td data-page-node-id="YVPdh60AGZcRHd3Ay0ldiT">v1</td><td data-page-node-id="JsUZHwgCv7MEn7HBo0TS39">2026-04-12 11:05</td><td data-page-node-id="n2OzFFHaFPMIAo1TBAoOzT">赵六</td><td data-page-node-id="6LsRVB4FuZs7HlPauS3PV2">初版上线</td><td data-page-node-id="B4E9pYZi3Xbu4dDAKoa6fn"><span class="badge shield" data-page-node-id="GmNFM3yU3SQZwlzz2ac09j">已停用</span></td><td data-page-node-id="6s46oaYqDGvOED9dw0wiAG">[查看]</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 7 评论 -->
+      <div class="tab-pane" data-rpane="cmt" data-page-node-id="YEVdJiKkWgwGFE5uaF1ZX3">
+        <div class="card" data-page-node-id="WDFM6f0BajXBBESoBAvs2J">
+          <h3 data-page-node-id="dmHzqa9NyUEeVKPdtPi7TG">评论（18）</h3>
+          <div style="border-left:3px solid var(--primary);padding:8px 12px;background:var(--panel-2);border-radius:6px;margin-bottom:10px" data-page-node-id="tISEdMyQEx0kmypBzA6aFP">
+            <div style="font-size:12px;color:var(--muted)" data-page-node-id="0lIV3WwGtUj4KvIgshj35u"><b data-page-node-id="v7HOvJ8SUalMaTUOvI4fEv">张三</b> · 2026-09-01 14:25 · <a data-page-node-id="HAAUDl5ZQY0hUIhdKT3PsV">引用阈值</a></div>
+            <div data-page-node-id="GzgHkyOOTH1QYxQy6rzuUH">阈值从 99.5% 调到 99.0% 是为了兼容客户端 0.4% 漏报，需要持续观察一周再决定是否调整回去。</div>
+          </div>
+          <div style="border-left:3px solid var(--ok);padding:8px 12px;background:#f0fdf4;border-radius:6px;margin-bottom:10px" data-page-node-id="ECzVCZYTYECQRFE8hZaDaT">
+            <div style="font-size:12px;color:var(--muted)" data-page-node-id="jCQyw3HbihA6jRXL4B4Bc8"><b data-page-node-id="kvx2dZgaPiB1rXMUACeBkp">李四</b> · 2026-09-02 09:18 · <a data-page-node-id="beDtMR2ttgek7Qsxi9ytAV">触发条件</a></div>
+            <div data-page-node-id="KIUPTTI649GHXQ4hi8bbqA">已确认规则在 S4 任务产线上的触发延迟在 30s 内。</div>
+          </div>
+          <div style="border-left:3px solid var(--warn);padding:8px 12px;background:#fff8eb;border-radius:6px;margin-bottom:10px" data-page-node-id="VZM4U27EJzPxC2Vsb8b2um">
+            <div style="font-size:12px;color:var(--muted)" data-page-node-id="FNMoGESHaV7G3wLN39zYGd"><b data-page-node-id="HGk3MqVRNWJXfZ1twiKQZx">王五</b> · 2026-09-04 16:30 · <a data-page-node-id="Q3pCPFhVsh2RIrqIdXjIEQ">告警接收</a></div>
+            <div data-page-node-id="zg3IXV4Q71mfnwXdoH0tfs">建议把告警同时推送到 #fraud-alert 频道，避免值班漏接。</div>
+          </div>
+          <div style="border:1px dashed var(--line);padding:14px;border-radius:8px;display:flex;gap:10px;align-items:flex-start" data-page-node-id="f2YQlHZOH9EJg4xNesIWxu">
+            <div class="avatar" style="background:linear-gradient(135deg,var(--primary),var(--danger));color:#fff;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700" data-page-node-id="SbbRAPimMT7u7qsPyJRAoC">CY</div>
+            <textarea placeholder="发表评论... 输入 @ 提及团队成员" style="flex:1;min-height:60px;padding:8px;border:1px solid var(--line);border-radius:6px"></textarea>
+            <button class="btn primary" data-page-node-id="HIFF8yRlmTsWqleahbDAni">发布</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 4 · 异常中心                                                -->
+    <!-- ============================================================== -->
+    <section class="view" id="view-anomaly" data-page-node-id="x02fDO69esGD6dlv6GYSDQ">
+      <div class="view-title" data-page-node-id="3uNoGfCMKY1dbUUapstTJ8">
+        <h2 data-page-node-id="GuGLZrer5vACmO3L9HH2qH">⚠️ 异常中心 <span class="tt-tag" data-page-node-id="1QWJSatMjOs0CLVjhOsruM">VIEW 4 / 6</span></h2>
+        <div style="display:flex;gap:8px" data-page-node-id="x1j4gMoaFJHxewfNRTUK7v">
+          <button class="btn" data-page-node-id="vhj0kwoEn9EnV9DLVXfkzz">⏬ 导出异常列表</button>
+          <button class="btn primary" data-page-node-id="LJOYrj4vtnTwAIsMML3gbu">认领所选</button>
+        </div>
+      </div>
+
+      <div class="card" data-page-node-id="hkhooPS8Ta4UE3ScXFG17I">
+        <div class="toolbar" style="margin-bottom:12px" data-page-node-id="YKB8N9NvmMPQvZvjAgoyDd">
+          <span class="pill on" data-page-node-id="Vr8dnFzK2HovCNUFUz4jkp">全部 (247)</span>
+          <span class="pill" data-page-node-id="lADobe2BZr070j10ExBbjA">阻塞 (12)</span>
+          <span class="pill" data-page-node-id="zsXCXYeRXc7frdAtofThna">告警中 (38)</span>
+          <span class="pill" data-page-node-id="1smFo1Pob60AXZ5QDC726H">处理中 (61)</span>
+          <span class="pill" data-page-node-id="hFPTOzPvR2u9EDkVIQEjQw">待复盘 (23)</span>
+          <div class="spacer" data-page-node-id="TnXWIX31I7lwEnnnX9AWh5"></div>
+          <select data-page-node-id="vuljzeLscy9SYV25ylzSFD"><option data-page-node-id="RdfqnfeCFG8y1xwCwQLXjD">全部主题域</option></select>
+          <select data-page-node-id="5mGYK1PNhMEptuOvf3Jd6V"><option data-page-node-id="3OYomgU7s2kbEnfSW29v2r">全部 Owner</option></select>
+          <select data-page-node-id="QrauXXmPLm8fl66rMtFlDi"><option data-page-node-id="d7TE2bK2yw0xNiJorFSv2j">近 7 天</option></select>
+          <input placeholder="搜索资产 / 规则 / ID" data-page-node-id="jj2fxr2ReIEufazvGJred6"/>
+        </div>
+
+        <div class="toolbar" style="margin-bottom:6px;font-size:12px;color:var(--muted)" data-page-node-id="ZLc84pYC76gZWQplpCcTHu">
+          <span data-page-node-id="O3LNgtqx1OGM3i6Gs2HP0i">当前筛选：阻塞级 / 主题域=交易</span>
+          <span data-page-node-id="Dbj10mQbvDiUwv7IdYAtnO">·</span>
+          <span data-page-node-id="8rH8RiG8rmHp1uQw7JoAIY">激活聚合节流</span>
+          <span data-page-node-id="Ol8KS2ctfc1QYrumy01tyy">·</span>
+          <span data-page-node-id="171LaPJ9Dvw61vxMz5i7N9">激活 Quiet Hours</span>
+        </div>
+
+        <!-- 异常列表 -->
+        <div id="anomalyList" data-page-node-id="eTaph9RqyRLajyf8eNGSEX"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 5 · 异常处置工作台                                          -->
+    <!-- ============================================================== -->
+    <section class="view" id="view-workbench" data-page-node-id="ZN8cVvkQei0oSSCDAbUXKf">
+      <div class="workbench-head" data-page-node-id="XIEbRgCoScTUf5OFsnvUr5">
+        <div class="left" data-page-node-id="sbdkLETB1ucnD2cTFpcsro">
+          <div class="badges" data-page-node-id="R6RSSOGxPkArC8gPZZaiPX">
+            <span class="badge block" data-page-node-id="jXARDApd9kvaGGcEnFXXkm">阻塞</span>
+            <span class="badge aggr" data-page-node-id="D5j2CKJLwCvWpvs5PKXHRb">聚合 124 条</span>
+            <span class="badge trend" data-page-node-id="GKTRkQVmE2Q9ICL5YyLXAq">🔺 趋势恶化 4h 翻倍</span>
+          </div>
+          <h1 data-page-node-id="7OmT43FVktrMSHr70ACmQC">A-2401 · 客户端 order_paid 事件 amount 字段缺失</h1>
+          <div style="font-size:12px;color:var(--muted)" data-page-node-id="3QqfRPorAgEOmbFgMe3LOn">
+            资产：<b style="color:var(--ink)" data-page-node-id="4sv7nMAucrAOpU79kIBq2j">tbl_order_main</b> · 主题域：交易 · Owner：@张宇团队 ·
+            规则：<a data-page-node-id="SZNVRZPqbUqjpEWgvU7n7C">DQ-CLIENT-001</a> · 关联工单：<a data-page-node-id="iuwh7nlCMGm4hk93Nw0nU6">WK-2058</a> ·
+            触发于 2026-09-06 04:12
+          </div>
+        </div>
+        <div class="actions" style="display:flex;gap:8px" data-page-node-id="z277squeOAqEHzX375mpRL">
+          <button class="btn" data-page-node-id="JzB3NQdhORKdz3SaC6y6ds">认领</button>
+          <button class="btn" data-page-node-id="qO3mccDblOIaojAkEEe0sv">转派</button>
+          <button class="btn" data-page-node-id="2DHdltxtUJFeGUtxTzM8Do">抑制 1h</button>
+          <button class="btn primary" data-page-node-id="lamoArnRYCPYNXGVves65H">▶ 启动回溯</button>
+        </div>
+      </div>
+
+      <div class="tabs" id="wbTabs" data-page-node-id="PBhouUbYhVB0B0vodvk2HG">
+        <div class="tab active" data-wtab="ov" data-page-node-id="VINqKiTYFgIoUaZyo1x4s1">① 概览</div>
+        <div class="tab" data-wtab="imp" data-page-node-id="t3BytHwk1w5bS0603P8iHp">② 影响面</div>
+        <div class="tab" data-wtab="tk" data-page-node-id="NnmnZYvp5v77f7DzESzC8G">③ 工单</div>
+        <div class="tab" data-wtab="bf" data-page-node-id="LtkSumGykdDBu76YpWytxQ">④ 回溯</div>
+        <div class="tab" data-wtab="pr" data-page-node-id="2ICNLD4zpl3qOXOpSYfMDP">⑤ 复盘</div>
+      </div>
+
+      <!-- Tab 概览 -->
+      <div class="tab-pane active" data-wpane="ov" data-page-node-id="CcN2oAhkepBYGqnRuV59HS">
+        <div class="card" data-page-node-id="uNGcqn9FStvvCzVNwVk1xM">
+          <h3 data-page-node-id="PJigNJnJRsDwLB5PzXxSGC">异常摘要</h3>
+          <div class="kv" data-page-node-id="4EvgH3kERFsnhrACH3qyZW">
+            <div data-page-node-id="UiJgLt9sw4uNy6EH2Trr6l"><div class="k" data-page-node-id="7RFqaaR63OdOHLWz3gQO3O">异常 ID</div><div class="v" data-page-node-id="pZmEBtZS5SkDHHby4KILtV">ANOM-2401</div></div>
+            <div data-page-node-id="n5lrBdRVsGTR8Yo3G6pGWg"><div class="k" data-page-node-id="OZ4BL6KGruuFvaVVDGelHX">首次发现时间</div><div class="v" data-page-node-id="SFUiet4wM9dHNIHjr7MtiX">2026-09-06 04:12</div></div>
+            <div data-page-node-id="20agzBwQRXeOycYV73pOgD"><div class="k" data-page-node-id="o53FDf9Tj4yD4uELPmsLUB">当前状态</div><div class="v" data-page-node-id="AnKPA3h5R5RHA9khudNrjQ"><span class="badge block" data-page-node-id="SYcpLVajKp1IR35xK5tSmW">阻塞中</span></div></div>
+            <div data-page-node-id="dV5fDrP6ynlqW6sGEdYZNy"><div class="k" data-page-node-id="DnVlviEvYBfjGOZLbgTWIr">关联规则</div><div class="v" data-page-node-id="PJqVlzzVQueF5D2csdDQRg">DQ-CLIENT-001 v5</div></div>
+            <div data-page-node-id="MSUHOujWbMp5redRBKcZKR"><div class="k" data-page-node-id="pBtaHJ3l1RajTiMYPXsHEk">聚合内样本数</div><div class="v" data-page-node-id="tMs9OuMkB6FUIWtCJd9IgM">124</div></div>
+            <div data-page-node-id="Fr4GZ9eD4jLKevf3UKAUuN"><div class="k" data-page-node-id="FOmUbuIFENyGxgChAIvtof">影响资产数</div><div class="v" data-page-node-id="IUbCBsedPZ0rZ0u2VCi9No">8</div></div>
+            <div data-page-node-id="b9yLL0A9itxDZHZZ8yT6x9"><div class="k" data-page-node-id="EKWOoBv7JBybbeSR2n7OTC">触发 SLA</div><div class="v" style="color:var(--block)" data-page-node-id="mbvsXGEPXpFEURSAg6H4uH">已超 30 分钟</div></div>
+            <div data-page-node-id="zXWHcfEfrAiB4ZTZI6cKQU"><div class="k" data-page-node-id="ufmKXnbHkx36HTmBWCHETU">认领人</div><div class="v" data-page-node-id="EnRvayMAoBz11n4IinPMtX">未认领（@张宇团队）</div></div>
+          </div>
+        </div>
+
+        <div class="trend-grid" data-page-node-id="soGk7WNxnLdGT4v5jI67go">
+          <div class="card" data-page-node-id="1HgIgZ9PF2XELfgwLGui2x">
+            <h3 data-page-node-id="JGGnQKb9x6uCyv4fAvCCFW">失败数趋势（7 天 vs 30 天基线）</h3>
+            <svg viewBox="0 0 600 160" style="width:100%;height:160px" data-page-node-id="jlmA01bCCEyAPVIQGA6xDq">
+              <defs data-page-node-id="EzW71oEMUMP6GkPYx3jPH5"><linearGradient id="gC" x1="0" x2="0" y1="0" y2="1" data-page-node-id="LIh7i7eUiqBmaEUCXaTIWo"><stop offset="0" stop-color="#e03854" stop-opacity=".3" data-page-node-id="WUS04RTg5NDn7CMF7TJFBc"/><stop offset="1" stop-color="#e03854" stop-opacity="0" data-page-node-id="FH44CDxOzihtQtB1mF0G9J"/></linearGradient></defs>
+            </svg>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px" data-page-node-id="KMAZ2DyRbEuVftgkZn55n0">峰值 9/6 04:00 <b style="color:var(--block)" data-page-node-id="QVCOelPEIEQX8QhKKWFQab">42 条/小时</b> · 7 天均值 12 条/小时 · 30 天均值 5 条/小时</div>
+          </div>
+          <div class="card" data-page-node-id="1NQ6xuAfNvEEnCEPE04xFX">
+            <h3 data-page-node-id="rlrdrhFxa0clhSoQMnXMv4">代表性失败样本（12）</h3>
+            <div class="fail-row" data-page-node-id="4IOF77YuYnMmcPIVQrch3F"><b data-page-node-id="ED0JBfmbWuYFzd1B0E1kMr">#1024</b> amount=NULL &nbsp;<span class="reason" data-page-node-id="G0cLznUPSPLpx8y8bCoIvC">NULL_NOT_ALLOWED</span></div>
+            <div class="fail-row" data-page-node-id="YgRmSvWDRRDekEEcONHMEF"><b data-page-node-id="WmqQ2Kh4VFXAYB76nhjD6Q">#3507</b> amount=NULL &nbsp;<span class="reason" data-page-node-id="AFzS1vGTfyPT8kqoWYyGxu">NULL_NOT_ALLOWED</span></div>
+            <div class="fail-row" data-page-node-id="J1cXSDa2mkRNI62KTI3nxt"><b data-page-node-id="eGImOLIcfSC0hFJoDIlBnw">#8921</b> order_id=NULL &nbsp;<span class="reason" data-page-node-id="vYrQviKsy3gtDFuVtly62E">NULL_NOT_ALLOWED</span></div>
+            <div class="fail-row" data-page-node-id="HCNFGhZJa2aGbTrU3objiT"><b data-page-node-id="IurlLfKUFFqqsQZFwXb9T9">#12030</b> user_id=NULL &nbsp;<span class="reason" data-page-node-id="ospupZIBRpUo94EGPEYP1E">NULL_NOT_ALLOWED</span></div>
+            <div class="fail-row" data-page-node-id="tkvI1oEsC8HOILVdxGp5Ex"><b data-page-node-id="DipiWyG3UhgLzPgqLrg3b7">#15002</b> order_id="null"(str) &nbsp;<span class="reason" data-page-node-id="kB0jv9pIDOdE7AfnAZ6mVK">NULL_NOT_ALLOWED</span></div>
+            <a style="font-size:12px" data-page-node-id="6mTB3ubZkCCMUohiRA2Oc6">下载全量 124 条 CSV →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 影响面 -->
+      <div class="tab-pane" data-wpane="imp" data-page-node-id="hPH3lEuB7AK9s3Mw0a2y47">
+        <div class="card" data-page-node-id="qsxbYiXCj7drZn49UQ5mQS">
+          <h3 data-page-node-id="sFc8fAKnTqF7mWp0Ibz7qL">下游影响面分析（最深 5 层） · 共 <b style="color:var(--block)" data-page-node-id="DyjEjX6GJj7MYOk5A2SrkZ">8</b> 个下游对象受不同程度影响</h3>
+          <table class="tbl impact-table" data-page-node-id="aojNr2NvQKls997gob4WCW">
+            <thead data-page-node-id="l5vvxnvuDLQQwPVQxaEbPK"><tr data-page-node-id="j8gIseDWiNxPMcdj9pV5Sk"><th data-page-node-id="E8QFfCXVDOVGhd08bkPP6c">对象</th><th data-page-node-id="CETKDfWUdGrizd5FxiBksm">类型</th><th class="num" data-page-node-id="fcacVLolB7lVEnYyVGOimZ">深度</th><th class="num" data-page-node-id="liaLOeLIHOxy2tv8xARDCw">影响分</th><th data-page-node-id="u3Kjp2dcLdCBjX0atBGsdl">影响描述</th></tr></thead>
+            <tbody data-page-node-id="dHW41HIBaHAFngvptXcqKS">
+              <tr class="depth-1" data-page-node-id="WeoUPEAHmzG5pI6nRFvcAb"><td data-page-node-id="XNnu1de2XEYYLoqAC6Pb3Q"><a data-page-node-id="KrkgqsK1nIfg0ZuF0n7umb">dws_marketing_funnel</a></td><td data-page-node-id="LXOWbuAZcGXQy5HnRYAUwE"><span class="badge info" data-page-node-id="VNyPb2n0vQCl4eFwttCqfy">ADS</span></td><td class="num" data-page-node-id="dcz7BEL9EFxPpRPG9fA7R5">2</td><td class="num" data-page-node-id="DUBRjYDcjPAkOU57zZnQPW"><span class="badge block" data-page-node-id="VnpLgTEgwfBmhsVRQ70PKZ">92</span></td><td data-page-node-id="waWBm3pQmEBAbVbyHVbG2C">漏斗指标计算会缺失 order_paid 数据，估算 ~3.2% 失真</td></tr>
+              <tr class="depth-2" data-page-node-id="vGUozA55j5e4LUA3h3mZTu"><td data-page-node-id="ahuahCWAfL3zFuDo9tvI21"><a data-page-node-id="lvRgZIRwVBS3C3p1K9niJ4">ads_marketing_funnel_d</a></td><td data-page-node-id="BSAXhODSTfacgx2oqoLQxu"><span class="badge info" data-page-node-id="k6bU7zGopISW73CGFJywXp">ADS</span></td><td class="num" data-page-node-id="RSlDCwdsnKRfQMiXXtPbut">3</td><td class="num" data-page-node-id="1YR1EZkvcGO2iikYJugDMc"><span class="badge block" data-page-node-id="OsGkdtceFx4Iec7iiIArz2">88</span></td><td data-page-node-id="KxJIwmJ5aG2w4kXnyxfg1n">下游 ADS 列被影响</td></tr>
+              <tr class="depth-3" data-page-node-id="mBzJlMH8HL0j2kkIpuXs9a"><td data-page-node-id="k7nhhVCc62KjozxK3BmhUr"><a data-page-node-id="NYOyBENEpbX5Q1SY6cLBKM">report_daily_revenue</a></td><td data-page-node-id="SgvvW27FwCKmq0jVpDHbAU"><span class="badge shield" data-page-node-id="b01eYm57G6HxzzETKvkwp9">报表</span></td><td class="num" data-page-node-id="UhAd7wDqmFnv3Ag3o2y2FD">3</td><td class="num" data-page-node-id="C2vuNSHJvT0qaRIw9khBtG"><span class="badge warn" data-page-node-id="AAHolVyvYbFwJOAzlVB4IA">76</span></td><td data-page-node-id="qIkYPPUalZ78mHyQ5tEY9J">当日营收报表偏差 ~3%</td></tr>
+              <tr class="depth-3" data-page-node-id="mrVpHySj9fCtmd9EaYQvej"><td data-page-node-id="b4LdRDuzuxZxp0jdyy609s"><a data-page-node-id="DgShgKG6dPXGlGa21v3xQg">dash_marketing_realtime</a></td><td data-page-node-id="kHv64BAlkH6iftMXSyo3ki"><span class="badge shield" data-page-node-id="1Jz7zHAqpBqfW3vhXQwBOA">大盘</span></td><td class="num" data-page-node-id="lTGq2SGBNq8k4Aw7RI0Uya">3</td><td class="num" data-page-node-id="wTcfp9Dyn45hS0SCClz6Vb"><span class="badge warn" data-page-node-id="qVDNfvOlSwHXb6V28uds7s">72</span></td><td data-page-node-id="XaCv515nA9idOqygBF6ioK">实时大盘数字会同步偏差</td></tr>
+              <tr class="depth-4" data-page-node-id="QaJbi7wMvVIEN5cz7vQBab"><td data-page-node-id="F9j63YPTXcn9NMvzBysPHY"><a data-page-node-id="Zv9ootkG5tQ3VjdNxWzkTF">alert_revenue_anomaly</a></td><td data-page-node-id="jkRdHdRqzrRzqLrD8NezWv"><span class="badge shield" data-page-node-id="XLAlBilcljbPnLJsrjdF3P">告警</span></td><td class="num" data-page-node-id="bBJ4lLrHsGKzLvDQc0ztzk">4</td><td class="num" data-page-node-id="wsqO8bTPukTGnPcSCuFeLK"><span class="badge warn" data-page-node-id="OntuVMRsEFkS85stSEMoXC">68</span></td><td data-page-node-id="QA33i28FyefBr4FJ90jPdE">营收异常告警可能误触发</td></tr>
+              <tr class="depth-1" data-page-node-id="2MTSrDksLZIfEeP8393e63"><td data-page-node-id="7qank6ohER2FKTdFTzxGfL"><a data-page-node-id="3BauuUKgDehEMxMuR61qr5">api_get_recent_orders</a></td><td data-page-node-id="dboW7PevcsC9wVosgHTN49"><span class="badge info" data-page-node-id="zdA3rUaFBUIAAa60uLMmoy">API</span></td><td class="num" data-page-node-id="gT5V55t7SIiCxQQVmo3kcc">1</td><td class="num" data-page-node-id="Rc3TBzlJnaANuGBHpDNgB9"><span class="badge block" data-page-node-id="v7HRK7BV8LY5AU5aFOg1F6">85</span></td><td data-page-node-id="SfaHLURlCjhtLUPfvTZK7B">实时推荐接口数据不全</td></tr>
+              <tr class="depth-2" data-page-node-id="fiMTF19uPJE9f8YNgKiqrh"><td data-page-node-id="xBRpWMNbIadBIpcFWhSTSr"><a data-page-node-id="GWARUfn23zl5ZqyzWb2KnC">svc_realtime_recommend</a></td><td data-page-node-id="wHfpeEL9NYfkVDT1jIQ6fD"><span class="badge info" data-page-node-id="rQcA9cIWstIIZGGCzxggCm">服务</span></td><td class="num" data-page-node-id="edew65VKHDggLbhugQiewX">2</td><td class="num" data-page-node-id="kBWSsdP7xC8pLJCu5VSSBe"><span class="badge warn" data-page-node-id="Ey1DDWvsPsQZYhqZ2xyuLu">65</span></td><td data-page-node-id="A7tqltXa0FEkLJjUHHwlbx">推荐系统冷启动数据缺失</td></tr>
+              <tr class="depth-1" data-page-node-id="XUx0TVxQKUkepwgQ5QhNK9"><td data-page-node-id="aQW6uxCwgu6QONDctrGDXL"><a data-page-node-id="pL5voKhJlOrPad7whe955A">event_log_to_es</a></td><td data-page-node-id="uu7TtBRlyepqNhWaHHvrVy"><span class="badge info" data-page-node-id="DMZ62qZ9mG3SDMbRKVMiHS">事件</span></td><td class="num" data-page-node-id="lKqLnM0gZoaFV6bixnHFVW">1</td><td class="num" data-page-node-id="Kxez6MJ28WRA5quJ6vNd0J"><span class="badge warn" data-page-node-id="TkHrHdwc9XpLeTskaAiqBw">62</span></td><td data-page-node-id="mUafcy5DHeyQmIqiOiw24r">ES 索引不全</td></tr>
+            </tbody>
+          </table>
+          <div style="margin-top:10px;display:flex;gap:14px;font-size:12px;color:var(--muted)" data-page-node-id="9lDidYEpM7WR6sk4TgWGED">
+            <span data-page-node-id="l5qRgIknDmoK9jEj3CFR5u">📌 受影响下游 8 个</span><span data-page-node-id="bJzQKnULK7Z0AU29YqFMSH">·</span><span data-page-node-id="oZpqiMiQLqwHWAmzzj170h">需立即通知 5 个 Owner</span><span data-page-node-id="xHKCxe4quAtQoNyfFzKhfh">·</span><span data-page-node-id="WuYMg6LrAKdQ00JmnGA28p">风险等级 <b style="color:var(--block)" data-page-node-id="qZzEb7IxOzYzUuHaJNgD5h">HIGH</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 工单 -->
+      <div class="tab-pane" data-wpane="tk" data-page-node-id="j4Gpbtq9TdHPNQHJm9aGHO">
+        <div class="card" data-page-node-id="VImshR6Asf4haorev45qH1">
+          <h3 data-page-node-id="B8hqI0iuHr63Di5zurnawX">工单 WK-2058 · 当前节点：<b style="color:var(--warn)" data-page-node-id="Si6lijFrgxLtwAOxmfuVBJ">客户团队处理中</b>（SLA 剩余 2h 18m）</h3>
+          <div style="background:var(--panel-2);border-radius:8px;padding:14px;margin:10px 0" data-page-node-id="7RtU1xYBFdqGvkEq0znBtl">
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-size:12px" data-page-node-id="bBgRzBk26nOkKfQygLS3gb">
+              <div style="text-align:center" data-page-node-id="WPQ1JfKFMfXl3CaJLYG1YS"><div style="color:var(--ok)" data-page-node-id="ixi83ocB9T17umz4bfgnFY">●</div><div data-page-node-id="3hjYm1LRgA5C1ymMBSDmMi"><b data-page-node-id="g8uZpmv4EBltl8pdSoaIBO">已创建</b></div><div style="color:var(--muted)" data-page-node-id="E7ff8eG3GFUFHb8BXrxOKw">04:12</div></div>
+              <div style="text-align:center" data-page-node-id="bqVJa3M2Os2GQvTHyWfd8p"><div style="color:var(--ok)" data-page-node-id="K8HuoIAXewM0e6Wwh1HYsh">●</div><div data-page-node-id="49DDnfyNwF9Q7RkQOpBItH"><b data-page-node-id="sgXWyG9XeggfEfv6wDKfgS">已分派</b></div><div style="color:var(--muted)" data-page-node-id="qT1RzCorvCpZjs9wRJnWkq">04:15</div></div>
+              <div style="text-align:center" data-page-node-id="kaDl3wB2wr1XHwuJK436gI"><div style="color:var(--warn)" data-page-node-id="dtWOY40gzLmqtXtMqgLnPa">●</div><div data-page-node-id="UV6PYmpXBFs2qgj3qmaR73"><b data-page-node-id="nNPZlbVCVz2xfHnTILncXR">处理中</b></div><div style="color:var(--muted)" data-page-node-id="gQL08DKIJyO5JMbvsXLjRg">04:30</div></div>
+              <div style="text-align:center" data-page-node-id="YDU8eAAJ0IG8NdbMj8TqCe"><div data-page-node-id="lp6YHGw4B8exhFun4g7gqR">○</div><div data-page-node-id="zMc6BSEpgXOTVH6OYB7jtl"><b data-page-node-id="tlz740k6uTIDoC2xhzYfMC">待验证</b></div><div style="color:var(--muted)" data-page-node-id="Y9B7mrvBLQo4pqh0WLDiiP">—</div></div>
+              <div style="text-align:center" data-page-node-id="YVAk1hmxNLKhW1FV15shHp"><div data-page-node-id="9uTn951HakauX3jZKqXaH7">○</div><div data-page-node-id="ufITJ3ZWUglLIl5VfsOqZo"><b data-page-node-id="GAzwVYF4roGmsWExP1zUtL">已关闭</b></div><div style="color:var(--muted)" data-page-node-id="8HxPszLCThgVCVpnXCGLGW">—</div></div>
+            </div>
+            <div style="height:4px;background:var(--line);border-radius:2px;margin-top:6px;display:flex" data-page-node-id="VV14cGb4uuVP3jOrSR3g16">
+              <div style="width:55%;background:var(--warn);border-radius:2px" data-page-node-id="nfrHgiOFFcnczZRYxqCjzt"></div>
+            </div>
+          </div>
+          <div class="form-grid" data-page-node-id="hLqjQBgFEj4q4AfE6Gd0Gx">
+            <div class="field" data-page-node-id="UQuOCowICLvx1F41DKFOAJ"><label data-page-node-id="Flc9BHpuHYKQ3HoDktPpkd">流转历史</label>
+              <textarea>04:12 - 系统创建（自动）
+04:15 - 系统分派至客户端团队
+04:30 - @张宇 已认领
+04:45 - @张宇 评论：定位到 SDK 5.8.1 兼容性问题
+05:01 - @王佳 关注
+06:18 - 当前状态：处理中</textarea>
+            </div>
+            <div class="field" data-page-node-id="J1FCVM0sFcT4kJpOe1CI3A"><label data-page-node-id="mbNXYjGb5N8zbzvIF3G9Gj">添加评论 / 证据</label>
+              <textarea placeholder="支持 @ 提及 / 上传截图"></textarea>
+              <div style="display:flex;gap:8px;margin-top:6px" data-page-node-id="o9HwHqABr49ZYGypZq6Je9"><button class="btn sm" data-page-node-id="61XkSBSD41sLrs2pG4qNnF">📎 上传证据</button><button class="btn sm primary" data-page-node-id="HvPwusoR9PvU5pqTX2eauT">发布</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 回溯 -->
+      <div class="tab-pane" data-wpane="bf" data-page-node-id="KWGODuOOq2Oc78APHtypb1">
+        <div class="card" data-page-node-id="lTZNY75aSWxdxudvMxqKOY">
+          <h3 data-page-node-id="mp5XB3KtEKXVd5vD9bodaS">回溯 DAG · 当前节点：<b style="color:var(--primary)" data-page-node-id="ncpSq9fKXrrUFyXS7PBj05">生成回溯方案</b>（待启动）</h3>
+          <div class="dag" style="text-align:center" data-page-node-id="sDvVnyujgxTwC7AgEN1Tw7">
+            <div class="node done" data-page-node-id="8RgOhn00sUHuy3OTIRIOXT"><div class="icon" data-page-node-id="B4pwtkDM33lONcMqZUKoJ7">⚠️</div><div data-page-node-id="7UQwhA05W1r05LIBXMU3GE">发现异常</div><div class="id" data-page-node-id="73UsHjnWrBa5g9rmxcX94W">04:12</div></div>
+            <span class="arrow" data-page-node-id="XjPJzQa1uLqDOaWsBydJ7R">→</span>
+            <div class="node done" data-page-node-id="2OXnF75oFN3D2TrCIqM6mI"><div class="icon" data-page-node-id="ACEqEnHgLXiPHdbI942M89">🕸️</div><div data-page-node-id="0AuFASlXS4KUebawI1jI67">影响面分析</div><div class="id" data-page-node-id="XXURzZojAyLSWIEfWKA0iI">04:14</div></div>
+            <span class="arrow" data-page-node-id="DCcb9LUW08ALJ5SmssWWym">→</span>
+            <div class="node curr" data-page-node-id="CwsQ3y4jBaJphVGX9tVSFF"><div class="icon" data-page-node-id="gCwSGLCB99hfFQGQ0nolS8">📐</div><div data-page-node-id="wZDhberfoZxaO5nLt3Q4RE">生成回溯方案</div><div class="id" data-page-node-id="moVhsHDtc3KBOAAPCFJgJd">—</div></div>
+            <span class="arrow" data-page-node-id="8dCY7uEhRqLgHNMrW30Kz0">→</span>
+            <div class="node" data-page-node-id="WjJw3RIAjSiwH8ZAjv6Zz2"><div class="icon" data-page-node-id="3QkhzUamq3rjs6B2DyiDLG">▶</div><div data-page-node-id="MYwcaKtE8umHze1dy5bGWF">执行回溯</div><div class="id" data-page-node-id="VvWnuLeX5koXdDdQqQNQey">tbl_order_main</div></div>
+            <span class="arrow" data-page-node-id="MbmvoX2hfeepfOfgIHVDAV">→</span>
+            <div class="node" data-page-node-id="aB5oAQBjzn6xbHqIOEFqML"><div class="icon" data-page-node-id="6Zx58KtQquk3qh7y2BEZUO">✓</div><div data-page-node-id="CemXoHSXSHQPG1lknqDk3c">复检质量规则</div><div class="id" data-page-node-id="P7RCmEwuQjGxXGYgVa3MIR">DQ-CLIENT-001</div></div>
+            <span class="arrow" data-page-node-id="G4NQcjMeEIcZuwAbQ5ur9g">→</span>
+            <div class="node" data-page-node-id="gt47yaYesOwIoqXl8YcLUR"><div class="icon" data-page-node-id="wZ4IUm7Wd5039aJ30e7N6y">🔒</div><div data-page-node-id="tYgFefpos9M5nlf93QkjRE">关闭异常/工单</div><div class="id" data-page-node-id="9c2Cko3BesPB0io0bogHlI">—</div></div>
+            <div style="margin-top:24px;display:flex;justify-content:center;gap:14px" data-page-node-id="4aY9gAwfsKBQQs3P6v9UJy">
+              <button class="btn primary" data-page-node-id="UuHvXjN7z8M7LD5VKCheUl">▶ 启动回溯</button>
+              <button class="btn" data-page-node-id="TB7qVxbFcaHLgYdOVsNQBS">跳过当前节点</button>
+              <button class="btn" data-page-node-id="eC2YJQJSZ5l97LDsEaNbgw">强制重跑</button>
+              <button class="btn warn" data-page-node-id="hyZSF5yV56tMP2CInPs0FB">终止回溯</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 复盘 -->
+      <div class="tab-pane" data-wpane="pr" data-page-node-id="g4KTTiZteu8Omf2JM614f0">
+        <div class="card" data-page-node-id="7O3VXK3GOImyhIJeH88F4a">
+          <h3 data-page-node-id="K4XPqGMx0n9rHvmmA5ofZN">异常归因</h3>
+          <div class="form-grid" data-page-node-id="JMDGDBsH5ul6QMaxW9a0wj">
+            <div class="checklist" data-page-node-id="EugIaEZoYGjuxwCC2Q01RW">
+              <label data-page-node-id="4LA3zIpdgVIm34SjYzVLbA"><input type="checkbox" checked data-page-node-id="uRM7p0YuB7IGkHsHlUiaao"/> 数据原因：客户端 SDK 5.8.1 兼容性问题导致 amount 字段丢失</label>
+              <label data-page-node-id="uVa1tYf56NsvyaIqsUHrGj"><input type="checkbox" data-page-node-id="aIlPn45gCaPC6ENERMhKLZ"/> 数据原因：源端推送缺失</label>
+              <label data-page-node-id="a2lhcSPeprHFt2ooGtdlSo"><input type="checkbox" data-page-node-id="Tdh5sgRSIHDEgBLsndJQXf"/> 工程原因：采集 SDK bug</label>
+              <label data-page-node-id="jF7o055l7dqOe6rxS7ZjqQ"><input type="checkbox" data-page-node-id="SrbmTO5R8ugq8uRzBetL5u"/> 工程原因：解析逻辑错误</label>
+              <label data-page-node-id="fk5QBnXDjDdvZyKT2PXtUa"><input type="checkbox" data-page-node-id="w91A7kEAOrX6Z4OM44xLGR"/> 业务原因：业务规则调整未通知治理</label>
+            </div>
+            <div class="checklist" data-page-node-id="ljQBbxrbEqwhhOBFRluvFh">
+              <label data-page-node-id="790w3lN8oLfy0tcIcM4n8M"><input type="checkbox" checked data-page-node-id="Ly5CDEttnJghWUnQGSu764"/> 建议纳入既有规则集：客户端埋点必填字段校验规则</label>
+              <label data-page-node-id="Kchwbpk7k2l2AMRLBREaZL"><input type="checkbox" checked data-page-node-id="FjLSsINC9PaIKwC7kNdEAl"/> 建议升级 [DQ-CLIENT-001] 阈值 99.0% → 99.3%</label>
+              <label data-page-node-id="QzZRNxwkoNGMREkHrWHK6A"><input type="checkbox" data-page-node-id="VEyqlJzPjdRgOH0V0wHICL"/> 建议新增数据标准：amount 字段规范</label>
+              <label data-page-node-id="voPhHbGiAzUlG8D3wqjVra"><input type="checkbox" data-page-node-id="EWdOT48pVCXOpFSZjeA1Bh"/> 建议生成新规则：客户端 SDK 版本兼容性校验</label>
+              <label data-page-node-id="a8HRkP5nFK36p8PnoEHyXf"><input type="checkbox" data-page-node-id="vLAopg7JZg0tADlEYQWkSq"/> 不沉淀（一次性事件）</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid" data-page-node-id="fzG8gdr9x5oLqIGwXhaRzI">
+          <div class="field" data-page-node-id="UcCWfg6SoiFlKz2I4oNEer"><label data-page-node-id="b2Fot8cLiwtWnNGRZbbbGK">复盘结论</label><textarea>根因为客户端 SDK 5.8.1 在 iOS 17 上的兼容性问题，已下线有问题的版本，发布新版 5.8.2。同期增强规则 DQ-CLIENT-001 阈值，保证 30 分钟内可识别相同异常。</textarea></div>
+          <div class="field" data-page-node-id="4vAazyjuLUL8aJxh99mC4A"><label data-page-node-id="7bDOrc0utzI4vVWJnqRyRe">执行人 / 责任人</label><textarea>@张宇 (客户端团队) · @王佳 (质量治理) · CC: @陈勇</textarea></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px" data-page-node-id="S14R5xg2NZsuWZTadqrIDf">
+          <button class="btn primary" data-page-node-id="Vl1fkXWUjtMiXf2H4Qotou">📄 生成整改报告 PDF</button>
+          <button class="btn" data-page-node-id="8UQBKGb9TUiBhCsRCulwzt">✅ 标为已复盘</button>
+          <button class="btn" data-page-node-id="fPlBkT2obFhdQNi369fx9w">➡️ 转给他人复盘</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- VIEW 6 · 主题域聚焦                                                -->
+    <!-- ============================================================== -->
+    <section class="view" id="view-domain-focus" data-page-node-id="n3oenxJ0FCVybbYkLBhUhB">
+      <div class="drill-head" data-page-node-id="WGZmnvmPqxd3e8CEClBO2j">
+        <div data-page-node-id="lwGX8j4n80eNrX0jnSCD2r">
+          <h2 data-page-node-id="1f7KKCGyGwT8m1rRwAWMbE">🧭 交易 · 质量聚焦</h2>
+          <div class="meta" data-page-node-id="lxXPESrF3oRKyg5pkhoNdw">218 个资产 · 142 个主题 · 健康均分 87.4 · 阻塞异常 5 · Owner：@张宇</div>
+        </div>
+        <div style="display:flex;gap:8px" data-page-node-id="mVSKrsp7aquHll6kNm1yJj">
+          <select style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;background:#fff" data-page-node-id="hd5dY8cE1dlBql3CHGiiMW">
+            <option data-page-node-id="1myqqdxf1jjYUxFldnd8bs">近 30 天</option><option data-page-node-id="6C3PPgYc2X7n9BYlHvDc6i">近 7 天</option><option data-page-node-id="0pj43OlbofnF1ZFRax7Bgf">近 90 天</option>
+          </select>
+          <button class="btn" data-page-node-id="ZqdOrdOlU181NuECFcPijt">导出质量报告</button>
+        </div>
+      </div>
+
+      <div class="radar-grid" data-page-node-id="mXxQ7HFvHWSHDaEyeOwKol">
+        <div class="card" data-page-node-id="ZOib3PoD6uEURPqTMp5sZ2">
+          <h3 data-page-node-id="VoeaigxLqDCkqBYIdBLQOM">6 维质量分</h3>
+          <svg viewBox="0 0 360 240" style="width:100%;height:240px" id="radarChart" data-page-node-id="xfWqsKBNt5Nb6UIu0mJkWi"></svg>
+          <div style="display:flex;justify-content:space-around;font-size:11px;color:var(--muted);margin-top:6px" data-page-node-id="eA0bAHSHkyZ1BUJP30s7bz">
+            <span data-page-node-id="L4v6pHQkgewhw7WrkWBwGY">完整性 92</span><span data-page-node-id="91CTolkY8iA825Quh6NoXs">准确性 89</span><span data-page-node-id="MeNbnEWMviGT5aiukQXC3C">一致性 88</span>
+            <span data-page-node-id="zilJqABY95N0vnsAFbqm24">及时性 85</span><span data-page-node-id="7BG1p9ezazn9iMA948w03c">唯一性 100</span><span data-page-node-id="6sM4kWL1InOEQsiZxyaIQS">有效性 91</span>
+          </div>
+        </div>
+        <div class="card" data-page-node-id="5dDYMa1jdrx3jLb0UI6boE">
+          <h3 data-page-node-id="XnYH1vckVWgIIC5tdHLp2W">健康分布</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:center" data-page-node-id="E3mZ0quQZdYnmJOde3P7Zf">
+            <div data-page-node-id="CLgTMaBKzFcWwuAmGVrtIE">
+              <svg viewBox="0 0 200 200" style="width:100%" data-page-node-id="hTQTf9rd49BWqgoPH7G1bp">
+                <circle cx="100" cy="100" r="70" fill="none" stroke="var(--ok)" stroke-width="22" stroke-dasharray="290 440" transform="rotate(-90 100 100)" data-page-node-id="dUDG3thFlK3rBBBKJyHDy9"/>
+                <circle cx="100" cy="100" r="70" fill="none" stroke="var(--warn)" stroke-width="22" stroke-dasharray="90 440" stroke-dashoffset="-290" transform="rotate(-90 100 100)" data-page-node-id="C6muIwjGF75alyXGET1Hts"/>
+                <circle cx="100" cy="100" r="70" fill="none" stroke="var(--block)" stroke-width="22" stroke-dasharray="40 440" stroke-dashoffset="-380" transform="rotate(-90 100 100)" data-page-node-id="PcMreiUbcAtgo0tUqdx9Gh"/>
+                <text x="100" y="95" text-anchor="middle" font-size="28" font-weight="700" fill="#1d2330" data-page-node-id="oq0L2KrBCAf3z2nCDNr8yy">218</text>
+                <text x="100" y="118" text-anchor="middle" font-size="11" fill="#8089a0" data-page-node-id="rZSgrQL2ZpGRNl5arT8kCi">总资产数</text>
+              </svg>
+            </div>
+            <div style="font-size:13px" data-page-node-id="IAFXzhl3htAL7x0tqI0WRa">
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0" data-page-node-id="6oBHhlg7xSaH7rTGMSSV8Q"><span style="width:10px;height:10px;background:var(--ok);border-radius:2px" data-page-node-id="v8r2UH8fBjqRGlUNJelVV0"></span>健康（≥85）<b style="margin-left:auto" data-page-node-id="tH84czDhDug4OGzDlDgZDY">165</b></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed var(--line)" data-page-node-id="asEWnOIdaZGydU4nEZugiu"><span style="width:10px;height:10px;background:var(--warn);border-radius:2px" data-page-node-id="Cm7qq1GpVTNemFxTaVu2oU"></span>警告（60-85）<b style="margin-left:auto" data-page-node-id="V3FObOLGsFHoZUPSwkHItv">42</b></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed var(--line)" data-page-node-id="94726s4Zaq98nHOA5LHyZE"><span style="width:10px;height:10px;background:var(--block);border-radius:2px" data-page-node-id="WNa0UvkwjgI4fwWuJfKk9d"></span>阻塞（&lt;60）<b style="margin-left:auto" data-page-node-id="dAd9RYGTvjXKVPXt2eeHn8">11</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" data-page-node-id="wLVClevbkkSNOIoAdTwF7i">
+        <h3 data-page-node-id="c13FQqk2sy6ljXowZTdFs7">主题域子节点 · 钻取</h3>
+        <table class="tbl" data-page-node-id="tirE0TyjxaK8AwPERi4Tqj">
+          <thead data-page-node-id="9aZdPwfEWEHBbOTuk8IBPu"><tr data-page-node-id="i4GmuYO10TA6PyLGwsIu03"><th data-page-node-id="uKVb7HssLyOqd5uhwLdWyH">子主题域 / 资产组</th><th class="num" data-page-node-id="DrQpsn0AyDfV9xFuYa0dyj">资产数</th><th data-page-node-id="SLeTcNlRI0UbZhjJcwzoiq">健康分</th><th class="num" data-page-node-id="LSm9o5uHkUozSgYx631mtv">规则数</th><th class="num" data-page-node-id="rQXbih9skLQzuNDKt0snpW">最近异常</th><th class="num" data-page-node-id="Gp7uknn5LZLiQ0MXSPY06h">最近回溯</th><th data-page-node-id="1WIvKxBJGnDdbENtaBW0i3">Owner</th></tr></thead>
+          <tbody data-page-node-id="Ci0u6Q6sSZARSBupMPjMnS">
+            <tr data-page-node-id="Dh17dX4VD0AlEDfKOS1eoE"><td data-page-node-id="XB8K5DoCrkgT11mIkg1ay2"><a data-page-node-id="XUs9oCehQlc3G15N6aiFIs">交易核心</a></td><td class="num" data-page-node-id="svNFfzUQALieIDWlfXbaIG">28</td><td data-page-node-id="bzMlPCirYEVTcIcvVgQueJ"><span class="health" data-page-node-id="CrkcM38NmKpJ5fyOeS7QRd"><span class="ring" style="--p:91" data-page-node-id="TXYJZIbN6MMEuJ4h3bc6Fb"><b data-page-node-id="j08petDT8ruIAXLz7Hjku1">91</b></span></span></td><td class="num" data-page-node-id="9CGypEZKO2xjVYB0bqtJS4">42</td><td class="num" data-page-node-id="zcvYnB5AaO15lg65NrYIEl">2</td><td class="num" data-page-node-id="0NfOzbioNfCCt701qGQnfG">3</td><td data-page-node-id="E3A8jV0FVctvY8Y7oOqYDA">@张宇</td></tr>
+            <tr data-page-node-id="dP3j1Fa4zcvZS4CPbt9zor"><td data-page-node-id="zOTff9pLUjGBwA4A1G3CIc"><a data-page-node-id="jdF1KLdotiRz2SWIyOmnGs">交易结算</a></td><td class="num" data-page-node-id="FfEuICMQ5u0BFuR09lH5l9">14</td><td data-page-node-id="wdiADwkFDnL0hEnZmX15DJ"><span class="health" data-page-node-id="8fTkzXbF0w6EmL1y1netVh"><span class="ring" style="--p:88" data-page-node-id="EYB22f5eMzZFy5qDYRklbR"><b data-page-node-id="v8LCtsB7vI0pDz5HAOth6d">88</b></span></span></td><td class="num" data-page-node-id="MOENnDo858iXuyCwf1A0xB">24</td><td class="num" data-page-node-id="tjGPvdoG0yaGACtyEXS6xY">1</td><td class="num" data-page-node-id="7UpbeLqY79cx14MlCI1lT2">1</td><td data-page-node-id="MYT8lL7ikptXGXHSk3peMt">@张宇</td></tr>
+            <tr data-page-node-id="57KK8NLTiLlBNtEc9nqGG2"><td data-page-node-id="VwsB1AiaJfxrf2OCLAirQn"><a data-page-node-id="tkZ0naICAONZX23JLswBgb">支付</a></td><td class="num" data-page-node-id="Ph0ocqx1hLXUZh5w3sGa1D">36</td><td data-page-node-id="3kVZOt3LNwWcH9LdiIWL54"><span class="health warn" data-page-node-id="a8Ja0a59Fq3DRYsQ9apHQ8"><span class="ring" style="--p:75" data-page-node-id="EBoD24DufQUGwCt9CCFUwu"><b data-page-node-id="wFC6tRzeyl8fwVVtqz3b9D">75</b></span></span></td><td class="num" data-page-node-id="LuhfO8w7eK73HQaOgImC5t">58</td><td class="num" data-page-node-id="GLm64tVUSkEgyWw9x9duMJ"><span class="badge block" data-page-node-id="8WznJxa99pyBzfZHhcHZeD">4</span></td><td class="num" data-page-node-id="eT0xCCR2HOSBjJu9DLrzvL">2</td><td data-page-node-id="0AHdRAIfwc8WNToUWW33FB">@李娜</td></tr>
+            <tr data-page-node-id="FLPsn1vhGxkKWw1TXtMmOL"><td data-page-node-id="YDZu04eBBwq42siVx3V5Ri"><a data-page-node-id="WjHEFvFzeAAxJO8y8AuGLA">退款</a></td><td class="num" data-page-node-id="dDmGB7FL3frh59Qq224DD4">22</td><td data-page-node-id="y4XBV6MFY6SrqDKEqge5p8"><span class="health" data-page-node-id="j4SeHNeAFCeA9duqtSxbL3"><span class="ring" style="--p:90" data-page-node-id="Eq56Rq9HGSntYddV590E2u"><b data-page-node-id="vnZbVk8aNXOZzbCG10eXKt">90</b></span></span></td><td class="num" data-page-node-id="wLew39bmxBu3GrL2gEQVRX">31</td><td class="num" data-page-node-id="Ri3O49Smrb64Z9EalBaeBv">0</td><td class="num" data-page-node-id="tD89MnNboBKLUNYstiA9I6">0</td><td data-page-node-id="6fJPC6IgdcqQzlaLGlBfV5">@张宇</td></tr>
+            <tr data-page-node-id="hZ9q8oCx1o2KAnqZawpseM"><td data-page-node-id="pu4NV5vOSyqAgnJHXbUyCj"><a data-page-node-id="2lyasnCp9ztwynKk8AFP17">订单</a></td><td class="num" data-page-node-id="OS1fqSIKX6zMqAwF3eUUd6">58</td><td data-page-node-id="s9C6GBZalDB6oacXvBDxBc"><span class="health" data-page-node-id="7FKTluLMvyTh2GP2VcvdxV"><span class="ring" style="--p:83" data-page-node-id="8OjZlQABBI0rniMANkYkwr"><b data-page-node-id="PF0c600OMMb1wxuA5rI6QH">83</b></span></span></td><td class="num" data-page-node-id="XKEf570ZNkTo7liG2wCb8H">76</td><td class="num" data-page-node-id="yJlwD1Sq59YcgGNmMfD6iY">2</td><td class="num" data-page-node-id="4L0BUcDUh3IMobREZoJlbg">1</td><td data-page-node-id="mUjOszEIClySilkGMDRnGf">@张宇</td></tr>
+            <tr data-page-node-id="MeJKnaDttlW7X6SKKggAy2"><td data-page-node-id="HbQSZzHtjCyKeYc0u2IqJz"><a data-page-node-id="iH3vY00YbkDglfLEfyyOtL">优惠/券</a></td><td class="num" data-page-node-id="JftUTVYOTVyybbcVh0DdZl">38</td><td data-page-node-id="1AeHQQXjKtGh5kyHDcM3Mm"><span class="health warn" data-page-node-id="gLHYswtJFyEbjnYi1Sw4TL"><span class="ring" style="--p:72" data-page-node-id="xHlUYNdFcjH5A1mDDLFShA"><b data-page-node-id="yABNxOCyxOpN4XDSuS7Aur">72</b></span></span></td><td class="num" data-page-node-id="NeYeMvFe9dV56GzvOE9z8M">48</td><td class="num" data-page-node-id="H1oHWILyBP1JJVI2jkQ0g0"><span class="badge warn" data-page-node-id="er11tOLKH7EFuZnGggUyie">3</span></td><td class="num" data-page-node-id="g0Per6C1qHqJTKQU2LFPB4">0</td><td data-page-node-id="ME9DieHsLGvXrRnxAfA2Ps">@陈超</td></tr>
+            <tr data-page-node-id="oXuCnBguZKHoEgIhMsq9AI"><td data-page-node-id="dVlpnnx21WyxXAni8nJw6H"><a data-page-node-id="D5rVFhfDBZcoURXowmST3k">账务</a></td><td class="num" data-page-node-id="FxCYnKOsyJwNPCEZ0mbB9C">22</td><td data-page-node-id="teFZ0CqNFaht5fHTBVbIuj"><span class="health block" data-page-node-id="MugtDkPXD1gCrniUvHgiMd"><span class="ring" style="--p:55" data-page-node-id="zfH1R0ydVDsXy4aLEybEI3"><b data-page-node-id="3mnDCtPYIP32S4mhD9g0WH">55</b></span></span></td><td class="num" data-page-node-id="6aUy1X7iPFVf1PgmhXlr47">28</td><td class="num" data-page-node-id="kKM7Oajcjbee6K0u8T3Kvz"><span class="badge block" data-page-node-id="1izaG54US7xv0Tm05xDU05">5</span></td><td class="num" data-page-node-id="9D3wIAqaHkBsA31maJzSey">1</td><td data-page-node-id="H7ledGIaN4xA7A0Qi4sw2x">@王玥</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="trend-grid" data-page-node-id="1q3o9RqoiqrSWzJc9TWFEK">
+        <div class="card" data-page-node-id="Oduw7iGDRq7d9562iDTWC7">
+          <h3 data-page-node-id="YnFkXxPQggQDmAvCTTnD17">主题域健康分 30 天趋势</h3>
+          <svg viewBox="0 0 600 160" style="width:100%;height:160px" id="trendChart2" data-page-node-id="z3O2Hv80O5rR8DB7NY7vVz"></svg>
+        </div>
+        <div class="card" data-page-node-id="F08FPicBAyAdx0ALSkZL8Y">
+          <h3 data-page-node-id="GaUTJD79tfcA0lmtoSqop3">Top 5 阻塞异常</h3>
+          <table class="tbl" data-page-node-id="Ya9mkrFgzyQeBs2PtI79yl">
+            <thead data-page-node-id="qrGUtRNwUPfGzjxwYBQnBK"><tr data-page-node-id="J5l8OTyrSfWEN6FO9bB89x"><th data-page-node-id="fC0PCzQJEbapwFu5cGtNAQ">ID</th><th data-page-node-id="at2JIpiMm8GB6FBLeYBcwd">异常</th><th data-page-node-id="3BagFfUekxTqQy5oU9hzqa">资产</th><th class="num" data-page-node-id="djfx31jJ4bXEkBr1SFDbIK">触发时间</th></tr></thead>
+            <tbody data-page-node-id="B78s3dKZzQ2mXEkH6dPWNp">
+              <tr data-page-node-id="7WhikaBK0JyZ47zdukWiAK"><td data-page-node-id="G4LjshHHhPezF0IHJTU16P"><a data-page-node-id="Hk1ccs5fhzGu54FXFGMHQy">A-2401</a></td><td data-page-node-id="HGDND1usFeMmdgjJ0dzUes">order_paid 字段缺失</td><td data-page-node-id="9KOcDUAkYKXmVLCFKKgV9d">tbl_order_main</td><td class="num" data-page-node-id="uVDmfnyUpuWNT3Gtp3Nl9Z">04:12</td></tr>
+              <tr data-page-node-id="GjhzySeO8ST8AcWa3slnDT"><td data-page-node-id="WZCHYCcd1qQrfKl6dOnZHL"><a data-page-node-id="lrAUIKvhsEV4KGipdTG9CL">A-2398</a></td><td data-page-node-id="BGJAOCaig4BP3a2EPj4AgA">账务对账差异</td><td data-page-node-id="XfhjA7j77hjqh9bMUr6kjw">tbl_recon_daily</td><td class="num" data-page-node-id="keMv3PH8sPaLUHIMjJFnpA">昨日 22:10</td></tr>
+              <tr data-page-node-id="29Y9BLmnGAsOouVdPWuXBJ"><td data-page-node-id="GTKxPFEkokVlmWQKx7oCm0"><a data-page-node-id="Euo97IsH50mmDRmBuLoZix">A-2387</a></td><td data-page-node-id="lUAt0wbBEdYCRELS5z3S9j">优惠核销重复</td><td data-page-node-id="VjcJwxmz0JFHjydcgRPpCY">tbl_coupon_used</td><td class="num" data-page-node-id="QrLHwzSID8fu1XQUYU7a6N">昨日 18:30</td></tr>
+              <tr data-page-node-id="LIrCV4XJ1AYVVRLQMRK4qb"><td data-page-node-id="ICJNoxe7KsHW2CAOgXrR9c"><a data-page-node-id="Uu45gMgdiM1JYVRvZbyF9x">A-2375</a></td><td data-page-node-id="cwjaVCdNWana2mlpULoDlt">退款金额异常</td><td data-page-node-id="tAEM1Ko7LsaZ2A5NF73lTw">tbl_refund_record</td><td class="num" data-page-node-id="vV4k2ksGBthFrD15ZAV2We">前天 14:00</td></tr>
+              <tr data-page-node-id="2kVANpUFfHhiaHqejvYRe6"><td data-page-node-id="416GMK5H8oQrAcj1fwZu3r"><a data-page-node-id="XKUcECPGMCpfUK85VIQ6mS">A-2360</a></td><td data-page-node-id="0smYQrTHpK1kmx77JnL1e4">支付方式维度缺失</td><td data-page-node-id="zBpNBR2H8TlqedCxsprHay">tbl_pay_success</td><td class="num" data-page-node-id="YXtaHWTCqHolEReF3iRHco">3 天前</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ===================== 视图切换 =====================
+document.querySelectorAll('[data-view]').forEach(el=>{
+  el.addEventListener('click',e=>{
+    e.preventDefault();
+    const v=el.dataset.view;
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('[data-view]').forEach(x=>x.classList.remove('active'));
+    const tgt=document.getElementById('view-'+v);
+    if(tgt) tgt.classList.add('active');
+    el.classList.add('active');
+    window.scrollTo(0,0);
+  });
+});
+
+// ===================== Tab 切换 (规则详情) =====================
+document.querySelectorAll('[data-rtab]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const t=el.dataset.rtab;
+    document.querySelectorAll('[data-rtab]').forEach(x=>x.classList.toggle('active',x===el));
+    document.querySelectorAll('[data-rpane]').forEach(x=>x.classList.toggle('active',x.dataset.rpane===t));
+  });
+});
+
+// ===================== Tab 切换 (工作台) =====================
+document.querySelectorAll('[data-wtab]').forEach(el=>{
+  el.addEventListener('click',()=>{
+    const t=el.dataset.wtab;
+    document.querySelectorAll('[data-wtab]').forEach(x=>x.classList.toggle('active',x===el));
+    document.querySelectorAll('[data-wpane]').forEach(x=>x.classList.toggle('active',x.dataset.wpane===t));
+  });
+});
+
+// ===================== 主题域卡片 (S8 dashboard) =====================
+(function(){
+  const data=[
+    {name:'交易',tag:'P0',score:91,block:5,alerts:12,trend:[88,89,90,90,91,91,92,91,91]},
+    {name:'用户',tag:'P0',score:88,block:2,alerts:8,trend:[85,86,86,87,88,88,89,89,88]},
+    {name:'营销',tag:'P1',score:82,block:3,alerts:9,trend:[80,81,81,82,82,82,83,82,82]},
+    {name:'风控',tag:'P0',score:86,block:1,alerts:6,trend:[84,85,85,86,86,86,87,86,86]},
+    {name:'内容',tag:'P2',score:78,block:0,alerts:3,trend:[76,77,77,78,78,78,79,78,78]},
+    {name:'广告',tag:'P1',score:81,block:2,alerts:7,trend:[78,79,80,80,81,81,82,81,81]},
+    {name:'财务',tag:'P0',score:75,block:4,alerts:11,trend:[72,73,74,74,75,75,76,75,75]},
+    {name:'运维',tag:'P1',score:84,block:1,alerts:4,trend:[82,82,83,83,84,84,84,84,84]},
+    {name:'商品',tag:'P0',score:87,block:2,alerts:6,trend:[85,85,86,86,87,87,87,87,87]},
+    {name:'物流',tag:'P1',score:80,block:1,alerts:5,trend:[78,78,79,79,80,80,80,80,80]},
+    {name:'客服',tag:'P2',score:79,block:0,alerts:2,trend:[77,78,78,79,79,79,80,79,79]},
+    {name:'组织',tag:'P3',score:90,block:0,alerts:1,trend:[88,89,89,90,90,90,91,90,90]}
+  ];
+  const color=s=>s>=85?'var(--ok)':s>=75?'var(--warn)':'var(--block)';
+  const wrap=document.getElementById('domainCards');
+  if(!wrap) return;
+  wrap.innerHTML=data.map(d=>{
+    const mn=Math.min(...d.trend),mx=Math.max(...d.trend);
+    const pts=d.trend.map((v,i)=>{
+      const x=(i/(d.trend.length-1))*100;
+      const y=100-((v-mn)/(mx-mn+.001))*80-10;
+      return x.toFixed(1)+','+y.toFixed(1);
+    }).join(' ');
+    return `<div class="domain">
+      <div class="head"><div class="name">${d.name}</div><span class="badge">${d.tag}</span></div>
+      <div class="stats">
+        <div class="item">健康均分 <b style="color:${color(d.score)}">${d.score}</b></div>
+        <div class="item">阻塞异常 <b style="color:${color(d.score)}">${d.block}</b></div>
+        <div class="item">活跃告警 <b>${d.alerts}</b></div>
+      </div>
+      <svg class="spark" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline fill="none" stroke="${color(d.score)}" stroke-width="2" points="${pts}"/>
+        <polyline fill="${color(d.score)}" fill-opacity=".08" stroke="none" points="${pts} 100,100 0,100"/>
+      </svg>
+    </div>`;
+  }).join('');
+})();
+
+// ===================== 失败规则 TOP 5 =====================
+(function(){
+  const data=[
+    {name:'客户端埋点必填字段非空率',hits:124,pct:97.6},
+    {name:'交易核心订单状态枚举校验',hits:76,pct:98.8},
+    {name:'用户身份证号格式校验',hits:54,pct:99.2},
+    {name:'账户余额不能为负',hits:42,pct:99.6},
+    {name:'退款金额与原价一致',hits:31,pct:99.4}
+  ];
+  const target=document.getElementById('topFailRules');
+  if(!target) return;
+  target.innerHTML=data.map((r,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:${i<4?'1px dashed var(--line-2)':'none'}">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${r.name}</div>
+        <div style="height:5px;background:var(--line-2);border-radius:3px;margin-top:4px;overflow:hidden"><i style="display:block;height:100%;width:${100-r.pct*100}%;background:var(--block)"></i></div>
+      </div>
+      <div style="text-align:right;margin-left:12px">
+        <div style="font-weight:700">${r.hits}</div>
+        <div style="font-size:11px;color:var(--muted)">7d 命中</div>
+      </div>
+    </div>
+  `).join('');
+})();
+
+// ===================== 趋势图 (30d) =====================
+(function(){
+  const svg=document.getElementById('trendChart');
+  if(!svg) return;
+  // 30 data points
+  const A=Array.from({length:30},(_,i)=>84+Math.sin(i/3)*2+Math.random());
+  const B=Array.from({length:30},(_,i)=>82+Math.sin(i/4)*1.2);
+  const C=Array.from({length:30},(_,i)=>Math.round(Math.abs(Math.sin(i/2))*8+2));
+  const W=600,H=160,padX=10,padY=18;
+  const sx=i=>padX+i*(W-2*padX)/(A.length-1);
+  const sy=v=>H-padY-((v-72)/28)*(H-2*padY);
+  const pathA=A.map((v,i)=>(i?'L':'M')+sx(i)+' '+sy(v)).join(' ');
+  const pathB=B.map((v,i)=>(i?'L':'M')+sx(i)+' '+sy(v)).join(' ');
+  const areaA=pathA+` L ${sx(A.length-1)} ${H} L ${sx(0)} ${H} Z`;
+  const barW=(W-2*padX)/C.length*0.5;
+  svg.innerHTML=`
+    ${[80,84,88,92,96,100].map(y=>{
+      const yy=sy(y);
+      return `<line x1="${padX}" y1="${yy}" x2="${W-padX}" y2="${yy}" stroke="var(--line-2)" stroke-dasharray="2,3"/>
+              <text x="${padX-2}" y="${yy+3}" text-anchor="end" font-size="9" fill="#8089a0">${y}</text>`;
+    }).join('')}
+    <path d="${areaA}" fill="url(#gA)"/>
+    <path d="${pathA}" fill="none" stroke="#6d4cff" stroke-width="2"/>
+    <path d="${pathB}" fill="none" stroke="#16a085" stroke-width="2" stroke-dasharray="4,3"/>
+    ${C.map((v,i)=>{
+      const x=sx(i)-barW/2;
+      const yy=sy(100);const h=v*(H-2*padY)/28;
+      return `<rect x="${x}" y="${yy-h}" width="${barW}" height="${h}" fill="#e03854" fill-opacity=".6"/>`;
+    }).join('')}
+  `;
+})();
+
+// ===================== 趋势图 (异常详情) =====================
+(function(){
+  const svg=document.querySelector('[data-wpane="ov"] svg');
+  if(!svg) return;
+  const A=Array.from({length:30},(_,i)=>Math.max(0,8+Math.sin(i/2)*5+Math.abs(Math.sin(i))*8|i%5===0?20:0));
+  const W=600,H=160,padX=10,padY=18;
+  const sx=i=>padX+i*(W-2*padX)/(A.length-1);
+  const sy=v=>H-padY-(v/40)*(H-2*padY);
+  const pathA=A.map((v,i)=>(i?'L':'M')+sx(i)+' '+sy(v)).join(' ');
+  const areaA=pathA+` L ${sx(A.length-1)} ${H} L ${sx(0)} ${H} Z`;
+  svg.innerHTML=`
+    ${[0,10,20,30,40].map(y=>{
+      const yy=sy(y);
+      return `<line x1="${padX}" y1="${yy}" x2="${W-padX}" y2="${yy}" stroke="var(--line-2)" stroke-dasharray="2,3"/>
+              <text x="${padX-2}" y="${yy+3}" text-anchor="end" font-size="9" fill="#8089a0">${y}</text>`;
+    }).join('')}
+    <path d="${areaA}" fill="url(#gC)"/>
+    <path d="${pathA}" fill="none" stroke="#e03854" stroke-width="2"/>
+  `;
+})();
+
+// ===================== 主题域聚焦趋势 =====================
+(function(){
+  const svg=document.getElementById('trendChart2');
+  if(!svg) return;
+  const A=Array.from({length:30},(_,i)=>84+Math.sin(i/3)*2+Math.cos(i/5)*1.5);
+  const W=600,H=160,padX=10,padY=18;
+  const sx=i=>padX+i*(W-2*padX)/(A.length-1);
+  const sy=v=>H-padY-((v-70)/30)*(H-2*padY);
+  const pathA=A.map((v,i)=>(i?'L':'M')+sx(i)+' '+sy(v)).join(' ');
+  const areaA=pathA+` L ${sx(A.length-1)} ${H} L ${sx(0)} ${H} Z`;
+  svg.innerHTML=`
+    ${[70,75,80,85,90,95,100].map(y=>{
+      const yy=sy(y);
+      return `<line x1="${padX}" y1="${yy}" x2="${W-padX}" y2="${yy}" stroke="var(--line-2)" stroke-dasharray="2,3"/>
+              <text x="${padX-2}" y="${yy+3}" text-anchor="end" font-size="9" fill="#8089a0">${y}</text>`;
+    }).join('')}
+    <path d="${areaA}" fill="url(#gA)" fill-opacity=".5"/>
+    <path d="${pathA}" fill="none" stroke="#6d4cff" stroke-width="2"/>
+  `;
+})();
+
+// ===================== 雷达图 (主题域聚焦) =====================
+(function(){
+  const svg=document.getElementById('radarChart');
+  if(!svg) return;
+  const labels=['完整性','准确性','一致性','及时性','唯一性','有效性'];
+  const vals=[92,89,88,85,100,91];
+  const cx=180,cy=120,R=85;
+  const angles=labels.map((_,i)=>-Math.PI/2+i*Math.PI*2/labels.length);
+  const pt=(a,r)=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+  const poly=angles.map((a,i)=>{
+    const r=vals[i]/100*R;
+    return pt(a,r);
+  }).map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ')+' Z';
+  svg.innerHTML=`
+    <polygon points="${angles.map(a=>{
+      const o=[];
+      for(let k=1;k<=4;k++){
+        const p=pt(a,R*k/4);
+        o.push(p[0].toFixed(1)+','+p[1].toFixed(1));
+      }
+      return o.join(' ');
+    }).join(' ').split(' ').map(s=>s).join(' ')}" fill="none" stroke="var(--line-2)"/>
+    ${[0.25,0.5,0.75,1].map(k=>{
+      const pts=angles.map(a=>{
+        const p=pt(a,R*k);
+        return p[0].toFixed(1)+','+p[1].toFixed(1);
+      }).join(' ');
+      return `<polygon points="${pts}" fill="none" stroke="var(--line-2)" stroke-width="${k===1?'1.2':'1'}"/>`;
+    }).join('')}
+    ${angles.map(a=>{
+      const p=pt(a,R+8);
+      return `<line x1="${cx}" y1="${cy}" x2="${p[0].toFixed(1)}" y2="${p[1].toFixed(1)}" stroke="var(--line-2)"/>`;
+    }).join('')}
+    <path d="${poly}" fill="#6d4cff" fill-opacity=".25" stroke="#6d4cff" stroke-width="2"/>
+    ${angles.map((a,i)=>{
+      const r=vals[i]/100*R;
+      const p=pt(a,r);
+      const tp=pt(a,R+18);
+      return `
+        <circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" fill="#fff" stroke="#6d4cff" stroke-width="2"/>
+        <text x="${tp[0].toFixed(1)}" y="${tp[1].toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="#3a4358">${labels[i]}<tspan font-weight="700" fill="#1d2330"> ${vals[i]}</tspan></text>
+      `;
+    }).join('')}
+  `;
+})();
+
+// ===================== 规则市场列表 =====================
+(function(){
+  const list=document.getElementById('ruleList');
+  if(!list) return;
+  const rules=[
+    {name:'客户端埋点必填字段非空率校验',code:'DQ-CLIENT-001',dim:'完整性',st:'block',impl:'模板型',assets:128,hits:124,score:92,up:'2天前'},
+    {name:'订单状态枚举合法性校验',code:'DQ-CORE-002',dim:'准确性',st:'block',impl:'枚举',assets:96,hits:76,score:88,up:'5天前'},
+    {name:'跨表对账：交易表 vs 支付表',code:'DQ-CROSS-003',dim:'一致性',st:'warn',impl:'对比型',assets:42,hits:38,score:86,up:'1周前'},
+    {name:'用户身份证号格式校验',code:'DQ-USER-004',dim:'有效性',st:'block',impl:'正则',assets:64,hits:54,score:90,up:'3天前'},
+    {name:'账户余额不能为负',code:'DQ-FIN-005',dim:'准确性',st:'block',impl:'SQL',assets:28,hits:42,score:84,up:'今日'},
+    {name:'退款金额与原价一致性',code:'DQ-CORE-006',dim:'一致性',st:'warn',impl:'对比型',assets:18,hits:31,score:82,up:'4天前'},
+    {name:'埋点事件上报时延 P95',code:'DQ-TRK-007',dim:'及时性',st:'warn',impl:'实时',assets:84,hits:24,score:80,up:'昨日'},
+    {name:'分区表行数波动监控',code:'DQ-OPS-008',dim:'完整性',st:'info',impl:'模板型',assets:212,hits:11,score:75,up:'2周前'},
+    {name:'客户端 SDK 版本兼容性校验',code:'DQ-CLIENT-009',dim:'埋点专项',st:'warn',impl:'模板型',assets:48,hits:18,score:78,up:'1天前'}
+  ];
+  list.innerHTML=rules.map(r=>`
+    <div class="rule-card" onclick="location.hash='#rule-detail';document.querySelector('[data-view=&quot;rule-detail&quot;]').click()">
+      <div class="title">
+        <div>
+          <div class="name">${r.name}</div>
+          <div style="font-size:11px;color:var(--muted);font-family:Menlo,Consolas,monospace">${r.code}</div>
+        </div>
+        <span class="badge ${r.st==='block'?'block':r.st==='warn'?'warn':''}">${r.st.toUpperCase()}</span>
+      </div>
+      <div class="meta">
+        <span class="tag">${r.dim}</span>
+        <span class="tag">${r.impl}</span>
+        <span class="tag">更新于 ${r.up}</span>
+      </div>
+      <div class="stats">
+        <div>有效分<b>${r.score}</b></div>
+        <div>覆盖资产<b>${r.assets}</b></div>
+        <div>7d 命中<b style="color:${r.hits>40?'var(--block)':'var(--ok)'}">${r.hits}</b></div>
+      </div>
+    </div>
+  `).join('');
+})();
+
+// ===================== 异常中心列表 =====================
+(function(){
+  const target=document.getElementById('anomalyList');
+  if(!target) return;
+  const items=[
+    {level:'block',id:'A-2401',title:'客户端 order_paid 事件 amount 字段缺失',asset:'tbl_order_main',on:'@张宇团队',rule:'DQ-CLIENT-001',agg:124,since:'04:12',sl:'已超 30 分钟',suppress:[],trend:'up'},
+    {level:'block',id:'A-2398',title:'账务对账差异 1.2% 超阈值',asset:'tbl_recon_daily',on:'@王玥团队',rule:'DQ-FIN-CROSS',agg:42,since:'昨日 22:10',sl:'剩余 2h 18m',suppress:['认领中'],trend:'flat'},
+    {level:'block',id:'A-2387',title:'优惠核销重复 1.4%（阈值 0.5%）',asset:'tbl_coupon_used',on:'@陈超',rule:'DQ-MKT-CR',agg:18,since:'昨日 18:30',sl:'已超 6h',suppress:['Quiet Hours'],trend:'up'},
+    {level:'warn',id:'A-2375',title:'退款金额与原价差异率 0.3%',asset:'tbl_refund_record',on:'@张宇',rule:'DQ-CORE-006',agg:7,since:'前天 14:00',sl:'剩余 1d',suppress:[],trend:'flat'},
+    {level:'warn',id:'A-2360',title:'支付方式维度缺失（pay_channel 空）',asset:'tbl_pay_success',on:'@李娜',rule:'DQ-PAY-CHN',agg:54,since:'3 天前',sl:'今日到期',suppress:['同类聚合'],trend:'flat'},
+    {level:'info',id:'A-2351',title:'埋点 SDK 版本分布统计',asset:'event_all',on:'@王佳',rule:'DQ-TRK-SDK',agg:0,since:'5 天前',sl:'—',suppress:[],trend:'flat'},
+    {level:'block',id:'A-2342',title:'客户端 crash 事件计数断崖',asset:'event_crash',on:'@张宇',rule:'DQ-CLIENT-CRASH',agg:96,since:'上周 09:30',sl:'处理中',suppress:['认领中'],trend:'flat'}
+  ];
+  target.innerHTML=items.map(a=>`
+    <div class="agg-card ${a.level}" onclick="location.hash='#workbench';document.querySelector('[data-view=&quot;workbench&quot;]').click()">
+      <div class="top">
+        <div>
+          <div class="id">${a.id}</div>
+          <h4>${a.title}</h4>
+          <div class="meta">
+            资产：<b>${a.asset}</b> · 主题域：交易 · Owner：${a.on}
+            · 规则：<a>${a.rule}</a>
+            · 触发于 ${a.since}
+            · <span style="color:${a.sl.startsWith('已')?'var(--block)':a.sl==='—'?'var(--muted)':'var(--warn)'}">SLA ${a.sl}</span>
+          </div>
+          <div class="trend-mini">
+            ${a.agg>0?`<span class="badge aggr">聚合 ${a.agg} 条</span>`:'<span class="badge shield">未聚合</span>'}
+            ${a.suppress.map(s=>`<span class="badge shield">${s}</span>`).join('')}
+            ${a.trend==='up'?'<span class="badge trend">🔺 趋势恶化</span>':''}
+          </div>
+        </div>
+        <div class="badges">
+          <span class="badge ${a.level}">${a.level==='block'?'阻塞':a.level==='warn'?'警告':'信息'}</span>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn sm">详情</button>
+        <button class="btn sm">影响面</button>
+        <button class="btn sm">认领</button>
+        <button class="btn sm">转派</button>
+      </div>
+    </div>
+  `).join('');
+})();
+</script>
+</body>
+</html>

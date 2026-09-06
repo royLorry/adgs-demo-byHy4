@@ -1,0 +1,1329 @@
+<!doctype html>
+<html lang="zh-CN" data-page-node-id="OwydBVHEGrS9C4d4E3gC7a">
+<head data-page-node-id="gfZkPVOPhKrjBO1hFYWxh0">
+<meta charset="utf-8" data-page-node-id="oz85K7piBjuoYwVRJANqFJ">
+<title>S2 埋点与事件治理平台 · 原型</title>
+<meta name="viewport" content="width=1366" data-page-node-id="e3pcCkBJIIxVIWmpc1fQ0L">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%230891b2'/%3E%3Cstop offset='1' stop-color='%2314b8a6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='url(%23g)'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='Arial' font-weight='700' font-size='14' fill='white'%3ES2%3C/text%3E%3C/svg%3E" data-page-node-id="HMGXcNKghXZYJLUEaz9ScD">
+<style>
+/* ============ 设计 token ============ */
+:root{
+  --bg:#f5f7fa; --panel:#ffffff; --line:#e3e7ec; --line-2:#eef1f4;
+  --ink:#0f172a; --ink-2:#1e293b; --muted:#64748b; --muted-2:#94a3b8;
+  --primary:#0891b2; --primary-2:#14b8a6; --primary-bg:#ecfeff; --primary-bg-2:#cffafe;
+  --ok:#059669; --ok-bg:#d1fae5;
+  --warn:#d97706; --warn-bg:#fed7aa;
+  --err:#dc2626; --err-bg:#fee2e2;
+  --info:#2563eb; --info-bg:#dbeafe;
+  --purple:#7c3aed; --purple-bg:#ede9fe;
+  --pink:#db2777; --pink-bg:#fce7f3;
+  --shadow:0 1px 2px rgba(15,23,42,.04),0 4px 12px rgba(15,23,42,.04);
+  --radius:8px; --radius-sm:6px;
+  --font:'PingFang SC','Microsoft YaHei','Source Han Sans CN',-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);font-size:13px;color:var(--ink);background:var(--bg);line-height:1.55}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+a{color:inherit;text-decoration:none}
+code{font-family:var(--mono);font-size:12px;background:var(--line-2);padding:1px 5px;border-radius:3px}
+
+/* ============ 顶部 ============ */
+.topbar{position:sticky;top:0;z-index:50;height:48px;background:linear-gradient(135deg,#0891b2,#14b8a6);color:white;display:flex;align-items:center;padding:0 20px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.brand{font-weight:700;font-size:14px;letter-spacing:.5px;margin-right:24px;display:flex;align-items:center;gap:8px}
+.brand-logo{width:24px;height:24px;background:rgba(255,255,255,.18);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.nav-main{display:flex;gap:4px;flex:1}
+.nav-main a{padding:6px 12px;border-radius:5px;font-size:12.5px;opacity:.8;transition:all .15s}
+.nav-main a:hover{background:rgba(255,255,255,.1);opacity:1}
+.nav-main a.active{background:rgba(255,255,255,.18);opacity:1;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:14px;font-size:12px}
+.topbar-right .pill{background:rgba(255,255,255,.16);padding:3px 10px;border-radius:12px}
+.user{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);padding:3px 10px;border-radius:14px}
+.avatar{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+
+/* ============ 布局 ============ */
+.layout{display:flex;min-height:calc(100vh - 48px)}
+.sidebar{width:200px;background:var(--panel);border-right:1px solid var(--line);padding:14px 0;flex-shrink:0}
+.side-section{padding:0 16px;margin-bottom:14px}
+.side-section h4{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;font-weight:600}
+.side-nav a{display:flex;align-items:center;gap:8px;padding:7px 12px;margin:1px 0;border-radius:5px;font-size:13px;color:var(--ink-2);transition:all .1s}
+.side-nav a:hover{background:var(--bg)}
+.side-nav a.active{background:var(--primary-bg);color:var(--primary);font-weight:600}
+.side-nav a .ic{width:18px;text-align:center;opacity:.7}
+.side-nav a.active .ic{opacity:1}
+.main{flex:1;padding:18px 22px;overflow-x:auto;min-width:0}
+
+/* ============ 通用 ============ */
+.page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-hd h1{font-size:18px;font-weight:600;color:var(--ink)}
+.page-hd .crumb{font-size:12px;color:var(--muted);margin-bottom:4px}
+.page-hd .actions{display:flex;gap:8px}
+.btn{padding:6px 14px;border-radius:5px;border:1px solid var(--line);background:var(--panel);font-size:12.5px;color:var(--ink-2);transition:all .12s;font-weight:500}
+.btn:hover{border-color:var(--primary);color:var(--primary)}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:white}
+.btn.primary:hover{background:#0e7490;border-color:#0e7490;color:white}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--primary);background:var(--bg)}
+.btn.sm{padding:3px 10px;font-size:12px}
+.btn.lg{padding:8px 18px;font-size:13px}
+.btn.danger{color:var(--err);border-color:var(--err);background:#fff5f5}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow)}
+.card-hd{padding:10px 14px;border-bottom:1px solid var(--line-2);display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#fafbfc,#ffffff)}
+.card-hd h3{font-size:13.5px;font-weight:600;color:var(--ink-2)}
+.card-hd .meta{font-size:12px;color:var(--muted)}
+.card-body{padding:14px}
+
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11.5px;font-weight:600;line-height:1.55}
+.badge.ok{background:var(--ok-bg);color:#047857}
+.badge.warn{background:var(--warn-bg);color:#b45309}
+.badge.err{background:var(--err-bg);color:#b91c1c}
+.badge.info{background:var(--info-bg);color:#1d4ed8}
+.badge.primary{background:var(--primary-bg);color:#0e7490}
+.badge.purple{background:var(--purple-bg);color:#6d28d9}
+.badge.pink{background:var(--pink-bg);color:#9d174d}
+.badge.gray{background:var(--line-2);color:var(--muted)}
+.badge.dark{background:var(--ink);color:white}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;position:relative;box-shadow:var(--shadow)}
+.kpi .label{font-size:11.5px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.5px}
+.kpi .val small{font-size:13px;color:var(--muted);font-weight:500;margin-left:2px}
+.kpi .delta{font-size:11.5px;margin-top:3px}
+.kpi .delta.up{color:var(--ok)}
+.kpi .delta.down{color:var(--err)}
+.kpi .ic{position:absolute;top:10px;right:10px;font-size:18px;opacity:.4}
+
+table.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+table.tbl th{text-align:left;padding:9px 12px;background:#fafbfc;font-weight:600;color:var(--muted);border-bottom:1px solid var(--line);font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+table.tbl td{padding:9px 12px;border-bottom:1px solid var(--line-2);color:var(--ink-2)}
+table.tbl tr:hover td{background:#fafbfc}
+table.tbl td.mono{font-family:var(--mono);font-size:12px}
+
+input.inp,select.inp{padding:5px 10px;border:1px solid var(--line);border-radius:5px;font-size:12.5px;font-family:inherit;outline:none;background:var(--panel)}
+input.inp:focus,select.inp:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(8,145,178,.12)}
+input[type=search]{min-width:280px}
+.tabs{display:flex;border-bottom:1px solid var(--line);gap:2px;margin-bottom:12px}
+.tab{padding:8px 14px;font-size:12.5px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;font-weight:500}
+.tab:hover{color:var(--ink-2)}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+
+.progress{height:6px;background:var(--line-2);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;min-width:80px}
+.progress>div{height:100%;background:var(--primary);transition:width .3s}
+.progress>div.ok{background:var(--ok)}
+.progress>div.warn{background:var(--warn)}
+.progress>div.err{background:var(--err)}
+
+.view{display:none}
+.view.active{display:block}
+
+/* ============ 视图1：事件字典首页 ============ */
+.v1-hero{background:linear-gradient(135deg,#0891b2 0%,#14b8a6 100%);color:white;padding:18px 22px;border-radius:10px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.v1-hero h2{font-size:17px;margin-bottom:4px}
+.v1-hero .sub{font-size:12px;opacity:.9}
+.v1-hero .stats{display:flex;gap:24px;font-size:12px}
+.v1-hero .stats .v{font-size:22px;font-weight:700;display:block}
+.v1-hero .stats .v small{font-size:11px;font-weight:400;opacity:.85;margin-left:3px}
+
+.v1-cat{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.v1-cat-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.v1-cat-card:hover{border-color:var(--primary);transform:translateY(-1px)}
+.v1-cat-card .ic{font-size:22px;margin-bottom:4px;display:block}
+.v1-cat-card .n{font-size:18px;font-weight:700;color:var(--ink)}
+.v1-cat-card .name{font-size:12px;color:var(--muted);margin-top:2px}
+.v1-cat-card .corner{position:absolute;top:8px;right:10px;font-size:10px;background:var(--bg);padding:2px 6px;border-radius:8px;color:var(--muted)}
+
+.v1-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.v1-toolbar .left{display:flex;gap:8px;align-items:center;flex:1;min-width:0}
+.v1-toolbar .right{display:flex;gap:8px;align-items:center}
+
+.event-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--line-2);transition:all .1s;cursor:pointer}
+.event-row:hover{background:var(--primary-bg)}
+.event-row .name{font-family:var(--mono);font-size:13px;color:var(--ink);font-weight:600;min-width:200px}
+.event-row .name .lock{font-size:10px;color:var(--ok);margin-left:4px}
+.event-row .desc{flex:1;color:var(--muted);font-size:12px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.event-row .owner{min-width:80px;color:var(--muted);font-size:11.5px;text-align:right}
+.event-row .cov{min-width:120px;text-align:right}
+.event-row .v{min-width:120px;text-align:right;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+
+/* ============ 视图2：事件详情 ============ */
+.v2-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.v2-header .left h2{font-size:18px;font-family:var(--mono);font-weight:700;color:var(--ink);margin-bottom:4px}
+.v2-header .left h2 .badge{margin-left:6px;font-weight:500}
+.v2-header .desc{color:var(--muted);font-size:12.5px;margin:6px 0;max-width:680px}
+.v2-header .meta{display:flex;gap:18px;font-size:12px;flex-wrap:wrap}
+.v2-header .meta div .lbl{color:var(--muted);font-size:11px;display:block}
+.v2-header .meta div .val{color:var(--ink-2);font-weight:600;margin-top:1px}
+
+.v2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.v2-attr-tbl th,.v2-attr-tbl td{padding:7px 10px;font-size:12px}
+.v2-attr-tbl .req{color:var(--err);font-weight:700}
+.v2-attr-tbl .opt{color:var(--muted)}
+
+.v2-similar-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.v2-similar-row .ev-name{font-family:var(--mono);font-weight:600;color:var(--ink);min-width:180px}
+.v2-similar-row .sim{display:flex;gap:6px;flex:1;align-items:center}
+.v2-similar-row .sim .chip{font-size:11px;padding:2px 8px;border-radius:10px;background:var(--line-2);color:var(--muted)}
+
+.v2-version-item{display:flex;gap:12px;padding:9px 0;border-left:2px solid var(--primary);padding-left:12px;margin-bottom:6px;position:relative}
+.v2-version-item::before{content:'';position:absolute;left:-5px;top:12px;width:8px;height:8px;background:var(--primary);border-radius:50%}
+.v2-version-item .ver{font-family:var(--mono);font-weight:700;color:var(--primary);min-width:60px}
+.v2-version-item .summary{flex:1;color:var(--ink-2);font-size:12.5px}
+.v2-version-item .ts{color:var(--muted);font-size:11.5px}
+
+.v2-sample{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.v2-sample-pre{background:#0f172a;color:#e2e8f0;padding:10px 12px;border-radius:5px;font-family:var(--mono);font-size:11.5px;line-height:1.6;max-height:280px;overflow:auto;border-left:3px solid var(--ok)}
+.v2-sample-pre .k{color:#7dd3fc}
+.v2-sample-pre .s{color:#86efac}
+.v2-sample-pre .n{color:#fde68a}
+.v2-sample-pre .miss{background:#7f1d1d;color:#fecaca;padding:0 3px;border-radius:2px}
+.v2-sample-pre .bad{color:#fca5a5}
+
+/* ============ 视图3：方案列表 ============ */
+.v3-statusbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.v3-statusbar .stats{display:flex;gap:20px}
+.v3-statusbar .stats .item{text-align:center}
+.v3-statusbar .stats .v{font-size:18px;font-weight:700;display:block}
+.v3-statusbar .stats .l{font-size:11px;color:var(--muted)}
+
+.plan-progress{display:flex;align-items:center;gap:6px;min-width:160px}
+.plan-progress .bar{flex:1;height:5px;background:var(--line-2);border-radius:3px;overflow:hidden}
+.plan-progress .bar>div{height:100%;background:var(--primary);transition:width .3s}
+.plan-progress .bar>div.ok{background:var(--ok)}
+.plan-progress .bar>div.warn{background:var(--warn)}
+.plan-progress .txt{font-size:11px;color:var(--muted);min-width:38px;text-align:right}
+
+/* ============ 视图4：方案设计器 ============ */
+.designer{display:grid;grid-template-columns:240px 1fr 280px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden;box-shadow:var(--shadow);min-height:680px;margin-bottom:12px}
+.des-left{border-right:1px solid var(--line);background:#fafbfc;overflow-y:auto;max-height:680px}
+.des-mid{background:#fff;overflow-y:auto;max-height:680px;position:relative}
+.des-right{border-left:1px solid var(--line);background:#fafbfc;overflow-y:auto;max-height:680px}
+
+.des-h{padding:9px 14px;border-bottom:1px solid var(--line);font-size:12px;font-weight:600;color:var(--ink-2);background:#fff;position:sticky;top:0;z-index:2}
+.des-search{padding:8px 10px;border-bottom:1px solid var(--line-2)}
+.des-search input{width:100%;padding:5px 10px;border:1px solid var(--line);border-radius:5px;font-size:12px;font-family:inherit;outline:none}
+.des-search input:focus{border-color:var(--primary)}
+
+.des-cat{padding:6px 0;border-bottom:1px solid var(--line-2)}
+.des-cat-h{padding:5px 14px;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600;display:flex;justify-content:space-between;cursor:pointer}
+.des-cat-h .ct{background:var(--bg);padding:0 5px;border-radius:6px}
+.des-item{display:flex;justify-content:space-between;align-items:center;padding:6px 14px;font-size:12.5px;cursor:grab;color:var(--ink-2)}
+.des-item:hover{background:var(--primary-bg);color:var(--primary)}
+.des-item .n{font-family:var(--mono);font-size:12px}
+.des-item .ic{font-size:10px;color:var(--muted)}
+
+.des-canvas{padding:18px 20px;min-height:400px;position:relative}
+.des-canvas-hint{text-align:center;color:var(--muted);font-size:12px;padding:60px 0;border:2px dashed var(--line);border-radius:8px;background:#fafbfc}
+.des-canvas-hint.hide{display:none}
+.des-canvas-empty{text-align:center;color:var(--muted-2);font-size:11px;margin-top:8px}
+
+.evt-card{background:white;border:2px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;position:relative;transition:all .15s;cursor:move}
+.evt-card:hover{border-color:var(--primary);box-shadow:0 4px 12px rgba(8,145,178,.1)}
+.evt-card.selected{border-color:var(--primary);background:var(--primary-bg);box-shadow:0 0 0 2px rgba(8,145,178,.2)}
+.evt-card .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.evt-card .name{font-family:var(--mono);font-weight:700;color:var(--ink);font-size:13px}
+.evt-card .del{font-size:11px;color:var(--muted);cursor:pointer;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px}
+.evt-card .del:hover{background:var(--err-bg);color:var(--err)}
+.evt-card .body{font-size:11.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.evt-card .body .chip{background:var(--bg);padding:2px 7px;border-radius:8px;color:var(--ink-2)}
+.evt-card .body .chip.green{background:var(--ok-bg);color:#047857}
+.evt-card .body .chip.amber{background:var(--warn-bg);color:#b45309}
+
+.des-prop{padding:12px 14px;border-bottom:1px solid var(--line-2)}
+.des-prop h5{font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;font-weight:600;letter-spacing:.4px}
+.des-prop-list{font-size:12px}
+.des-prop-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px dashed var(--line-2)}
+.des-prop-row:last-child{border-bottom:0}
+.des-prop-row .pn{font-family:var(--mono);flex:1;color:var(--ink);font-size:11.5px}
+.des-prop-row .pt{color:var(--muted);font-size:11px;min-width:55px}
+.des-prop-row .preq{color:var(--err);font-weight:700;font-size:11px;min-width:24px}
+
+.des-end{padding:12px 14px;border-top:1px solid var(--line)}
+.des-end h5{font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;font-weight:600;letter-spacing:.4px}
+.des-end-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;font-size:12px;color:var(--ink-2)}
+.des-end-row .switch{position:relative;width:32px;height:18px;background:var(--line-2);border-radius:9px;cursor:pointer}
+.des-end-row .switch.on{background:var(--primary)}
+.des-end-row .switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:white;border-radius:50%;transition:transform .15s}
+.des-end-row .switch.on::after{transform:translateX(14px)}
+
+.sdk-bar{background:#0f172a;color:#e2e8f0;padding:0;font-family:var(--mono);border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
+.sdk-tabs{display:flex;background:#1e293b;border-bottom:1px solid #334155}
+.sdk-tabs .t{padding:8px 14px;font-size:12px;color:#94a3b8;cursor:pointer;border-right:1px solid #334155;font-family:var(--font)}
+.sdk-tabs .t:hover{color:#e2e8f0}
+.sdk-tabs .t.active{background:#0f172a;color:var(--primary-2);font-weight:600}
+.sdk-tabs .t .ic{margin-right:5px;opacity:.7}
+.sdk-body{padding:14px 18px;font-size:12px;line-height:1.7;overflow-x:auto;max-height:300px;overflow-y:auto}
+.sdk-body .k{color:#7dd3fc}
+.sdk-body .s{color:#86efac}
+.sdk-body .c{color:#64748b;font-style:italic}
+.sdk-body .kw{color:#f472b6}
+.sdk-body .num{color:#fde68a}
+.sdk-copy{position:absolute;top:46px;right:14px;background:var(--primary);color:white;padding:3px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-family:var(--font);font-weight:500}
+.sdk-copy:hover{background:#0e7490}
+
+/* ============ 视图5：实时观测 ============ */
+.v5-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.v5-domain{display:flex;align-items:center;gap:14px;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.v5-domain .name{font-weight:600;color:var(--ink-2);min-width:90px}
+.v5-domain .bar{flex:1;height:10px;background:var(--line-2);border-radius:5px;overflow:hidden}
+.v5-domain .bar>div{height:100%;background:var(--primary)}
+.v5-domain .bar>div.warn{background:var(--warn)}
+.v5-domain .bar>div.err{background:var(--err)}
+.v5-domain .v{font-weight:700;font-size:14px;min-width:48px;text-align:right}
+
+.v5-matrix{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.v5-matrix table{width:100%;border-collapse:collapse}
+.v5-matrix th{background:#fafbfc;padding:9px 12px;font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;text-align:center;border-bottom:1px solid var(--line);font-weight:600}
+.v5-matrix th:first-child{text-align:left}
+.v5-matrix td{padding:10px 12px;border-bottom:1px solid var(--line-2);text-align:center;font-size:12px}
+.v5-matrix td:first-child{text-align:left;font-weight:600;color:var(--ink-2)}
+.v5-matrix tr:last-child td{border-bottom:0}
+.v5-matrix .v{font-family:var(--mono);font-weight:600;color:var(--ink)}
+.v5-matrix .v.warn{color:var(--warn)}
+.v5-matrix .v.err{color:var(--err)}
+.v5-matrix .v.ok{color:var(--ok)}
+
+.v5-stream{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.v5-stream-h{padding:10px 14px;background:#fafbfc;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.v5-stream-h h3{font-size:13px;color:var(--ink-2)}
+.v5-stream-h .live{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ok)}
+.v5-stream-h .live .dot{width:8px;height:8px;background:var(--ok);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.v5-stream-body{padding:6px 0;max-height:280px;overflow-y:auto;font-family:var(--mono);font-size:11.5px}
+.v5-stream-row{padding:4px 14px;display:flex;gap:14px;border-bottom:1px solid var(--line-2);align-items:center}
+.v5-stream-row:hover{background:var(--bg)}
+.v5-stream-row .ts{color:var(--muted);min-width:80px}
+.v5-stream-row .ev{color:var(--primary);min-width:160px;font-weight:600}
+.v5-stream-row .ct{flex:1;color:var(--ink-2)}
+.v5-stream-row .badge{font-size:10.5px;padding:0 6px}
+
+.v5-anomaly{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid var(--line-2);font-size:12.5px}
+.v5-anomaly:hover{background:var(--bg)}
+.v5-anomaly .rank{font-weight:700;color:var(--muted);min-width:24px}
+.v5-anomaly .desc{flex:1;color:var(--ink-2);margin-left:10px}
+.v5-anomaly .ct{color:var(--muted);font-size:11.5px;min-width:80px;text-align:right}
+
+/* ============ 视图6：验收工作台 ============ */
+.v6-summary{padding:14px 18px;background:linear-gradient(135deg,#ecfeff,#cffafe);border:1px solid var(--primary-2);border-radius:var(--radius);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
+.v6-summary .info h3{font-size:14px;color:#0e7490;margin-bottom:4px}
+.v6-summary .info .sub{font-size:12px;color:#155e75}
+.v6-summary .stats{display:flex;gap:18px}
+.v6-summary .stats .item{text-align:center}
+.v6-summary .stats .v{font-size:18px;font-weight:700;display:block;color:#0e7490}
+.v6-summary .stats .l{font-size:10.5px;color:var(--muted);text-transform:uppercase}
+
+.v6-row{padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;transition:all .12s;box-shadow:var(--shadow)}
+.v6-row:hover{border-color:var(--primary)}
+.v6-row .left{flex:1}
+.v6-row .name{font-weight:600;color:var(--ink);margin-bottom:3px}
+.v6-row .meta{font-size:11.5px;color:var(--muted)}
+.v6-row .center{display:flex;gap:8px;flex:2}
+.v6-row .center .acc{display:flex;align-items:center;gap:6px;font-size:11.5px;padding:4px 10px;border-radius:5px;background:var(--bg)}
+.v6-row .center .acc.ok{background:var(--ok-bg);color:#047857}
+.v6-row .center .acc.warn{background:var(--warn-bg);color:#b45309}
+.v6-row .center .acc.err{background:var(--err-bg);color:#b91c1c}
+.v6-row .center .acc .v{font-weight:700;font-family:var(--mono)}
+.v6-row .right{display:flex;gap:6px}
+
+.v6-detail{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.v6-detail-h{padding:14px 18px;background:linear-gradient(135deg,#ecfeff,#cffafe);border-bottom:1px solid var(--primary-2)}
+.v6-detail-h h3{font-size:15px;color:#0e7490;margin-bottom:4px}
+.v6-detail-h .sub{font-size:12px;color:#155e75}
+.v6-detail-body{padding:16px 18px}
+.v6-acc{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.v6-acc-cell{padding:12px 14px;border-radius:7px;border:1px solid var(--line);background:#fafbfc}
+.v6-acc-cell .l{font-size:11.5px;color:var(--muted);margin-bottom:4px}
+.v6-acc-cell .v{font-size:18px;font-weight:700;color:var(--ink)}
+.v6-acc-cell .th{font-size:11px;color:var(--muted);margin-top:2px}
+.v6-acc-cell.ok{border-color:var(--ok);background:#f0fdf4}
+.v6-acc-cell.ok .v{color:#047857}
+.v6-acc-cell.ok .ic{color:var(--ok);font-size:14px;margin-right:4px}
+.v6-acc-cell.warn{border-color:var(--warn);background:#fffbeb}
+.v6-acc-cell.warn .v{color:#b45309}
+.v6-acc-cell.warn .ic{color:var(--warn);font-size:14px;margin-right:4px}
+.v6-acc-cell.err{border-color:var(--err);background:#fef2f2}
+.v6-acc-cell.err .v{color:#b91c1c}
+.v6-acc-cell.err .ic{color:var(--err);font-size:14px;margin-right:4px}
+
+.v6-fail-reason{padding:12px 14px;background:#fef2f2;border:1px solid var(--err);border-radius:7px;color:#7f1d1d;font-size:12.5px;margin-bottom:12px}
+.v6-fail-reason h5{font-size:12.5px;font-weight:700;margin-bottom:6px}
+.v6-fail-reason ul{margin-left:18px}
+.v6-fail-reason ul li{margin-bottom:3px}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+</style>
+</head>
+<body data-page-node-id="IfDFSDxGS02WC9cNUvqljI">
+
+<div class="topbar" data-page-node-id="TP2TZa90V97EYTMG2jmPB7">
+  <div class="brand" data-page-node-id="CalI5LPyi1RZGgb6vlNLsN"><span class="brand-logo" data-page-node-id="7iswEvwpDeLksEE2nj1VLZ">ADGS</span> 智能体数据治理系统</div>
+  <div class="nav-main" data-page-node-id="bT8cEzzhcDrHWSNHgV1kjZ">
+    <a href="#" data-page-node-id="YuueiuMr54sPqYMRH1VWPG">首页</a>
+    <a href="#" data-page-node-id="JaneE48X6Hnebbd0Wct3Kk">资产目录</a>
+    <a href="#" class="active" data-page-node-id="79werscopfSeEDMuDYzbJB">埋点治理</a>
+    <a href="#" data-page-node-id="acCgE5QTyN1P7djX58KSt9">数据建模</a>
+    <a href="#" data-page-node-id="m29MRdaNvuGq8BoZoxFcsy">指标平台</a>
+    <a href="#" data-page-node-id="8B9A55zI49pFhjVxf86AC1">质量中心</a>
+    <a href="#" data-page-node-id="2f0rcapC18zng56bSog1Qh">协作流</a>
+    <a href="#" data-page-node-id="lGyhcze1diQaYAinqdFmwl">系统设置</a>
+  </div>
+  <div class="topbar-right" data-page-node-id="YuL9fltaBgiFRFqP8GDmWD">
+    <span class="pill" data-page-node-id="ARW8uAZftt10JOZsKpDWUY">ADGS v1.0</span>
+    <span class="user" data-page-node-id="THgYZqAEO8mM4ivgTcPyCx"><span class="avatar" data-page-node-id="wJ4RaQgRRZUFx8ILZHSA0T">ZL</span>张磊 · 数据治理</span>
+  </div>
+</div>
+
+<div class="layout" data-page-node-id="5Rs0fXFbfM60wxrMEye0iF">
+  <aside class="sidebar" data-page-node-id="utXlGF3ZpTbBkmwNN1DvmI">
+    <div class="side-section" data-page-node-id="YuSUbLw9RRy2hjpIe0GnUq">
+      <h4 data-page-node-id="uNWoZuITTyJEseZ0ppJhP7">S2 工作台</h4>
+      <div class="side-nav" data-page-node-id="CPDO5AdiLDyCn5kwb8HtNV">
+        <a href="#" data-view="v1" class="active" data-page-node-id="enMC1r4rK47V8dthJcKFPg"><span class="ic" data-page-node-id="yQkuiVKPPcp9DXyb42QUqJ">📚</span>事件字典</a>
+        <a href="#" data-view="v3" data-page-node-id="xeCE2bX0ASL5n7iTdiZFhZ"><span class="ic" data-page-node-id="UzLBmK5b7PL9bC573jfed2">📋</span>埋点方案</a>
+        <a href="#" data-view="v4" data-page-node-id="VzFcRqQBbj5pLCGkBddBr9"><span class="ic" data-page-node-id="QhbcAdYVa2YZuOJ8yhkKVf">🎨</span>方案设计器</a>
+        <a href="#" data-view="v2" data-page-node-id="v3TD4Olc40ff6kHCYhHtdb"><span class="ic" data-page-node-id="YmRELpjhrAMXKFoMfAzyc6">📄</span>事件详情</a>
+        <a href="#" data-view="v5" data-page-node-id="WTek4EnSwHr9cAygDBNEuF"><span class="ic" data-page-node-id="3btWbsMVVcAmnsALqYjslV">📡</span>实时观测</a>
+        <a href="#" data-view="v6" data-page-node-id="RYpB3pCslibBCQnJMlbGrj"><span class="ic" data-page-node-id="8HKABPROYYTDHxnjayLibZ">✅</span>验收工作台</a>
+      </div>
+    </div>
+    <div class="side-section" data-page-node-id="B8Qup4booXc5gEVdvTToHw">
+      <h4 data-page-node-id="8vwhLYa1YyJANLRdU4ax8d">辅助</h4>
+      <div class="side-nav" data-page-node-id="UiBnjZnGnEqYItn4zUHw9e">
+        <a href="#" data-page-node-id="JlTeaA714GzBd8imBXk1PF"><span class="ic" data-page-node-id="B8TQu4EOFkyXodYr8yCXm5">🏷️</span>公共属性组</a>
+        <a href="#" data-page-node-id="KGNzTgkgGEuRXfucvZ0Nkh"><span class="ic" data-page-node-id="2EelqhAViB0NI2xfFesUJg">📜</span>命名规范</a>
+        <a href="#" data-page-node-id="QWvHM45TqsiyhlIaGcvyaV"><span class="ic" data-page-node-id="L3TBHICVnRoEUoZCZ1V0FU">🔍</span>相似度查重</a>
+        <a href="#" data-page-node-id="BUzoX8S5Jy0Gprb2ShuGCC"><span class="ic" data-page-node-id="Y3XPaKOK8OX2FvImn939g2">🛠️</span>SDK 下载</a>
+      </div>
+    </div>
+    <div class="side-section" data-page-node-id="51rkDmIuiaeMosLhn9lgDS">
+      <h4 data-page-node-id="rz7e0jBALjFqDYF1N5lGyf">本季重点</h4>
+      <div style="padding:6px 16px;background:var(--primary-bg);border-radius:5px;font-size:11.5px;color:#0e7490" data-page-node-id="mYTOivflUrDjCYbOS27AML">
+        🟢 上线事件数：<b data-page-node-id="k6yYPMFjN3N8SUsHTYhA2X">4,287</b><br data-page-node-id="05DPBdDfxk4lEOnS3vVIRw">
+        🟡 待评审：<b data-page-node-id="a06Nhks1FDNCuw32E43naV">5</b><br data-page-node-id="D72S455cDw3Ib6FeHYDbPh">
+        🔴 异常待处理：<b data-page-node-id="Ddvub56h7YilF4NRRFpyhY">3</b>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" data-page-node-id="BX07nJsE3m20bpw3XMaIvO">
+
+    <!-- ========== 视图1：事件字典首页 ========== -->
+    <section id="v1" class="view active" data-page-node-id="B8u9LnSNib5lJD1bnsDmcv">
+      <div class="page-hd" data-page-node-id="eAbHpsCC1FvT9fD4wARoDy">
+        <div data-page-node-id="RlN8aZLSDao7BzKNkLRe3o">
+          <div class="crumb" data-page-node-id="Y9XUthlPPA2cqAYc0Ow3v1">S2 埋点与事件治理</div>
+          <h1 data-page-node-id="UraXBkGxEC3tTWLZkPCOqW">📚 事件字典</h1>
+        </div>
+        <div class="actions" data-page-node-id="tHaVmNC8jfcViNd9Co77Iw">
+          <button class="btn ghost" data-page-node-id="qHbBclvaZadHCm0pyzVr1k">⤓ 导入</button>
+          <button class="btn ghost" data-page-node-id="ivclbfCJCClIZ3vAsTus6A">⚙ 规范设置</button>
+          <button class="btn primary" data-page-node-id="NAJ7N9A3XsOKow9zdFHRPI">+ 新建事件</button>
+        </div>
+      </div>
+
+      <div class="v1-hero" data-page-node-id="ZC8LLPcZz1MgeVui48RltF">
+        <div data-page-node-id="gzpIK62kOnGf04XXjpY65o">
+          <h2 data-page-node-id="4yDBBRAObo9cxtTn4SVqw8">埋点规范覆盖率 100%</h2>
+          <div class="sub" data-page-node-id="mbGNHTsJ6EsJQL9fHXjpAi">已注册 4,287 个事件 · 上线事件 100% 通过 4 类验收</div>
+        </div>
+        <div class="stats" data-page-node-id="z2prDQ7XTuawVZbWJmys3z">
+          <div data-page-node-id="hJQ0tTlCGkj0bKpVAnbLWG"><span class="v" data-page-node-id="YROnaAPw0s6VdtsFtF1uOZ">4287<small data-page-node-id="8ENAP2T7vejmsaNbxRean9">已注册</small></span></div>
+          <div data-page-node-id="UkH0b9BGgMTq84zZAAfK7P"><span class="v" data-page-node-id="5gwxFDsCpdIq6S2VhG9uqu">42<small data-page-node-id="XlorFlsOvRESmAQcl5zGcB">本周新增</small></span></div>
+          <div data-page-node-id="mri2rZWFiMRrM0fE5MTXIx"><span class="v" data-page-node-id="3ORThhk0On8AWT0ABKlLMD">18<small data-page-node-id="7ybvYwhxRQg4hbimEhbJB1">相似待处理</small></span></div>
+          <div data-page-node-id="ZsGK0MEvqUjbD0v5FE0qo8"><span class="v" data-page-node-id="udDEpqgR2XXMZ8OBdm7H3h">63<small data-page-node-id="EZyI0ucyInopYGC4HBi88a">僵尸事件 (1.5%)</small></span></div>
+          <div data-page-node-id="A0fCW9Eu1EcaFu4KZwOI8m"><span class="v" data-page-node-id="kG4ZFD4sqqjASzloAOxWvK">97.4%<small data-page-node-id="0dQrgMy97VBshf2F44IbEA">整体覆盖率</small></span></div>
+        </div>
+      </div>
+
+      <div class="v1-cat" data-page-node-id="c9EZvdAlJDImzO9u4OqhrA">
+        <div class="v1-cat-card" onclick="filterCat('generic')" data-page-node-id="hcbHAwbilG3rmC11KS7h0c">
+          <span class="ic" data-page-node-id="XvwMnsgMD2XEFsqzYzdxMC">⚙️</span><span class="corner" data-page-node-id="UvV61YzrHaZviJAoSqQ1V6">812</span>
+          <div class="n" data-page-node-id="PIBgDS31sRLbzEVYRwHfjE">通用事件</div>
+          <div class="name" data-page-node-id="aGoxFBao8vWcztCY4L3Pzd">通用浏览、自动采集</div>
+        </div>
+        <div class="v1-cat-card" onclick="filterCat('interaction')" data-page-node-id="Jf2AdXX8aOn6eYhYgLal3d">
+          <span class="ic" data-page-node-id="2VmqLYFvfx8zPO1pLKRetk">👆</span><span class="corner" data-page-node-id="sCnTvzqWHIV0OhAjLyx881">1,253</span>
+          <div class="n" data-page-node-id="nnX0IGLtCV4GVMGETprQts">交互事件</div>
+          <div class="name" data-page-node-id="W7nFVJ4lesmeeE6LxiRQNt">用户主动操作</div>
+        </div>
+        <div class="v1-cat-card" onclick="filterCat('business')" data-page-node-id="EWeS3ty7PjFlBW0gbNUFhl">
+          <span class="ic" data-page-node-id="xDVbeTsZfDkfxGlLJEc7bj">💼</span><span class="corner" data-page-node-id="XLs6YpzljUwKWIR0f1raEN">986</span>
+          <div class="n" data-page-node-id="jLTaHy0SH7M8yK28pjEPJd">业务过程</div>
+          <div class="name" data-page-node-id="9dlwRAuCeYs8dc5Fkju6am">关键业务节点</div>
+        </div>
+        <div class="v1-cat-card" onclick="filterCat('system')" data-page-node-id="sSthBQa73BFawwdjfPRLBl">
+          <span class="ic" data-page-node-id="pIZmpgShNrulbzBd889DK4">🛡️</span><span class="corner" data-page-node-id="pqhYNTJTJUSNAHZMwk3vmK">421</span>
+          <div class="n" data-page-node-id="9MYYDHxl1UlSHp8SZOvksF">系统/技术</div>
+          <div class="name" data-page-node-id="bKLChS76ZSWta15772MKFR">性能与异常</div>
+        </div>
+        <div class="v1-cat-card" onclick="filterCat('agent')" data-page-node-id="rqKoFXW02Mutrice9rFYTp">
+          <span class="ic" data-page-node-id="05rOw0lr0Oud6TSrCo08n4">🤖</span><span class="corner" data-page-node-id="vJP95KxzwppqVFIwSD8idw">815</span>
+          <div class="n" data-page-node-id="Ml4zGj7LKZCgHaZbkVNJFC">Agent 语义</div>
+          <div class="name" data-page-node-id="WzpdtPfLc6h54eJrhg8CgX">Agent 特有行为</div>
+        </div>
+      </div>
+
+      <div class="card" data-page-node-id="cOE2lCaR6bFEoou0zKt1F3">
+        <div class="card-hd" data-page-node-id="yHHHUqPEqB7VCyB5CFBEnQ">
+          <h3 data-page-node-id="kGW7FxS1cH8kKudgdaEGKK">事件清单</h3>
+          <div class="meta" data-page-node-id="pYQL3TigZwx4pRX4U54k01">共 4,287 个 · 视图：[列表] [卡片] [按 Owner 分组]</div>
+        </div>
+
+        <div class="v1-toolbar" style="padding:10px 14px" data-page-node-id="1sVwlmnhswX6cxwR9tib38">
+          <div class="left" data-page-node-id="4bkRR3GWvhVfW5OJbsO2eQ">
+            <input class="inp" type="search" placeholder="🔍 搜索事件名 / 属性名 / 描述 / 主题域 / Owner" data-page-node-id="jR9LKZNVZErZ1uUVkJjU7n">
+            <select class="inp" data-page-node-id="soqZ05puMXhCouTlWtdpLN"><option data-page-node-id="Y8dLSrR7ACJDddTwCd4FE1">全部主题域</option><option data-page-node-id="SbjiSoRXqpMMMLF1cN61Cf">agent</option><option data-page-node-id="T9QxHNziKpcAQOCn0ajNhm">commerce</option><option data-page-node-id="j8mAKaGnvjjzUMz6o7tgkw">growth</option></select>
+            <select class="inp" data-page-node-id="PCwNAgroQk0qAIfvE26ZBP"><option data-page-node-id="SuYfhXjBUEcswAM5GreNan">全部状态</option><option data-page-node-id="zVBZcYIQeoIMEYRbmsK7SK">设计中</option><option data-page-node-id="Tq63D19ozFgF8QgcyB8UoM">评审中</option><option data-page-node-id="7DO4KPfCfp3xMKRpbRj6af">已上线</option><option data-page-node-id="30iHMfdoU0dZ15Sa0DrcHw">已废弃</option></select>
+          </div>
+          <div class="right" data-page-node-id="0KcRzt4TrQm0lSehmm9jZI">
+            <button class="btn sm" data-page-node-id="AsWIYxn91Bf8szDvnpojgS">↕ 排序</button>
+            <button class="btn sm" data-page-node-id="sV9lxb3EDIgKN19Kji7nhG">📥 导出</button>
+          </div>
+        </div>
+
+        <div id="eventList" data-page-node-id="hEmVy1gSIdJT0NT0gdBwkn"></div>
+
+        <div style="padding:10px 14px;text-align:center;font-size:12px;color:var(--muted);border-top:1px solid var(--line-2)" data-page-node-id="Db4pMgt2fLuACzdgpBWmzo">
+          共 4,287 个事件 · 显示前 12 个 · [加载更多...]
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 视图2：事件详情 ========== -->
+    <section id="v2" class="view" data-page-node-id="pYQhy9MuYi5IuOvcqU4H7u">
+      <div class="page-hd" data-page-node-id="ulfEp8LNqRedEpWX24ihLj">
+        <div data-page-node-id="f5ahmy6LtHP9bpRJrLngG4">
+          <div class="crumb" data-page-node-id="SjUM280pLTCXXZ4mpRBJRX"><a href="#" onclick="showView('v1')" data-page-node-id="N9G4YkCstY5KV2RQAKiiuA">事件字典</a> / Agent 语义</div>
+          <h1 data-page-node-id="X9IhtZHEDv4mIpEFmxranP">📄 事件详情</h1>
+        </div>
+        <div class="actions" data-page-node-id="O1S8NFq7Nu5HXefGeKxtmQ">
+          <button class="btn ghost" data-page-node-id="e4GG0apAX7eFsEsJvFEjM5">↩ 返回</button>
+          <button class="btn ghost" data-page-node-id="Hjrm8JzZ0YzDSxCz6VBdjh">📥 导出 Schema</button>
+          <button class="btn" data-page-node-id="XYJ6sLaJQH9exGtPS0rX12">编辑 Schema</button>
+          <button class="btn primary" data-page-node-id="9RDH5oWHNSUdlbwLX63OMX">+ 新建版本</button>
+        </div>
+      </div>
+
+      <div class="v2-header" data-page-node-id="c94CwB58NdFRNL3FhdcaT5">
+        <div class="left" data-page-node-id="Evnz8G4g4hVvvynaGcPMdU">
+          <h2 data-page-node-id="npIoaAEB8ILiZ6pXZUs6xr">turn_complete <span class="badge primary" data-page-node-id="VdE7qYkd5aMvoe90fFpAiX">业务过程</span><span class="badge ok" data-page-node-id="jsmHezIhJGrEJUfkfhfqH7">已上线</span><span class="badge gray" data-page-node-id="Fq9uzGYErAhhur9AkyuqnW">backward</span></h2>
+          <div class="desc" data-page-node-id="eCfyzk5wlBEtkcXbA1tbtb">"一轮对话结束"——服务端主体，客户端补充。用于会话分析、Agent 评估、模型效果追踪。</div>
+          <div class="meta" data-page-node-id="TPwrnK4HtoBlIo8wwrBdHT">
+            <div data-page-node-id="dKW3i2txiI0Ld6sV7i4fzA"><span class="lbl" data-page-node-id="tmguHVjOOAhEIKHIhKaN1V">schema_version</span><span class="val" style="font-family:var(--mono)" data-page-node-id="e12FuCi3sLo8PW6EpNgJQv">v1.3.0</span></div>
+            <div data-page-node-id="2rd5C7ZcHjWrHm2DqfQDYH"><span class="lbl" data-page-node-id="lnZHIrOFYyPWM6QWG2D9Zt">上报端</span><span class="val" data-page-node-id="cQJGF4joesqG7OiM0aYEZj">客户端 + 服务端</span></div>
+            <div data-page-node-id="GkATZtp1zQEOxD8RP788Qz"><span class="lbl" data-page-node-id="tMqMJwd9CNoRujE4uYLP6k">主体端</span><span class="val" data-page-node-id="wmCFzAj2VgAamhB1flAn38">服务端</span></div>
+            <div data-page-node-id="PPiX6LsDqTjxTN4GfocJGb"><span class="lbl" data-page-node-id="qP53Mq7f075sQd7ejl1Vrw">Owner</span><span class="val" data-page-node-id="FIGefTZV0KJZtVFICoHGkP">王皓</span></div>
+            <div data-page-node-id="PhKoPV8sfgxAaGDT4S5ruE"><span class="lbl" data-page-node-id="MzVhRwp51jfBG7nOsp5c9c">主题域</span><span class="val" data-page-node-id="kMkCvy95wJADMr1Wo3jgRX">agent</span></div>
+            <div data-page-node-id="0nKuLqTYGBl7HCFQMXwZPv"><span class="lbl" data-page-node-id="Z0tD8u99fEz5kj2EwkVjDt">最近更新</span><span class="val" data-page-node-id="YOUy6PeUAyaNhEjzFgzu0I">2026-09-05 14:23</span></div>
+            <div data-page-node-id="fdqaCtQWqmcbeBsfoH4x8C"><span class="lbl" data-page-node-id="Voa1L5V4nwjsXQZnSGG8SI">日均上报</span><span class="val" data-page-node-id="bTHwdGgPsviFQoYx8zeysR">128,500 条</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabs" data-page-node-id="jHgOVVWt5qx3FXCSO1JAXF">
+        <div class="tab active" data-tab="t1" data-page-node-id="ssEbXPWkofuGKoLr08HOPm">Schema 定义</div>
+        <div class="tab" data-tab="t2" data-page-node-id="WTeTDCs5m0tLhlH7BnhBMH">属性与公共属性组</div>
+        <div class="tab" data-tab="t3" data-page-node-id="ZyWc3XD60MoYz9S9s7fHGW">版本历史</div>
+        <div class="tab" data-tab="t4" data-page-node-id="MVcLIpXc01WY8taASS4IxC">引用本事件的资产 <span class="badge primary" style="margin-left:4px" data-page-node-id="H1j1ApLcF4N3N467X3LwYy">8</span></div>
+        <div class="tab" data-tab="t5" data-page-node-id="dKcUBAq269CewtmJNBpm67">相似事件</div>
+        <div class="tab" data-tab="t6" data-page-node-id="Q92iLIyegtYPbegJzvCY93">实时上报样本</div>
+        <div class="tab" data-tab="t7" data-page-node-id="8kw0KlLAYPdzC7HNGv066G">评论</div>
+        <div class="tab" data-tab="t8" data-page-node-id="HEqD3vhbNk98MJRaOtKbIl">监控与告警</div>
+      </div>
+
+      <!-- Tab 1: Schema 定义 -->
+      <div class="tab-content active" id="tab-t1" data-page-node-id="wBhOndcSrvyxd51Fy8PkCj">
+        <div class="card" data-page-node-id="JG1U760IvTPEGYafGtdWqo">
+          <div class="card-hd" data-page-node-id="4p5c66UWhIKVaN8luW4LTq"><h3 data-page-node-id="x7pKwymKPFyjxdRdNP1Iod">属性定义（私有 + 公共属性组继承）</h3><div class="meta" data-page-node-id="4jXCGkH3nmsAicgrO3jADd">私有 4 个 + 继承 14 个</div></div>
+          <table class="tbl v2-attr-tbl" data-page-node-id="oABEFrYoZCHwp3i0PYJBSM">
+            <thead data-page-node-id="O7xyQHdTOtTCfNhDPBQuIG"><tr data-page-node-id="Dcj9aAyeJBxCYmuEmBYa4z"><th data-page-node-id="AZVKUTCypWE7mRSabPEHA1">属性名</th><th data-page-node-id="3FmUyYJrniVfbMbFcu9FFL">类型</th><th data-page-node-id="OznpeDb1OxmTLoB8T2UJ0c">必填</th><th data-page-node-id="UUQ5tDhYj1fZHtRROipcXp">枚举/示例</th><th data-page-node-id="4r7Zhuo73d9fqAUzszosNg">所属</th><th data-page-node-id="6jwidls2MD7tYWRzaAOyXW">备注</th></tr></thead>
+            <tbody data-page-node-id="xAi6hv3yDbfnHDvoom7PgF">
+              <tr data-page-node-id="YGEn1JDDORok03FsJNGNOi"><td class="mono" data-page-node-id="HXV0pwRWfoJDQYmzlIiHLq"><b data-page-node-id="OrdnA8kMxHk2YioNNgpvdR">turn_seq</b></td><td data-page-node-id="mqXTuGFHBqCv2Q4COADyM0">int</td><td class="req" data-page-node-id="unxv2gExp1cvmca3wk7B5x">必填</td><td data-page-node-id="PwVO6ogKaj1OzmVZCmOaFd">1, 2, 3, ...</td><td data-page-node-id="J9b51NAL4Z8UFXyjX7bjyC"><span class="badge primary" data-page-node-id="fW7LuGgsu8LXlqoPrDpMj0">私有</span></td><td data-page-node-id="k7R2XSM4qOZDLnVUYcTOEI">本轮在会话中的序号</td></tr>
+              <tr data-page-node-id="8Qry13v7GDbLGclBPs1OUE"><td class="mono" data-page-node-id="SOfICpP8IixrhEUp28N4vU"><b data-page-node-id="X7RkSN9HddwPVkNZS3GaXk">latency_ms</b></td><td data-page-node-id="GcoiT4G1ZADQ5EUQYyiemG">int</td><td class="req" data-page-node-id="HV37kus7oXWon7SPb7nGIN">必填</td><td data-page-node-id="5owwcuWXc1EDHF1tDV8hmC">100~5000</td><td data-page-node-id="7ZGelE7wqAPp5GSXwG1q67"><span class="badge primary" data-page-node-id="pGhKwlxXBrpwHB3Bw5Vde3">私有</span></td><td data-page-node-id="Scez6fhYV6VWJTjupEUalT">本轮响应耗时</td></tr>
+              <tr data-page-node-id="dH6BSdKF4I39NceN52L019"><td class="mono" data-page-node-id="AGCHZ0ADckY9VdIFjKFzpp"><b data-page-node-id="eThNIx3ebmgAF1NuMB3gEn">input_tokens</b></td><td data-page-node-id="L7bZeyj2dH92XCsryAdDBG">int</td><td class="req" data-page-node-id="P3sUInsC6dJsXoBlIc3Fm6">必填</td><td data-page-node-id="4S3cKtPFXJbHErgikKr4Fx">0~32000</td><td data-page-node-id="Wmb64ZgwR8sC6W1T4QdzT0"><span class="badge primary" data-page-node-id="XDjoIpAFSEVPAfA6VqYG2T">私有</span></td><td data-page-node-id="4qUeFnJeu2oc4ahbENHHFg">输入 token 数</td></tr>
+              <tr data-page-node-id="nAopWEdVYpZa3mB4hDPHr1"><td class="mono" data-page-node-id="aibx5LOjPM6SM7QYtmAl8Z"><b data-page-node-id="qf0PqJWA8pppDfFvF9GPKq">output_tokens</b></td><td data-page-node-id="swDsH1x99JqwvKFl0Hle05">int</td><td class="req" data-page-node-id="aWoP0hPRlwdP9F4Bsl18Sc">必填</td><td data-page-node-id="mz8jhD3VBANCJBIogZWuze">0~8000</td><td data-page-node-id="IuHHFQAlwPHsbyvMh6S3Uc"><span class="badge primary" data-page-node-id="lctYVOPHuXDZUIaxa5WuVg">私有</span></td><td data-page-node-id="uaiMqyveMHHwSbAc0VkuJl">输出 token 数</td></tr>
+              <tr data-page-node-id="jkKzCOZBaeDcPGG4njl7re"><td class="mono" data-page-node-id="HxttwrXWSL9GSwwbcV9XbK"><b data-page-node-id="qbFrYBoOh1ZGI0k28VB1Uk">tool_call_count</b></td><td data-page-node-id="cjm1wjdNw33sqSJ8PLDkXM">int</td><td class="opt" data-page-node-id="8itaGPjhDNTBnaCA8MjiYu">选填</td><td data-page-node-id="62M8cSOEa0Q9XGNMIwqPmA">0, 1, 2, ...</td><td data-page-node-id="iQ3pg199M9recif2T74g80"><span class="badge primary" data-page-node-id="VyAf15rl4ZxNMczrfYBvDh">私有</span></td><td data-page-node-id="uiJAKcEbsCjDG5Gl8afgYC">本轮工具调用次数</td></tr>
+              <tr data-page-node-id="2TNyQGJd6Gjay1zzKI1X2I"><td class="mono" data-page-node-id="H7tgpZPJVHhLFnpBfDvuWx">conversation_id</td><td data-page-node-id="HJEFh4rlyoZYTsdYBj9HDC">string</td><td class="req" data-page-node-id="sjTVse0PHFM5vXiC9guOUX">必填</td><td data-page-node-id="9w2zLrQWC5x9oWPaQBMorV">c_xxxx</td><td data-page-node-id="LltGR6KqIAr9tRmSZ0KX4i"><span class="badge purple" data-page-node-id="qbWZyrIVtQxh5ZYNHFNcN1">agent 公共组</span></td><td data-page-node-id="V10cJAHBjVCeEc1vravMTe">—</td></tr>
+              <tr data-page-node-id="IwfgEOpRahcVqjrzlT4zMT"><td class="mono" data-page-node-id="3HohqtEBRDmNHQ4A5zPavX">agent_id</td><td data-page-node-id="uwFW87aXuCAsm6Vlc5Hrwv">string</td><td class="req" data-page-node-id="6vmiMznTZuIeYS3QPJsQS9">必填</td><td data-page-node-id="qztyeG2M8J2nEPq5AV0QKJ">agt_xxxx</td><td data-page-node-id="zx8yeuDJGwQyxKmbdAHZBV"><span class="badge purple" data-page-node-id="RG7hgyiRRsH5APgNu7BAEG">agent 公共组</span></td><td data-page-node-id="11toBGBWEBTpuDE7trHADa">—</td></tr>
+              <tr data-page-node-id="ha83peOGndd2AZlKYiCLaq"><td class="mono" data-page-node-id="F9GWZ1nRQaBFddUNMMF41Y">model_id</td><td data-page-node-id="YbUHYY2Z1YFMuLlzR3AwsZ">string</td><td class="req" data-page-node-id="DTPMPZTuo0hgDO8l6gGQNW">必填</td><td data-page-node-id="2IykqLbCcwCqHdcjHoV3a4">gpt-x / claude-x / wb-1.5</td><td data-page-node-id="3Q6bnJxi3TlKFTgUXGTYgY"><span class="badge purple" data-page-node-id="A9vK7jkPepBV7DjyWAivNe">agent 公共组</span></td><td data-page-node-id="5Xk6E0U9VhYR39hYA6pR2Q">—</td></tr>
+              <tr style="background:#fafbfc" data-page-node-id="tlNiCOc6qCzfUAWO73kdCU"><td colspan="6" style="color:var(--muted);font-size:11px" data-page-node-id="IigKIfNQGFwKSlLywOKSgt">+ 10 个公共属性组字段（user_id, device_id, app_version, ...）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="v2-grid" data-page-node-id="2hFoTcYEDKSp9qFVwsbRWL">
+          <div class="card" data-page-node-id="ITPCQ0taGT4pbrJ5ZyXuEf">
+            <div class="card-hd" data-page-node-id="q0YikD0aHjCGE81kj4ePV8"><h3 data-page-node-id="rhczBWwciOquM10vVDCdFn">上报端矩阵</h3></div>
+            <table class="tbl" data-page-node-id="U7K9UjypVUzYl5SUnyjOQn">
+              <tr data-page-node-id="od7a57WbmbnwlxCcpn3EXa"><td data-page-node-id="1wm4fC7fAurvqSBFp450AL">Web</td><td data-page-node-id="vVQ1zhoGFf3dreXPJJOa3D"><span class="badge gray" data-page-node-id="2UTPnGGpjMcmXA6m2IC19S">不适用</span></td></tr>
+              <tr data-page-node-id="uU0Ec8hVb0b7JCVsg9jIH4"><td data-page-node-id="J0TURVMws3cTkdDUBwIj32">桌面</td><td data-page-node-id="Aq9FfyyBiG0XugiHHZOJNp"><span class="badge ok" data-page-node-id="5eMofOyJb4NgAvf6LB3oxZ">✓ 客户端补充</span></td></tr>
+              <tr data-page-node-id="lbocYIwayY0IPg18EXoMqJ"><td data-page-node-id="sVJYd6wpGd0ngBfPPJvywy">移动</td><td data-page-node-id="uAU4hmerV14OCFv0gEpPq2"><span class="badge ok" data-page-node-id="YbMAiL5cYN59pC2oqoxvU7">✓ 客户端补充</span></td></tr>
+              <tr data-page-node-id="9ykzVBMpboR6cZPXZoY8mz"><td data-page-node-id="zXPOidtmoxfpimE7Sx1hco">服务端</td><td data-page-node-id="r5QCCPexBNlPAnbDFllGgp"><span class="badge primary" data-page-node-id="oXbPAaUArCPUspubaVEsal">✓ 主体端</span></td></tr>
+              <tr data-page-node-id="PyaaZTCBYynPvP33jt2yLE"><td data-page-node-id="9HjFEVilBhsYKA8UOngKAF">Agent 运行时</td><td data-page-node-id="P8WbhX0wxEcoKt13xskJZo"><span class="badge ok" data-page-node-id="5XKW3Yb26yBzZ3qnZ4iOyo">✓ 上报</span></td></tr>
+            </table>
+          </div>
+          <div class="card" data-page-node-id="B1gXoKgW40A3U9QdrACFbk">
+            <div class="card-hd" data-page-node-id="udmrM5EbONOYJIHaWcaO6S"><h3 data-page-node-id="N92g6CnobdOd1VkzdAGgnG">双端去重规则</h3></div>
+            <div class="card-body" style="font-size:12px" data-page-node-id="ZR4rbJ2TEnLtBgKW36GrxG">
+              <p style="margin-bottom:6px" data-page-node-id="xjZwZuB7EdRgbdY6G6pguj"><b data-page-node-id="uoy9FpwMBU0aenfNtINyVk">主键：</b> <code data-page-node-id="foF4gNgMWUpgAORbKVZmsZ">(conversation_id, turn_seq, schema_version)</code></p>
+              <p style="margin-bottom:6px" data-page-node-id="iXub9mFr0V0kMS1vYAeMW5"><b data-page-node-id="jZWIpTmjWNJniSkT8sG6Yn">保留：</b> 服务端优先（覆盖客户端同 key）</p>
+              <p style="margin-bottom:6px" data-page-node-id="qjUx0NGZk3wEikwSvUADQL"><b data-page-node-id="bEADVl6kKeqnRvegH1vkHV">保留策略：</b> ROW_NUMBER() OVER (PARTITION BY ... ORDER BY side)</p>
+              <p style="color:var(--muted)" data-page-node-id="nUzafFGTv9vgGNSAHx08F2"><b data-page-node-id="w77DZEnoeStnRf3bApS12K">下游：</b> S5 DWD 层执行（S2 仅定义规则）</p>
+            </div>
+          </div>
+          <div class="card" data-page-node-id="ThaplrkQ2KiPP0O56plE22">
+            <div class="card-hd" data-page-node-id="d4fXnVs6paA9GUanWSRPlj"><h3 data-page-node-id="l8ZF1u8YacmHVSYTJtMozN">兼容性</h3></div>
+            <div class="card-body" style="font-size:12px" data-page-node-id="NGK7sKA8gTdlmHyAU9wGSY">
+              <p data-page-node-id="sXEYjYZVfSkBphfB8qq0K8">当前版本 <code style="color:var(--primary)" data-page-node-id="mVcWeqzMuuerkAeFi8MUei">v1.3.0</code> · <span class="badge ok" data-page-node-id="ovZDYaOImFkAJxSIffsikG">backward</span></p>
+              <p style="margin-top:6px;color:var(--muted)" data-page-node-id="ejEsA1bQIO7BN9KxvqVtaE">向上兼容，可被 v1.2.x / v1.1.x 上报数据消费</p>
+              <p style="margin-top:6px" data-page-node-id="gt5CJCVI8sVCOAcGr8BCST">下次修改请遵循 <a href="#" style="color:var(--primary)" data-page-node-id="doEMyRzsdW6yBc3L7eUuSh">兼容性规则</a>（破坏性变更将强制 major+1）</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: 版本历史 -->
+      <div class="tab-content" id="tab-t3" data-page-node-id="indly4QsOuoxUhfXt9QTSf">
+        <div class="card" data-page-node-id="xeriB0gQ8l3fXzUFAhKGZL">
+          <div class="card-hd" data-page-node-id="y08RvFXlPiS1SozDRuSo70"><h3 data-page-node-id="5ZR0SXlKpB9bb9t1uN1RqJ">版本时间线（共 4 个版本）</h3><div class="meta" data-page-node-id="RbAjaxOBPmGGGoykFomqEl">可对比任意两个版本 →</div></div>
+          <div class="card-body" data-page-node-id="VF5nMo6DBIuYabfP6i7THf">
+            <div class="v2-version-item" data-page-node-id="QrQZ9OVdej4wCEJHpTesr1">
+              <div class="ver" data-page-node-id="P2C0QtHRxlyKUwBLLLZ0xb">v1.3.0</div>
+              <div class="summary" data-page-node-id="RrvQnZhalHYUSlvTNNwGvU"><span class="badge ok" data-page-node-id="P0yDKqKHmCP0CIxJwF7PgI">backward</span> · 新增选填属性 <code data-page-node-id="TdzPXr18P44SQlp6ajYmNj">tool_call_count</code> · 当前版本</div>
+              <div class="ts" data-page-node-id="5VdOGligsoXaJ8F365rkxt">2026-09-05 · 王皓</div>
+            </div>
+            <div class="v2-version-item" data-page-node-id="KCABXpSA6FRXOneTynaToG">
+              <div class="ver" data-page-node-id="eGM6MJucUQBU4R7tJITCFD">v1.2.0</div>
+              <div class="summary" data-page-node-id="hMA9huTlmZ0N7ABsE6pwSc"><span class="badge ok" data-page-node-id="X3wPH8n6DviUjWYbeG95D6">backward</span> · 修改 <code data-page-node-id="ItpfHCa6B7WEW77gwNOiZb">latency_ms</code> 描述 + 示例</div>
+              <div class="ts" data-page-node-id="FsCSAk7qUahytQiG9b4gcT">2026-08-12 · 王皓</div>
+            </div>
+            <div class="v2-version-item" data-page-node-id="6ubMCD4wpUaI8GmnZYvkhH">
+              <div class="ver" data-page-node-id="cppPCiO8cdT7y7JSvQ9Hz6">v1.1.0</div>
+              <div class="summary" data-page-node-id="t2jhkC7BLsLaQfopBADhGi"><span class="badge ok" data-page-node-id="fZMFeEG60G3StefmgtAXNI">backward</span> · 新增选填属性 <code data-page-node-id="7vFQZdUW5S9fgRnn1AjRa3">output_tokens</code></div>
+              <div class="ts" data-page-node-id="ddMbgUk7BjRKrd8jZBjRvJ">2026-07-03 · 王皓</div>
+            </div>
+            <div class="v2-version-item" data-page-node-id="xg98RjVXNo8MEyXBnbFBGM">
+              <div class="ver" data-page-node-id="3mJNLW1cEWgjhVKjm6dOun">v1.0.0</div>
+              <div class="summary" data-page-node-id="ag7ah8ZARY9UwuXUEFxGD1"><span class="badge primary" data-page-node-id="9gfaphXUf2VCOAaIPFhGdb">首发</span> · 初版上线，包含 <code data-page-node-id="qOasglA4tTkWQPFmEWOBQS">turn_seq</code>/<code data-page-node-id="zbBOk6Db222VejHxmfMvnn">latency_ms</code>/<code data-page-node-id="SGCpKRcj3SXyddGvQD31fr">input_tokens</code> 3 个属性</div>
+              <div class="ts" data-page-node-id="8ukJDY1S40vHvoWnynOWnZ">2026-05-20 · 张磊</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 5: 相似事件 -->
+      <div class="tab-content" id="tab-t5" data-page-node-id="0HZjWNW03zQ5m2ZOqgwEYC">
+        <div class="card" data-page-node-id="TWUC8HiWfpXedkaSHuqyZV">
+          <div class="card-hd" data-page-node-id="GQjnzU9cMT2tJtRTblHHMm"><h3 data-page-node-id="FNGs27APY8wUuGtS1MtPVS">相似事件 Top-5（综合得分 ≥ 0.75）</h3><div class="meta" data-page-node-id="zzkruXuhONqf4StUUcTXgv">命名相似 + 语义相似 + 属性重合度</div></div>
+          <div style="padding:6px 0" data-page-node-id="WJj5srmqPnZ2e2FuMON4Lk">
+            <div class="v2-similar-row" data-page-node-id="UJd2IHQYh8yR4T1hlnVXf3">
+              <span class="ev-name" data-page-node-id="Z8ND2wFtUIKMwZQXl3VCwx">turn_complete_v2</span>
+              <span class="sim" data-page-node-id="AbYHkaHQWoblMpuTbCj46B"><span class="chip" data-page-node-id="fg3SBgJjx9D7r2xqtQoWdd">命名 0.92</span><span class="chip" data-page-node-id="xH82j1HzhUZhFo8xMfVc8j">语义 0.88</span><span class="chip" data-page-node-id="SpQv4RmG6DfceVeI4vkdTV">属性 0.85</span><b style="color:var(--primary);margin-left:8px" data-page-node-id="Nxy8t5r1aGzDFkLdZ3oxlF">总分 0.89</b></span>
+              <span class="badge warn" data-page-node-id="2dJFlRYVlE2yxPhlQgaH0e">deprecated</span>
+              <button class="btn sm" data-page-node-id="Xb6wKZYnXns45RaibsfJVV">查看差异</button>
+            </div>
+            <div class="v2-similar-row" data-page-node-id="OTRDRzxdADI9hoIzL7pOMK">
+              <span class="ev-name" data-page-node-id="N9C9O0kuEFCjBcjO1Z2t3Z">conversation_turn_end</span>
+              <span class="sim" data-page-node-id="e0W3rv11GfRVL7SEPRALc3"><span class="chip" data-page-node-id="oVARSmyoMBSyGRIoe1PhvO">命名 0.78</span><span class="chip" data-page-node-id="db4P1trvFOOGeI6hDXJBIE">语义 0.82</span><span class="chip" data-page-node-id="Iy7BpBArByCY98DISsE0lf">属性 0.75</span><b style="color:var(--primary);margin-left:8px" data-page-node-id="nhCHeWa1wAcg8zQaiSKu1o">总分 0.79</b></span>
+              <span class="badge warn" data-page-node-id="GXt6RDAw5qbUmIS08v8689">deprecated</span>
+              <button class="btn sm" data-page-node-id="bLSos3GdZmfy1S93uPi32W">查看差异</button>
+            </div>
+            <div class="v2-similar-row" data-page-node-id="6P3XuKFPzdjDClWGP0ncV9">
+              <span class="ev-name" data-page-node-id="Mn31YQcCotmL9JALpOFD3T">turn_finish</span>
+              <span class="sim" data-page-node-id="R3uwP0JT3WBMLCinAGqGC7"><span class="chip" data-page-node-id="eU6dEm1vemhaxT0vfegEVo">命名 0.81</span><span class="chip" data-page-node-id="D4JLvY0jiAC9SZgBh9JOFh">语义 0.76</span><span class="chip" data-page-node-id="APkb9uCDeCty4GiGZ0QI7E">属性 0.62</span><b style="color:var(--primary);margin-left:8px" data-page-node-id="R7qOByYi8c8IGjVpDZVmAI">总分 0.76</b></span>
+              <span class="badge gray" data-page-node-id="xcrHNiPJv6k5t2EzW8w3kl">设计中</span>
+              <button class="btn sm" data-page-node-id="Z5zW5g0OImnBtGG4zgDRY5">查看差异</button>
+            </div>
+            <div class="v2-similar-row" data-page-node-id="cOQlD1pCaxZ0CiEaDlcuNx">
+              <span class="ev-name" data-page-node-id="EjDHZQPfEeAEQZShIvH4lH">dialog_turn_done</span>
+              <span class="sim" data-page-node-id="IPDwEFNlsRCP50i2VW4FdA"><span class="chip" data-page-node-id="M3NBvU8KjDBC39EsUSjAAo">命名 0.72</span><span class="chip" data-page-node-id="bzMLsBqDAebRE9Ljcp8Tes">语义 0.81</span><span class="chip" data-page-node-id="GM74o6fHcOkSLH0tFlTR2w">属性 0.68</span><b style="color:var(--primary);margin-left:8px" data-page-node-id="89lsvAdMPCflz5NFb86u4H">总分 0.75</b></span>
+              <span class="badge gray" data-page-node-id="cnWdvjbEzmknrwfMEFA6Gc">设计中</span>
+              <button class="btn sm" data-page-node-id="zeS9ez7h95fv0Eh1BapxAL">查看差异</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 6: 实时上报样本 -->
+      <div class="tab-content" id="tab-t6" data-page-node-id="rJyQhjDdgdERiDxhWlbRAa">
+        <div class="card" data-page-node-id="1sQdTw1UGK5TEtuLe1QZwo">
+          <div class="card-hd" data-page-node-id="Nqw6UkGbOewZVDqU0m1v5s">
+            <h3 data-page-node-id="RJoiIbFDw12t2AZWdBElUg">实时上报样本（最近 10 条，字段对比）</h3>
+            <div class="meta" data-page-node-id="VrBBTrtKVu5r21WDBa8ED4"><span style="color:var(--ok)" data-page-node-id="eIGdMHvP5js4M8Y96Pogmb">●</span> 完整 · <span style="color:var(--warn)" data-page-node-id="ijEzflpIJsZn03bCjdrFIv">●</span> 类型不符 · <span style="color:var(--err)" data-page-node-id="oVIZit6vDm94mp6dUH6kPX">●</span> 缺失</div>
+          </div>
+          <div class="v2-sample" style="padding:14px" data-page-node-id="pRyDziBOqg5H68HmJgbPaR">
+            <div class="v2-sample-pre" data-page-node-id="m775EHNgr78jH65djI1kZD">{<br data-page-node-id="mAYQqK7BSly8S3qjbypvBN">
+&nbsp;&nbsp;<span class="k" data-page-node-id="DHfAFDBddT3XOtPjQ6Q7VW">"event_name"</span>: <span class="s" data-page-node-id="onL1XjAw1oFVWGEovqliCr">"turn_complete"</span>,<br data-page-node-id="a7b4emIUAwQx3EeSDIlZyZ">
+&nbsp;&nbsp;<span class="k" data-page-node-id="BCCVXoU9GCiNiMRRUNzxIQ">"schema_version"</span>: <span class="s" data-page-node-id="8yXvRiFVhCR1IvkSRwLpfv">"1.3.0"</span>,<br data-page-node-id="mk3LAjLKJvyNXnJFBb3oxp">
+&nbsp;&nbsp;<span class="k" data-page-node-id="SaDUoTOFNL3Av2RqGPicAy">"properties"</span>: {<br data-page-node-id="Hz41r34NzSNVyfSnL9FWHl">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="SUph4KScWMGxbgiSkHtSlT">"conversation_id"</span>: <span class="s" data-page-node-id="b8vj1G7SW6vQFiNdjMB0d5">"c_8f3a2b"</span>,<br data-page-node-id="FooJmnmGB3u0huEgOImocy">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="sWDqNKiSWjgcau7KqZdAUY">"turn_seq"</span>: <span class="n" data-page-node-id="6vZ3bdfvRl6yVfEN2E8CMA">3</span>,<br data-page-node-id="79u9drkra0xByRuleuf8jp">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="YmO3VOFQsrwnirCJk1XdaQ">"latency_ms"</span>: <span class="n" data-page-node-id="5vCJ32DUHSBINkliwSFL6e">2380</span>,<br data-page-node-id="oq86RajvWo8CjnFTwAEWFI">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="DHNO7gKLSwl7AueQEKmyMa">"input_tokens"</span>: <span class="n" data-page-node-id="zmT7NlHavoe8pGNewNOCHu">512</span>,<br data-page-node-id="FNLIQ05ppUr1xA6X5w0XlR">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="3uEV2m9o4UTgcedHoebb18">"output_tokens"</span>: <span class="n" data-page-node-id="aO5O8bWyFcFYaUBkHbPNWU">340</span>,<br data-page-node-id="ryJLkZQFGndlqxUYhBfjFf">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="tvuKaiqOSOvvjAzUGruCr0">"tool_call_count"</span>: <span class="n" data-page-node-id="CDoaxSChp5a8QUCkQTv5uO">2</span>,<br data-page-node-id="6WEDsfbW5YAJjlSQKhPE8Z">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="aMhfKmif10DI7u9BLG9BQx">"user_id"</span>: <span class="s" data-page-node-id="3dryPnFQI7c4rWWZabBBn4">"u_x9c"</span>,<br data-page-node-id="g5UsULP9fplsUG1hK2fQ9d">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="SKEp1bOjKC1hLeYqF1vFlC">"device_id"</span>: <span class="s" data-page-node-id="p1z390pO4VpcBi3rDGLJIy">"d_xx"</span>,<br data-page-node-id="BX84bOVkZARJAuUIvWFc1k">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="oEeaEUiXbXrdY8z0K2n71D">"client_ts"</span>: <span class="n" data-page-node-id="5MX3wwjZU8JWJ3hiRJ5S1i">1757000000123</span><br data-page-node-id="sSc7tTF5gNPhZObP2DIl2s">
+&nbsp;&nbsp;}<br data-page-node-id="TqtFjYKvVytmjGX33nv7ZX">
+}</div>
+            <div class="v2-sample-pre" data-page-node-id="pM51JQODDBkZt4QVvudaC9">{<br data-page-node-id="R2aCvEUvnmpRWea0vYFTtI">
+&nbsp;&nbsp;<span class="k" data-page-node-id="bpaYvIQSsk2XGlkDPKUMFK">"event_name"</span>: <span class="s" data-page-node-id="KjlxMqlSmV19qBEA2suVov">"turn_complete"</span>,<br data-page-node-id="VG4yqNJzRlvX4fU3eKk1zi">
+&nbsp;&nbsp;<span class="k" data-page-node-id="Og6tb2MD3DkYjn4SA2VtCC">"schema_version"</span>: <span class="s" data-page-node-id="pwFmE34EJF338FqOWodeXC">"1.3.0"</span>,<br data-page-node-id="DW8Al5JYvXGnXqHTS4b3qw">
+&nbsp;&nbsp;<span class="k" data-page-node-id="r88fsqU0GBFUtmQz4EPn1j">"properties"</span>: {<br data-page-node-id="IWzLR6zT7p02bekTTndt5t">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="UEy43xRqou1JpZFRQ7gfvt">"conversation_id"</span>: <span class="s" data-page-node-id="O7gTB0pXfctAVpTbXRp1wy">"c_8f3a2b"</span>,<br data-page-node-id="JVVl2LZDyQDrf5Y2wqroMC">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="BOK1kTTwNQAj1SMdERWQW0">"turn_seq"</span>: <span class="n" data-page-node-id="0ctZq6VtkRrypWOL1WRZ7a">4</span>,<br data-page-node-id="PKGbapLS0y0ytmQwIyUGpx">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="s7mV7QiKrVoJrF7ZYwajnI">"latency_ms"</span>: <span class="n" data-page-node-id="W9tHQOORQJ1xv9eAfaKF6O">1820</span>,<br data-page-node-id="exlbZk8zpIYaabxvI0qUTo">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="p3CXN2pchVKDpDlLWcUy0M">"input_tokens"</span>: <span class="n" data-page-node-id="EMICIdXhhpXxIKlJ5FQOS0">320</span>,<br data-page-node-id="CWYNEQnGLQBVDxM1xYcVby">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="F584fE2GHIGCgxRR3cXfg5">"output_tokens"</span>: <span class="n" data-page-node-id="Ki0NnXl4s4jYVaOoXQfj8G">210</span>,<br data-page-node-id="NbUTDaiXgPZ1kFivrffcpG">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="miss" data-page-node-id="Gjo7gLtL6R2oFNyNMbz257">"tool_call_count"</span>: <span class="miss" data-page-node-id="0vKGUJzYWr0KwdnIJ68ddt">null</span>,<br data-page-node-id="ajKqAKy2rSBzxFNT2ATsbH">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="SNQgnwBJAlDf5HNpXhclDM">"user_id"</span>: <span class="s" data-page-node-id="dTA1vKgJCNF7Xjvfuucjxr">"u_x9c"</span>,<br data-page-node-id="IGmd1HBbwURQDsJY6vS54f">
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="k" data-page-node-id="snZBoSpEDgD0B7zvwHYU0n">"device_id"</span>: <span class="s" data-page-node-id="RkBNwh5giJNFDivpy8Nj82">"d_xx"</span><br data-page-node-id="V64wXHE01lEwHvaaNHyu3V">
+&nbsp;&nbsp;}<br data-page-node-id="woPJpfztKkhohMLkus2dHY">
+}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 视图3：方案列表 ========== -->
+    <section id="v3" class="view" data-page-node-id="PMrBo9b2EDmC4Ao5hA3OqD">
+      <div class="page-hd" data-page-node-id="vDlmIZMfXqTqIGKcqu3FAx">
+        <div data-page-node-id="PCxvcEXB0jM8wwfcKWevBx">
+          <div class="crumb" data-page-node-id="2YqR1XFqEBGdwuafqCUAq8">S2 埋点与事件治理</div>
+          <h1 data-page-node-id="idJmI4XpE6uAowXsyBhoOS">📋 埋点方案</h1>
+        </div>
+        <div class="actions" data-page-node-id="JFDmilOjyN37w5shJW039x">
+          <button class="btn ghost" data-page-node-id="JhJFToP0nCnmuvMkpdYFn7">⤓ 导出全部</button>
+          <button class="btn primary" data-page-node-id="NVxouFrPWEHenePXYsPpwX">+ 新建方案</button>
+        </div>
+      </div>
+
+      <div class="v3-statusbar" data-page-node-id="sQNOgmDkOYhIiGcE4usc2q">
+        <div class="stats" data-page-node-id="e71fnrwhjnpspOUdu2DCNH">
+          <div class="item" data-page-node-id="GBRIkkqXdzxFwpSkxpy2Mf"><span class="v" style="color:var(--muted)" data-page-node-id="7ujP65iD09kjZBPX4fyQgA">12</span><span class="l" data-page-node-id="Dyo5tdErSgsrv21cqVuOs4">草稿</span></div>
+          <div class="item" data-page-node-id="0EABy7shdjCH5ALAahZhfw"><span class="v" style="color:var(--info)" data-page-node-id="sJqHBB3rW5qV8YqdFZVwQB">5</span><span class="l" data-page-node-id="kOLdZOELBnz8Pl6SIFy6eN">评审中</span></div>
+          <div class="item" data-page-node-id="rkphqY7zI5NIv4vlX3MBNh"><span class="v" style="color:var(--primary)" data-page-node-id="1QmyUA2ujNQBsfj20hlHSQ">8</span><span class="l" data-page-node-id="IDgjlMYjGUPjFCCaRw9X4p">实施中</span></div>
+          <div class="item" data-page-node-id="LQxDFf33OjjF7DCUyqgYAH"><span class="v" style="color:var(--warn)" data-page-node-id="d8lST9dBgbJHDpWEaEM9Lf">3</span><span class="l" data-page-node-id="7qC01YsLwqmRBRIC4SHvMO">验收中</span></div>
+          <div class="item" data-page-node-id="RmrFh6CXYhGGfErYf4e8JA"><span class="v" style="color:var(--ok)" data-page-node-id="a7q2OoYK2jLnXsFPyIQ83Q">142</span><span class="l" data-page-node-id="x0myXvH9YcBZECq7uy6a8M">已发布</span></div>
+          <div class="item" data-page-node-id="hNwbQjkkaJEjrbCNNLzTFG"><span class="v" style="color:var(--err)" data-page-node-id="DbdHiOd0NMH2jX5A8UCHsE">17</span><span class="l" data-page-node-id="uoABxIW2AEOMvsC818gpS9">已废弃</span></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center" data-page-node-id="EG1nuZem9gED4D7ouhVVnm">
+          <input class="inp" type="search" placeholder="🔍 方案名 / 需求 ID / Owner" data-page-node-id="2HEnhB8ZDgLMZO52NfAUEk">
+          <select class="inp" data-page-node-id="buzfaGvnIpJJcVFgn4L7PQ"><option data-page-node-id="UdWCX0rqtd5XhS9EPjDzCg">全部 Owner</option><option data-page-node-id="nD4BMACZMEE4raPW1pqwVV">张磊</option><option data-page-node-id="78dtWpw15reP6GF2A5ZuUZ">王皓</option><option data-page-node-id="2DA9s7p1aei6JC98s7e3Jc">陈薇</option></select>
+          <select class="inp" data-page-node-id="LG8OkkEylCf9Vab3QJ4NUG"><option data-page-node-id="X2znhzJydCwOA1pLveVP3g">全部状态</option><option data-page-node-id="PnMrRVI94VqyIGXCk2Iu8h">草稿</option><option data-page-node-id="XrEMtPcb3m5xx9VEHOr4Hz">评审中</option><option data-page-node-id="m9d7mkDVBrQ1xmp5LdHIFG">实施中</option><option data-page-node-id="9RceSJKxrkMVGniXWaQc0c">验收中</option><option data-page-node-id="e58EPE0hThs2TbyldK2Gz5">已发布</option></select>
+        </div>
+      </div>
+
+      <div class="card" data-page-node-id="HYTAOuuuIHeJXHf09TCsG1">
+        <div class="card-hd" data-page-node-id="GKNleZTO7OTlIwolRWpLAw"><h3 data-page-node-id="kIYL1OX2e2XjCOSOrtySwT">方案列表（共 187 个）</h3><div class="meta" data-page-node-id="rE6EuFzhW5QJsJ60Sd6bnH">视图：[表格] [看板]</div></div>
+        <table class="tbl" data-page-node-id="BCly92sdijkDJAPyNhOYer">
+          <thead data-page-node-id="Hr9MFJTxtTHOGtJiOdDRKF"><tr data-page-node-id="S1XZIY8gLUBGcQ5Q0ks7oq"><th data-page-node-id="WkaunfyyBySOClBnDFyETT">方案名</th><th data-page-node-id="lFSDBswB4TNBHgk4e3wAVH">需求 ID</th><th data-page-node-id="XpArHOXvWXXnctkB7cUqHK">产品模块</th><th data-page-node-id="xoVfVSFz7BNKUxJ2tBIrmH">Owner</th><th data-page-node-id="xW5MO55GQWMycDgkqu9GDX">评审</th><th data-page-node-id="LEGKqqTqaIqSFfMzpibzGE">实施进度</th><th data-page-node-id="qLuM9mWFIdpo4t9Y7WOnMX">验收进度</th><th data-page-node-id="9TEriWYiD9m7tDDkVIU790">上线时间</th><th data-page-node-id="60dZ28zNZKSB6v63cU2B4L">操作</th></tr></thead>
+          <tbody data-page-node-id="S7JtdkyRhMkGAibqXncGHR">
+            <tr data-page-node-id="64UzloVH2LsNrYgqHjoJzA">
+              <td data-page-node-id="uAW4OJ9zZBOW6bgu4dvCGX"><b style="color:var(--ink)" data-page-node-id="G4X0mVAMff3A8d4RICBP8F">Agent 卡片改版一期</b><br data-page-node-id="GyhFUe9BH2kjxQcXEpqAXm"><span style="font-size:11px;color:var(--muted)" data-page-node-id="XTZ5eWH7NfoQxiGTQRLZTJ">13 个事件 · 5 端 SDK</span></td>
+              <td class="mono" data-page-node-id="HQ18q1TUnQNCoBLpvVkeIP">REQ-2451</td>
+              <td data-page-node-id="8eEjCJlSsEUNQ9qSOmpE1W">Agent 卡片</td>
+              <td data-page-node-id="mc9SdDpkrjwzr2yu1QcMAT">王皓</td>
+              <td data-page-node-id="5rQpLGa26LJdQlFDbDkSb5"><span class="badge ok" data-page-node-id="jbvInQlCj4Kwyft5mb30KD">已通过</span></td>
+              <td data-page-node-id="6DFvzIImfHqfOYFNAdBPGm"><div class="plan-progress" data-page-node-id="SYXcHX1nrXXMXAacMJUPd6"><div class="bar" data-page-node-id="u8f41RAyFDiu0POCCeddJ5"><div style="width:92%" data-page-node-id="BR2pqSUle1izeCiFJnqZbP"></div></div><span class="txt" data-page-node-id="lBx07npRyKjys4pg14aAuz">92%</span></div></td>
+              <td data-page-node-id="7yMKOxqQYbd6xpWtUqYsle"><span class="badge warn" data-page-node-id="wVCVjz0ds7BIQBSxMNsefc">待启动</span></td>
+              <td data-page-node-id="sjPkgd8kRyHfO8oqzGallw">2026-09-12</td>
+              <td data-page-node-id="DpbeTV7KhE0DcdcJXjNKXC"><button class="btn sm" data-page-node-id="K5yV27CnvmL10ZzsPe8iLu">查看</button> <button class="btn sm" data-page-node-id="8M0jFmcvoCOYOtgGYUlm7K">编辑</button></td>
+            </tr>
+            <tr data-page-node-id="F1fV9e932pJWCp9cf5QL3d">
+              <td data-page-node-id="7Dq9jDMaxdeskxII79PdoJ"><b style="color:var(--ink)" data-page-node-id="rrFoEqMDssj4C25lDRrVEB">工具调用埋点补齐</b><br data-page-node-id="SNAItKnGe9RDysQBoE81sF"><span style="font-size:11px;color:var(--muted)" data-page-node-id="OshxGOjhgYFaGSdjDRQlxt">5 个事件 · 3 端</span></td>
+              <td class="mono" data-page-node-id="dbc7RqjDVJbmvrTJtIEV9J">REQ-2389</td>
+              <td data-page-node-id="b1FIwTCxZdHJEciwyqUs5A">Agent 工具</td>
+              <td data-page-node-id="saoHKE0E3pfmhNzjBWhG86">张磊</td>
+              <td data-page-node-id="G2Sym4ZFInYA7rgPjACGSc"><span class="badge ok" data-page-node-id="fZa4Ab1zdZsBIgqlxIucfI">已通过</span></td>
+              <td data-page-node-id="DrrtnCHj3rwfD8M9kvOIHw"><div class="plan-progress" data-page-node-id="VWBFuOvQ10upRbcNPybvea"><div class="bar" data-page-node-id="QzuPSbJQ2X6343KJ9NdgGw"><div style="width:100%" class="ok" data-page-node-id="ZaIauOFaEmdNu40jP4Bfbk"></div></div><span class="txt" data-page-node-id="m5N2Pf4qufWtsfRFfSxv6f">100%</span></div></td>
+              <td data-page-node-id="biEuJqyEOO67LbMJuYLRVj"><div class="plan-progress" data-page-node-id="vv9jJJdMpBPy9PvRFGxwPD"><div class="bar" data-page-node-id="UoKo0Gk3dXrVHUwSyKAZp0"><div style="width:80%" class="warn" data-page-node-id="yYBuOWnPrie7zlIL5G1swA"></div></div><span class="txt" data-page-node-id="2IhhcyErwsCzfReQY9ii8n">3/4</span></div></td>
+              <td data-page-node-id="hZSTXi63s7N3rUedb044t8">2026-09-10</td>
+              <td data-page-node-id="EFbuHe6uWiOxSnAdREok1U"><button class="btn sm" data-page-node-id="FIRjRrdxV77iAutOVr5e38">查看</button> <button class="btn sm primary" data-page-node-id="Zj5J3KmtE9hsEtb4JB8mMf">验收</button></td>
+            </tr>
+            <tr data-page-node-id="VX20uTkBR9jBWKwedTNKEZ">
+              <td data-page-node-id="ABTvWQ7K3pQ5so3giuRFrF"><b style="color:var(--ink)" data-page-node-id="ix4ILyI0lVxScD93LHPCDA">对话首页改版</b><br data-page-node-id="Od0qL8NEpKbJJuEpOgkeKQ"><span style="font-size:11px;color:var(--muted)" data-page-node-id="yvHdz7VKhQAo9iJNJQWDwG">8 个事件</span></td>
+              <td class="mono" data-page-node-id="CAtDwDsPVcO9sucFaIBzQk">REQ-2511</td>
+              <td data-page-node-id="SjEfFfMXA4qrfoPvHE6U9F">对话首页</td>
+              <td data-page-node-id="dGO9xr4dLX0HzcJJ3HSzd3">陈薇</td>
+              <td data-page-node-id="l23UEdP1s0KQF1ET6yocJV"><span class="badge info" data-page-node-id="H5eH9oh7ZWylAXb1vils0D">评审中</span></td>
+              <td data-page-node-id="ySvXJZ3Urua0EVQ7x0ovjs"><span class="badge gray" data-page-node-id="LyrAuU70e59HrLWFxfd0Q8">未启动</span></td>
+              <td data-page-node-id="yd9ZdOH5LoC1Z7lBURPWd8"><span class="badge gray" data-page-node-id="M6Lm1f3S3Yj9lSMWjQYXol">未启动</span></td>
+              <td data-page-node-id="9PwkWErYeU0u4MUPxxpsay">2026-09-25</td>
+              <td data-page-node-id="5Rzg2E3s3zn5AoKTPN655j"><button class="btn sm" data-page-node-id="gmxVAqiGTBOQ1oFmdrj4r0">查看</button> <button class="btn sm" data-page-node-id="x9Q9Ns7cLH8kA2ExOvw8JC">编辑</button></td>
+            </tr>
+            <tr data-page-node-id="ejqAObL5jJUoDriw7xaZmK">
+              <td data-page-node-id="VIL3hMvCFo56hinzEnmFMH"><b style="color:var(--ink)" data-page-node-id="k9vuLDDttBoFVJaBD4Hr8L">搜索埋点补齐</b><br data-page-node-id="OKcPnAza8Git9kNnjMpZ5d"><span style="font-size:11px;color:var(--muted)" data-page-node-id="Euh0LWH0aNDOpWU9nJooPp">3 个事件</span></td>
+              <td class="mono" data-page-node-id="mAyb4tFomPDc7zH03D2Aw9">REQ-2543</td>
+              <td data-page-node-id="ITdw3JREiNa3CFHM0Qc63W">搜索</td>
+              <td data-page-node-id="iY5UPwlZqa6B3HUq7Don0P">李明</td>
+              <td data-page-node-id="pNZG9X7MvVIdyDQF0i3r1o"><span class="badge warn" data-page-node-id="ZN324uSWga4Yk3AiNJldmJ">待评审</span></td>
+              <td data-page-node-id="4f2gsBrAA2mo0qsEThFy0g"><span class="badge gray" data-page-node-id="JEIvwET6IYQi2slPgUh1Nq">未启动</span></td>
+              <td data-page-node-id="Z26Mf5sAfxtc6idlgzzeZF"><span class="badge gray" data-page-node-id="piGN65NeLOokfF8S3B8LBj">未启动</span></td>
+              <td data-page-node-id="Q60TBSHEmTOCrH57fCaZhd">2026-10-05</td>
+              <td data-page-node-id="sFtUcJU9sbgZscvtGp9Csg"><button class="btn sm" data-page-node-id="HvVGgPwxbWDjXihHvic2Ms">查看</button> <button class="btn sm" data-page-node-id="HGE8wLsbWjrfkoPvxJxamc">编辑</button></td>
+            </tr>
+            <tr data-page-node-id="xr3pHHrDw28jjOazn9bS2J">
+              <td data-page-node-id="TxEBon6TTK3z1nPLfZFudL"><b style="color:var(--ink)" data-page-node-id="lW5kLMVGkPQHrAOUwWdwJv">设备指纹升级</b><br data-page-node-id="9OFeTah306iZuaDXPgZYou"><span style="font-size:11px;color:var(--muted)" data-page-node-id="Q3TOwDeoBGOe27AGgQQRpp">2 个事件 · 5 端</span></td>
+              <td class="mono" data-page-node-id="EgcXIyKF74vV6A5XDk3EDh">REQ-2203</td>
+              <td data-page-node-id="k9BRd4tzPIsYeEOJJ391uN">基础</td>
+              <td data-page-node-id="dXHAJKomms7RqD48j8kBBJ">王皓</td>
+              <td data-page-node-id="BasE7hs3PVE74JKokeMb13"><span class="badge ok" data-page-node-id="HsogGCGmYhjxzf3RAoh7oA">已通过</span></td>
+              <td data-page-node-id="g6wp1BR0Vly2mSnmx4IStg"><div class="plan-progress" data-page-node-id="WtK7lkowzbSBbUW3DvZ7xu"><div class="bar" data-page-node-id="9GGhwl3eafQVza2uKXNf41"><div style="width:100%" class="ok" data-page-node-id="6UKHJSpkHz3380pQ5CdISi"></div></div><span class="txt" data-page-node-id="RcBnZawbIa3DtTGdGr1k1t">100%</span></div></td>
+              <td data-page-node-id="XHBV37S5Zh7gFTWoOSFici"><div class="plan-progress" data-page-node-id="lwQH9g2Xklh0wIohE3nS30"><div class="bar" data-page-node-id="QCYRsRkrDhrw94d6EW2EEH"><div style="width:100%" class="ok" data-page-node-id="FeUUSQSAE3SVP6DWwMBxiK"></div></div><span class="txt" data-page-node-id="LfqaEv3TeXznFQ1c8KK9sP">4/4</span></div></td>
+              <td data-page-node-id="6XEoymhgbfupxDF6INT33z">2026-08-30</td>
+              <td data-page-node-id="UXiDNOQZY6oLdD19glUcBf"><button class="btn sm" data-page-node-id="1BXtpKIXZFKx0szFMmCEaI">查看</button> <button class="btn sm" data-page-node-id="hFYSazyvE757hvvZAJb2BA">发布记录</button></td>
+            </tr>
+            <tr style="background:#fffbeb" data-page-node-id="x23EjfE7D7tWrngkrtBfQE">
+              <td data-page-node-id="8CedSBpC26gLw32XYBhiJr"><b style="color:var(--ink)" data-page-node-id="1gWjXRBzlBgdI3C6IPFxTC">埋点需求模板标准化</b><br data-page-node-id="6xnb5Nb1EFm9pCWt04HG5v"><span style="font-size:11px;color:var(--muted)" data-page-node-id="H8dKpvIObgf0jbAhknh1ZF">流程规范</span></td>
+              <td class="mono" data-page-node-id="hoDD7ncnnFxZUpkzp0Hv9w">—</td>
+              <td data-page-node-id="eTpNjDLCCvpXgUUwmffefz">平台</td>
+              <td data-page-node-id="FLr0xqbX0KILaf3KF42sFt">张磊</td>
+              <td data-page-node-id="engtDHKVuDQEbWo8S9figf"><span class="badge err" data-page-node-id="sNBf83Adccn0VVDxN7eovB">已驳回</span></td>
+              <td data-page-node-id="Q8fJsgrypwbdGrOuc3SPHF"><span class="badge gray" data-page-node-id="cDmamrkIu1cBZORy4CwSft">—</span></td>
+              <td data-page-node-id="Ex4lTPOVcgw9Aw5QGENoIS"><span class="badge gray" data-page-node-id="iKIBMjYqo69gV7l1uqjd8L">—</span></td>
+              <td data-page-node-id="hqtSXMJQMvauB78ctM5A5t">—</td>
+              <td data-page-node-id="0oxGc1oFC8mHlPvEosIkYt"><button class="btn sm" data-page-node-id="6RRwj9LpVdiD4r2zcTIl4Q">查看驳回原因</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========== 视图4：方案设计器 ========== -->
+    <section id="v4" class="view" data-page-node-id="6AkejtowDowt0S3yvhWeNw">
+      <div class="page-hd" data-page-node-id="E29LftzrnFcoGSdFTHRvTe">
+        <div data-page-node-id="tM9TNCVXDM6lOWBi20bHzB">
+          <div class="crumb" data-page-node-id="aQnAdWDhC7gy2rHwBsFUlo"><a href="#" onclick="showView('v3')" data-page-node-id="oAHrjZdUIab8eBv5qGo10A">埋点方案</a> / 设计器</div>
+          <h1 data-page-node-id="aQZCTy67lIHIOznIBfV7kf">🎨 方案设计器：Agent 卡片改版一期</h1>
+        </div>
+        <div class="actions" data-page-node-id="22AhY92nhEApyi9T2FcgUC">
+          <button class="btn ghost" data-page-node-id="ccROXmffS1VzUDprSiEvHK">📋 影响面</button>
+          <button class="btn ghost" data-page-node-id="lUDjBAwGUXPi3kfZLtTRUi">📜 评审记录</button>
+          <button class="btn" data-page-node-id="cGuo4rJJI0LPI2S2Prj5ML">保存草稿</button>
+          <button class="btn primary" data-page-node-id="DpfGswVU8qmcUqPkyj5qEj">提交评审</button>
+        </div>
+      </div>
+
+      <div class="card-hd" style="background:var(--primary-bg);border-radius:8px;padding:10px 14px;margin-bottom:10px" data-page-node-id="rMlUHHAEFBfLasJIMnXryd">
+        <div data-page-node-id="VW0pz0O5d5TihsiWQIsn1q">
+          <span style="font-size:11px;color:var(--muted)" data-page-node-id="2hLq1BOwbHs5jH4BYHKkkD">需求 ID: <code data-page-node-id="Z8lV6rJpJWzivzH9MXmX6e">REQ-2451</code> · 关联指标: <code data-page-node-id="PRrB1YjigsgQt80ueoPn33">卡片 CTR</code> · 目标版本: <code data-page-node-id="6DeSUfgz49C6GlZ6o5PM8T">v2.5.0</code></span>
+          <div style="font-size:12px;color:#155e75;margin-top:3px" data-page-node-id="yrr42xIBvcRmnU1BIYEK4e"><b data-page-node-id="OaPlt5lZX0jJIRzoNKE2nm">业务目标：</b>追踪 Agent 卡片新版的点击率与转化路径，对比 v2.4.x 的 CTR 提升</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;font-size:12px" data-page-node-id="e0HPEi09cTl1kUnDEW9RTJ">
+          <span class="badge primary" data-page-node-id="bJfdJvGFnXWD6RD1dhWYz0">评审中</span>
+          <span style="color:var(--muted)" data-page-node-id="qHxynESqXMzBSn53WvHtA9">v1.2.0 · 13 个事件</span>
+        </div>
+      </div>
+
+      <div class="designer" data-page-node-id="liy0EPYwEFjFUS1gn1fCep">
+        <!-- 左侧：事件树 -->
+        <div class="des-left" data-page-node-id="wWk2g6GeM6Aak2jFzwHOyB">
+          <div class="des-h" data-page-node-id="uT1oMpCQSWrMT7hjcwUbt6">事件字典（拖拽到画布）</div>
+          <div class="des-search" data-page-node-id="A9T4LeHgkZaeSYqjQOzpAo"><input placeholder="🔍 搜索事件" data-page-node-id="IpaCFTEJrnRGamUZjzpvjJ"></div>
+          <div class="des-cat" data-page-node-id="dJJp6iKDLp4rICTjSOwS9T">
+            <div class="des-cat-h" data-page-node-id="4017QaK4zOgnaHFB4gpe7Z">⚙️ 通用事件 <span class="ct" data-page-node-id="8zxUt6z6xK8JtrRvnDLQnq">812</span></div>
+            <div class="des-item" data-page-node-id="PqQiFxTXYAn7VMtM5oja0Y"><span class="n" data-page-node-id="SAFmLs9eszMK8B1qg2hShj">page_view</span><span class="ic" data-page-node-id="89SgwH7E70NoKVfcfAEi14">↗</span></div>
+            <div class="des-item" data-page-node-id="M2sqhqBBmW4BHSZTLG6LVb"><span class="n" data-page-node-id="sDb1Y9CTmnjHKUnVcwOigG">app_launch</span><span class="ic" data-page-node-id="yxZLJPfSGm8atx6v54XNZ1">↗</span></div>
+            <div class="des-item" data-page-node-id="6crR7fsiFZlsxvSmsvzoB0"><span class="n" data-page-node-id="KVq3xMAuYdurazzt8jvloM">app_exit</span><span class="ic" data-page-node-id="cMGp7Rq0V1cOm87bZCGYCd">↗</span></div>
+          </div>
+          <div class="des-cat" data-page-node-id="Ts8gfKnk0a00XvYtWunUdb">
+            <div class="des-cat-h" data-page-node-id="NcCgeduiGdwuYCOBTNLsYL">👆 交互事件 <span class="ct" data-page-node-id="wV1JfmlGbRy4vM5MH8nVUI">1,253</span></div>
+            <div class="des-item" data-page-node-id="yiom6MfrmrksRLFjpDZjG8"><span class="n" data-page-node-id="DWmMYjepNcQFtx75p8a0ru">agent_card_click</span><span class="ic" data-page-node-id="91bd9mIqV717FhXD2DJx5z">↗</span></div>
+            <div class="des-item" data-page-node-id="sYzfFMArdCdB25V3dhYaqu"><span class="n" data-page-node-id="VYu77q6bDMirhwGgpO3tNb">agent_card_swipe</span><span class="ic" data-page-node-id="Tt2VtOOxu4NmTBMfsH6WUj">↗</span></div>
+            <div class="des-item" data-page-node-id="Jnzu03kV9CzFb49uBJMxNO"><span class="n" data-page-node-id="Ik9kxHGSLmdDrY0rowpi8c">agent_card_dislike</span><span class="ic" data-page-node-id="QI7AzcACzIMR3hFelzDJWb">↗</span></div>
+            <div class="des-item" data-page-node-id="I0ycRVm12B5tc9oV12sMF8"><span class="n" data-page-node-id="oldZLDBs1rfshEiLFeFOqp">tool_call_submit</span><span class="ic" data-page-node-id="Ou1k7iEmGc5S1LHKdsNlzu">↗</span></div>
+          </div>
+          <div class="des-cat" data-page-node-id="ATr9yCUiwMyKFzmCHSUJUz">
+            <div class="des-cat-h" data-page-node-id="6wZErxgFLzBx3uOrYZpyaj">💼 业务过程 <span class="ct" data-page-node-id="yrtaH2MfohW8nrBrEuz0ko">986</span></div>
+            <div class="des-item" data-page-node-id="A4LDGTdm0TASCSRyjS22CF"><span class="n" data-page-node-id="AVCNIzrBEFDC7JSjnTfqgc">conversation_start</span><span class="ic" data-page-node-id="ADGOn6jY4b8EOxmjwVQMWF">↗</span></div>
+            <div class="des-item" data-page-node-id="KT2xBBNdtacH4BotCuoMvP"><span class="n" data-page-node-id="EyvAX5dVqpqgLWlxRF9qwf">turn_complete</span><span class="ic" data-page-node-id="Z0EGe8rzeda14qzFZfTVBI">↗</span></div>
+            <div class="des-item" style="background:var(--primary-bg);color:var(--primary)" data-page-node-id="otEAdzn7TOmsnFIIEYi2Ju"><span class="n" data-page-node-id="KpV25rrRCKy2KhQ48EBFwn">turn_complete</span><span class="badge primary" style="font-size:10px" data-page-node-id="3ibtU9jEAyUEW8JMioLFRy">已加</span></div>
+            <div class="des-item" data-page-node-id="aQQipEdFyqsGUtDSXX6gCL"><span class="n" data-page-node-id="YXnu9K4a7HG7uBJF4kz8rt">task_finish</span><span class="ic" data-page-node-id="3i33KhNA0TRrwPUGyB80Iz">↗</span></div>
+          </div>
+          <div class="des-cat" data-page-node-id="cfXr3n7LFnfinHCZHfClVD">
+            <div class="des-cat-h" data-page-node-id="lE8fz0PGPRSQ1JH679sgmI">🤖 Agent 语义 <span class="ct" data-page-node-id="c0bKwjXESMuWIsSWDf5LPP">815</span></div>
+            <div class="des-item" data-page-node-id="vulATuYoCIZfSWaevgFx2G"><span class="n" data-page-node-id="XbGvXssZL9YgfrPfLKicQ6">intent_recognized</span><span class="ic" data-page-node-id="2s1BYVfOhClvypO2s4ZOa6">↗</span></div>
+            <div class="des-item" data-page-node-id="WcBkcSd9FRypON7eCNTPOV"><span class="n" data-page-node-id="CEVBAmIAZHH1xivQYe3L9V">tool_invoked</span><span class="ic" data-page-node-id="MmHXOPQIhkxDWuCkUmlCUe">↗</span></div>
+            <div class="des-item" data-page-node-id="EhYfGwElpDVgVA1pkdq1n0"><span class="n" data-page-node-id="mpRbfXI1Bzi68t0iF5wT1d">answer_cited</span><span class="ic" data-page-node-id="rBg9dpds72BCwltBJTBffx">↗</span></div>
+          </div>
+        </div>
+
+        <!-- 中央：方案画布 -->
+        <div class="des-mid" data-page-node-id="9YOP1KDEuH3IJXeOkbxUkh">
+          <div class="des-h" data-page-node-id="AymY9ENEIkhQ74VkNUjf1n">画布（13 个事件）</div>
+          <div class="des-canvas" data-page-node-id="iUZJVK03bjRRHugMCcbJn4">
+            <div class="evt-card" data-page-node-id="INLqsmqZelpSfH3bek68Wq">
+              <div class="head" data-page-node-id="BfoxNCU6mH1qgEVLiMcueX">
+                <span class="name" data-page-node-id="ME5TCD4p7KBYmAXU2ynnLg">page_view <span class="badge primary" style="margin-left:4px;font-size:10px" data-page-node-id="zKsQ8iiqnMMSrlMv23wWFI">通用</span></span>
+                <span class="del" data-page-node-id="Fh3v6ZDIg4urEGC22D3VTg">✕</span>
+              </div>
+              <div class="body" data-page-node-id="nWeEZD2bqiV8v1XGEjpdt8"><span class="chip" data-page-node-id="bdIMn97SflP2YbWAcPKUtZ">Web ✓</span><span class="chip" data-page-node-id="twh6BC3g46GXHFxWmG7SZk">桌面 ✓</span><span class="chip" data-page-node-id="eNDFwmZGwcyJoVwc2RR7RI">移动 ✓</span><span class="chip" data-page-node-id="NBUnlFHb2d4Qb100hP6BWH">服务端 ✓</span><span class="chip green" data-page-node-id="tKlSDzz9QqS3S06ZmKLGLd">5 属性</span></div>
+            </div>
+
+            <div class="evt-card" data-page-node-id="BOdKv4S2vQJHe5QBTcPfdS">
+              <div class="head" data-page-node-id="a6DxDuGZ0AHOKtkaUXELBH">
+                <span class="name" data-page-node-id="JZz8BucBhN9Uzc6moT1C12">agent_card_click <span class="badge primary" style="margin-left:4px;font-size:10px" data-page-node-id="niwWuQ6QBY3puAsMDTfTRM">交互</span></span>
+                <span class="del" data-page-node-id="UpEUVBYgNoFYW1BM9sU50B">✕</span>
+              </div>
+              <div class="body" data-page-node-id="C98H5N3OcwI6stoxsKogZl"><span class="chip" data-page-node-id="2Ey9jIEbfzYXsYXzTRnPTK">桌面 ✓</span><span class="chip" data-page-node-id="oMgTyGaIuxVnBSIAgIAsUO">移动 ✓</span><span class="chip" data-page-node-id="UdaN4kbNMurTi06uUvoJck">服务端 ✓</span><span class="chip green" data-page-node-id="PAFJSibFtg2Um1idPyrd6v">7 属性</span><span class="chip amber" data-page-node-id="GRYVffKfXhFL9WaER3t2wB">位置 pos</span></div>
+            </div>
+
+            <div class="evt-card selected" data-page-node-id="p6SKqX6QEJiUYLE9oig1zx">
+              <div class="head" data-page-node-id="uWFmqFAOOJcitpt1s5yU4y">
+                <span class="name" data-page-node-id="HmmTjzeByQAlUEmVFioymA">turn_complete <span class="badge primary" style="margin-left:4px;font-size:10px" data-page-node-id="VkDPJNnnLuZ9C4LM1TMTRf">业务</span></span>
+                <span class="del" data-page-node-id="VrAWL6ojgHxgyCOr7m74o0">✕</span>
+              </div>
+              <div class="body" data-page-node-id="sYxCKQ4xpM6Wm3TQe1VMDe"><span class="chip" data-page-node-id="auJFYTfbM3pd6OqDnEy57e">服务端 ✓ 主体</span><span class="chip" data-page-node-id="dT0dwHnac45hbFFZN2NiGr">Agent ✓</span><span class="chip green" data-page-node-id="WEntOJAs7XFDPn8BepZO6l">5 属性</span></div>
+            </div>
+
+            <div class="evt-card" data-page-node-id="H2XmuqCfinGveXxS2w56kN">
+              <div class="head" data-page-node-id="72F62w6cBBFAnSKXjDucRX">
+                <span class="name" data-page-node-id="IRBfwF5A5UjPl5BsaDKsqd">tool_invoked <span class="badge primary" style="margin-left:4px;font-size:10px" data-page-node-id="okHt1sT5f47BiXi4zld2TY">Agent</span></span>
+                <span class="del" data-page-node-id="HdBRA06GLMGpCACsQshUnD">✕</span>
+              </div>
+              <div class="body" data-page-node-id="yJSH68MxU1aGm0YoH6Ndna"><span class="chip" data-page-node-id="HO9VXT2tXOCFuG8H1QJBaw">服务端 ✓</span><span class="chip" data-page-node-id="SWVfQKVKDQWO5Ilbgdrdk5">Agent ✓</span><span class="chip green" data-page-node-id="B5bq35y6XzkanZLoOSsL7W">8 属性</span></div>
+            </div>
+
+            <div class="evt-card" data-page-node-id="NQF8ZDNnaGalGcl37nHJuT">
+              <div class="head" data-page-node-id="nGePnr4Aqa8lweQZd7Em8F">
+                <span class="name" data-page-node-id="YgACaajxUOaKpCLcdsOsbm">answer_cited <span class="badge primary" style="margin-left:4px;font-size:10px" data-page-node-id="AmkUBp7f6G28X6oOit19hC">Agent</span></span>
+                <span class="del" data-page-node-id="m3AMw7I2YR8PmnqMhv35ee">✕</span>
+              </div>
+              <div class="body" data-page-node-id="79SazEO5zeN0CksCMNx0uI"><span class="chip" data-page-node-id="UT7lvsvIbvX0p9mEFoiVDP">服务端 ✓</span><span class="chip green" data-page-node-id="HraIAR1FRPPz8DiQhWBtkn">6 属性</span></div>
+            </div>
+
+            <div style="margin-top:14px;text-align:center;color:var(--muted);font-size:11.5px" data-page-node-id="HHwc9yCdlAelNvCAIVuUM8">+ 还有 8 个事件已折叠，点击展开</div>
+          </div>
+        </div>
+
+        <!-- 右侧：属性编辑器 -->
+        <div class="des-right" data-page-node-id="0O9v6hnw3nV9XD7MiOqlTU">
+          <div class="des-h" data-page-node-id="UKNnR1eyoS2tuH4Fk2Eo11">属性编辑器</div>
+          <div class="des-prop" data-page-node-id="GCJF64wJIBNU9HqztMcZXj">
+            <h5 data-page-node-id="j8UiQVsCULYF3rGAkQxORe">当前选中：turn_complete</h5>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:8px" data-page-node-id="IeyHiYO3VG1irUV1D3xkan">schema_version: <code data-page-node-id="0WVqi9cHAANjrHBn60h9jH">v1.3.0</code></div>
+            <div class="des-prop-list" data-page-node-id="CliEAgs6CxWVYejdygA6HH">
+              <div class="des-prop-row" data-page-node-id="lGW7CPrx8rFk78WOJkLsxt">
+                <span class="pn" data-page-node-id="58yULCLtB6ZLsiourpEEqP">turn_seq</span>
+                <span class="pt" data-page-node-id="Fsfm2T6ALB244BJtw6UhRj">int</span>
+                <span class="preq" data-page-node-id="kMfjEgQIrfjN0WBLcs4TdM">必</span>
+              </div>
+              <div class="des-prop-row" data-page-node-id="w9sLWumLKE9Rd4NPGiYTCF">
+                <span class="pn" data-page-node-id="kyJpdIgsFv8P7GnDLHgtie">latency_ms</span>
+                <span class="pt" data-page-node-id="x8CQ3zh551H4z61HsA9uEO">int</span>
+                <span class="preq" data-page-node-id="BMaEkPrpw38AC0qpyNN0a6">必</span>
+              </div>
+              <div class="des-prop-row" data-page-node-id="BdpSikAnFlGI33TOJ735Ge">
+                <span class="pn" data-page-node-id="hEKqEpE1ZCC0NDVFIziyXF">input_tokens</span>
+                <span class="pt" data-page-node-id="fhjo8FCWkOkzKGfLys5wyy">int</span>
+                <span class="preq" data-page-node-id="hddQUUvtl4Zy2GTueOvkN8">必</span>
+              </div>
+              <div class="des-prop-row" data-page-node-id="RCijvZFIgFLMbWIZelOtQm">
+                <span class="pn" data-page-node-id="1o7l1wpDY8KMYmEJydeEvr">output_tokens</span>
+                <span class="pt" data-page-node-id="x1cTSndB7nNtEXGVx8S1Zn">int</span>
+                <span class="preq" data-page-node-id="4WUw6k2HdpcoRjFZtH4aus">必</span>
+              </div>
+              <div class="des-prop-row" data-page-node-id="hTeLUpo2e3IwJPpA79t6sk">
+                <span class="pn" data-page-node-id="LwrUH9NDM0F43GLCHSJG8R">tool_call_count</span>
+                <span class="pt" data-page-node-id="FU0WOSEy8hF8iWe2Qo9tqm">int</span>
+                <span class="preq" style="color:var(--muted)" data-page-node-id="6DAkgqPBgYVOUevFNoCDrE">选</span>
+              </div>
+            </div>
+            <div style="margin-top:8px;font-size:11.5px;color:var(--muted)" data-page-node-id="2PM7bf9VYEPYfIuPhODZDy">+ 14 个公共属性组字段</div>
+          </div>
+
+          <div class="des-end" data-page-node-id="AFUsA8Dro36MydEMJlYNw5">
+            <h5 data-page-node-id="4JyCvFPEDVBgNknNOyZZxF">上报端</h5>
+            <div class="des-end-row" data-page-node-id="n3RcStPAyL8aIbyXVlElz3"><span data-page-node-id="fh2trCXw0KiG2otU5LTFO1">Web</span><div class="switch" onclick="this.classList.toggle('on')" data-page-node-id="qLvaHEaWf3FaJmvIC0XJot"></div></div>
+            <div class="des-end-row" data-page-node-id="khseY8W34P4BMo6kiiZE9t"><span data-page-node-id="eaJBXVEUMkY0F2rqhrxU1V">桌面</span><div class="switch on" onclick="this.classList.toggle('on')" data-page-node-id="BOGVVfuPO0vTeukNB9f6LS"></div></div>
+            <div class="des-end-row" data-page-node-id="hNSkErLuYOG7UcsDQrsxEn"><span data-page-node-id="oQVUANfsEwJAtXymDi9U3B">移动</span><div class="switch on" onclick="this.classList.toggle('on')" data-page-node-id="qz5kvbPALAC09WunV8CqnV"></div></div>
+            <div class="des-end-row" data-page-node-id="swG1VfH08GDEAPUMBHAeQu"><span data-page-node-id="0KDiBAVMcJ0fqAWRy06AFb">服务端</span><div class="switch on" onclick="this.classList.toggle('on')" data-page-node-id="3K5CwOchqQa58N5ttfr3BX"></div></div>
+            <div class="des-end-row" data-page-node-id="l1UL8GYDvp4u9XkLNo9NBe"><span data-page-node-id="TF6ss6mSmb5WpaeLQ3zMzi">Agent</span><div class="switch on" onclick="this.classList.toggle('on')" data-page-node-id="IXf3naWlbHmYtwwI9KgqhI"></div></div>
+          </div>
+
+          <div class="des-end" data-page-node-id="i9UI8ovtfCsfoSMDMhbogz">
+            <h5 data-page-node-id="Oz9TutDvfNEM4pfAwVOKlw">触发时机</h5>
+            <textarea style="width:100%;min-height:60px;border:1px solid var(--line);border-radius:5px;padding:6px 8px;font-family:inherit;font-size:12px;resize:vertical" placeholder="服务端：模型响应最后一 token 输出时触发&#10;客户端：流式响应完成时触发（仅用于补齐端侧属性）">服务端：模型响应最后一 token 输出时触发&#10;客户端：流式响应完成时触发（仅用于补齐端侧属性）</textarea>
+          </div>
+
+          <div style="padding:10px 14px;border-top:1px solid var(--line);background:var(--bg)" data-page-node-id="tgvVRdwefZN3KHK9VPKZ8z">
+            <button class="btn sm" style="width:100%" data-page-node-id="GQxwL9bHTPrJRoeCpLBCzl">+ 添加属性</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SDK 代码实时预览 -->
+      <div class="sdk-bar" data-page-node-id="29ItDCBD3J1X6VYmAR9Hfr">
+        <div class="sdk-tabs" data-page-node-id="O0tyJA5VH7TQXcSdD8i4X9">
+          <div class="t active" data-sdk="web" data-page-node-id="WJAqfBDXxg55menIoxRbYW">🌐 Web (TypeScript)</div>
+          <div class="t" data-sdk="desktop" data-page-node-id="3P3WwSuOplelfoibpTe1Wk">🖥️ 桌面 (TS+Rust)</div>
+          <div class="t" data-sdk="mobile" data-page-node-id="JDH6C7VtgPNmHeblOKW2ba">📱 移动 (Swift)</div>
+          <div class="t" data-sdk="go" data-page-node-id="ReVYEDjtiHosPfKwU9Xuzc">⚙️ 服务端 (Go)</div>
+          <div class="t" data-sdk="java" data-page-node-id="iRvcMFU7xh1r4qZBknYokd">☕ 服务端 (Java)</div>
+          <div class="t" data-sdk="py" data-page-node-id="lJlQt0oFU1dcFKkNFEI9VB">🐍 服务端 (Python)</div>
+          <div class="t" data-sdk="agent" data-page-node-id="nibwLJ8nJtjAjvA8UCJ8xR">🤖 Agent (Python)</div>
+        </div>
+        <div class="sdk-copy" data-page-node-id="ODsAjlNhAkdjqKBWX02Fuf">📋 一键复制</div>
+        <div class="sdk-body" id="sdkBody" data-page-node-id="V3vCKmplN1TqhXOjJ0GnvA"><span class="c" data-page-node-id="WXbA8vOTzB9E7DBGuRxzaq">// wb-tracker-web SDK · v1.8.3 · 自动生成 2026-09-06</span><br data-page-node-id="necvh1yhFWoopQVfCw7Zse">
+<span class="c" data-page-node-id="jUoRS1uy5JnxLPwkfgUx4P">// 包含 turn_complete / agent_card_click / page_view 等 13 个事件</span><br data-page-node-id="1dFwnCHnaxLWVvS1stBPao">
+<br data-page-node-id="wxcBGwU5jJABkUtaqb79IO">
+<span class="kw" data-page-node-id="g6AkzOJRQ6RatZlVcvw2Og">export const</span> <span class="k" data-page-node-id="b1RZpXJmKdtWho43oMNviL">EventName</span> = {<br data-page-node-id="lMJF97jdY8jpPdYWvTqxxi">
+&nbsp;&nbsp;<span class="k" data-page-node-id="NAXM2s0LAotRdB9AFdn387">TURN_COMPLETE</span>: <span class="s" data-page-node-id="BWJE4GDlqrIlTn6mMRgKPY">'turn_complete'</span>,<br data-page-node-id="IJlbGIJFOkHMBl3cwJl1hR">
+&nbsp;&nbsp;<span class="k" data-page-node-id="FPtRBnorTJlnBzw4VXR9xL">AGENT_CARD_CLICK</span>: <span class="s" data-page-node-id="3nFTiYIpAh92UhLpiZufF0">'agent_card_click'</span>,<br data-page-node-id="e4GaIHNgkNuaDC7VfCbi9Y">
+&nbsp;&nbsp;<span class="k" data-page-node-id="akM8lHcWucNG8CqtD9L3pV">PAGE_VIEW</span>: <span class="s" data-page-node-id="agu4P2W0bVJZOmrBplIlEA">'page_view'</span>,<br data-page-node-id="Kizr8GUV0YMeCXENFvBbkV">
+&nbsp;&nbsp;<span class="k" data-page-node-id="6hxOqTreAIVVUeGNLzqeXi">TOOL_INVOKED</span>: <span class="s" data-page-node-id="z1FNDeEu9XrOiaR11FmA9v">'tool_invoked'</span>,<br data-page-node-id="P4I653xxGnmy99mm5czaOP">
+&nbsp;&nbsp;<span class="k" data-page-node-id="UBW9WvLzVXGzjOeawcPJkm">ANSWER_CITED</span>: <span class="s" data-page-node-id="Nb9Pm6YdQBbFORZyxCBAfg">'answer_cited'</span>,<br data-page-node-id="SAjaIQGSSQqS36rbhKPGBp">
+&nbsp;&nbsp;<span class="c" data-page-node-id="7xMKHx0xwPUIRFHrZxBl15">// ... + 8 个事件</span><br data-page-node-id="TIf8UtT7v0oftUSD4bo4RO">
+} <span class="kw" data-page-node-id="KiDr2IjfwQGsB7JiPJrrWy">as const</span>;<br data-page-node-id="oVD2ul0VMDhnCu2IF52yZC">
+<br data-page-node-id="baT67qjteJvM03Ur6NJKR0">
+<span class="kw" data-page-node-id="FwCIgF58peLXVAXwPokPRo">export interface</span> <span class="k" data-page-node-id="pW9b7oMj1TQ0TLdCrg6oS5">TurnCompleteProps</span> {<br data-page-node-id="aBirF0t7MsfsE6VLX52xoU">
+&nbsp;&nbsp;<span class="k" data-page-node-id="Xxt1AyCMPtKfHPWzybHLdM">turn_seq</span>: <span class="kw" data-page-node-id="h1hjfyCsxPtv1Ddqy8kQby">number</span>;<br data-page-node-id="G9smd0K7fChwsFGOtYvvSD">
+&nbsp;&nbsp;<span class="k" data-page-node-id="BrYjms4ejFv9F95gB34ruX">latency_ms</span>: <span class="kw" data-page-node-id="MPG4cj3h5Uwq55VVaKL8v7">number</span>;<br data-page-node-id="p8AgRgXsRSJB38kidF0242">
+&nbsp;&nbsp;<span class="k" data-page-node-id="BYzHAQXkMSpgHNjwY6aneP">input_tokens</span>: <span class="kw" data-page-node-id="OcSpXsl13OzISpGOCqspna">number</span>;<br data-page-node-id="hDDaGNzJkEt56CjzBU7ZeH">
+&nbsp;&nbsp;<span class="k" data-page-node-id="13QF8K2yIf0Te9xphKgoQC">output_tokens</span>: <span class="kw" data-page-node-id="xiwTXBu7nhGcHryz2prrI4">number</span>;<br data-page-node-id="dHhaOoyx9JUMtkUUexlIhv">
+&nbsp;&nbsp;<span class="k" data-page-node-id="DSl4qDQvdygCHIE6ZsOzd5">tool_call_count?</span>: <span class="kw" data-page-node-id="fzVr2WEeIyprIZUEAFII1y">number</span>;<br data-page-node-id="MayUjOzXNYeiLTeSmDUpF6">
+}<br data-page-node-id="JQgdfGVPPHcoSD95eDspKY">
+<br data-page-node-id="WsUhk6EfcR0FlDDyvEgAXt">
+<span class="c" data-page-node-id="fRlw2JAH5udA1a3DEzA62D">// 自动注入公共属性组：user / device / app / session / agent</span><br data-page-node-id="Yt2DmeWWZFKROcnN4FYvjP">
+<span class="kw" data-page-node-id="KsxiwQfC4GzGNM9XsKuT7i">import</span> { <span class="k" data-page-node-id="MmNtwuXcMjiDk39cIlCzEE">tracker</span> } <span class="kw" data-page-node-id="C5oSVD22lmMhZezCta6oot">from</span> <span class="s" data-page-node-id="PWakr2ECgmn0LI1ELeQLrg">'wb-tracker-web'</span>;<br data-page-node-id="BlXM89VyecMg1mLOdBlthr">
+<br data-page-node-id="aaBA5IF41RVdHynWCNVD6i">
+<span class="k" data-page-node-id="lHjWmGvkIDUXfYLmzAxBaC">tracker</span>.<span class="k" data-page-node-id="qIY7QS23aswlCyP8THRWsb">track</span>(<span class="k" data-page-node-id="Pvml6iXA389MdRRQnmEt0Y">EventName</span>.<span class="k" data-page-node-id="bBIagqWJDr3RzoSe19FmAx">TURN_COMPLETE</span>, {<br data-page-node-id="cPQB9BUQpm1CFE27IfXeqI">
+&nbsp;&nbsp;<span class="k" data-page-node-id="s3O04gXnus4x5do2LD0vG0">turn_seq</span>: <span class="num" data-page-node-id="BU5RFM6M2eMfiCDBO3qeSE">3</span>,<br data-page-node-id="2hUNQNiTSc66tfCe2WUE2V">
+&nbsp;&nbsp;<span class="k" data-page-node-id="1YhVrEbnv4cnYCHhqVCx1m">latency_ms</span>: <span class="num" data-page-node-id="HjWz83Hexlz3PTS6VlbS8l">2380</span>,<br data-page-node-id="Bz10GmB4yuy2u89u6LF53w">
+&nbsp;&nbsp;<span class="k" data-page-node-id="60XIjrLxGIMsL0kerobn5H">input_tokens</span>: <span class="num" data-page-node-id="glzACqTDwa7wFlCg43Rkbc">512</span>,<br data-page-node-id="8J5VZ00AP8tj7wHILuvXQw">
+&nbsp;&nbsp;<span class="k" data-page-node-id="YBf43LQoKOtG3LPv01DiFL">output_tokens</span>: <span class="num" data-page-node-id="PtTS0GlGe7aUEMgQ9gfCth">340</span>,<br data-page-node-id="Zmt3jxCvq5EtLzcMs87GhR">
+&nbsp;&nbsp;<span class="k" data-page-node-id="gUwnkBENrNL4Fw1lqbBcwK">tool_call_count</span>: <span class="num" data-page-node-id="SLkfwMmZzelknL7Nu2vjBu">2</span>,<br data-page-node-id="t8L0ZRJrbJwSUOYwVlGnWo">
+});</div>
+      </div>
+    </section>
+
+    <!-- ========== 视图5：实时观测 ========== -->
+    <section id="v5" class="view" data-page-node-id="ijSHK95GqLQvWFqH4H53Rr">
+      <div class="page-hd" data-page-node-id="RWq6YhvXUbEq8KuBdwEVPL">
+        <div data-page-node-id="i7ubvH8jPvGb87b6BQQD0v">
+          <div class="crumb" data-page-node-id="tqJeHqmTcaTG5fGBVLz78G">S2 埋点与事件治理 / 实时观测</div>
+          <h1 data-page-node-id="RPjrmA6yEZfTFrVqJOLDHk">📡 实时观测大盘</h1>
+        </div>
+        <div class="actions" data-page-node-id="VCQmMLs3BvWSWUx42wSmqb">
+          <select class="inp" data-page-node-id="saQGfIUv7J9GjSgT4Sl4v5"><option data-page-node-id="g8caFTOTruPYCHQZz5pSrM">全部 app</option><option data-page-node-id="cUBy9RVWIjd3pnFlXIc5Bu">workbuddy_desktop</option><option data-page-node-id="opzSf9dlbJqdmJtSODEVo1">workbuddy_mobile</option><option data-page-node-id="cYzpl2jO2N7ZEj7WrA6eoB">workbuddy_web</option></select>
+          <button class="btn ghost" data-page-node-id="3hT9Z09RJEI2QE9ysmE1cL">⤓ 导出样本</button>
+        </div>
+      </div>
+
+      <div class="kpi-row" data-page-node-id="vk9VCBuSHpgbX3CZ9qpEeR">
+        <div class="kpi" data-page-node-id="rDyA3KJhwS9aC72tBYuP2Y"><span class="ic" data-page-node-id="HBqLTNcZIbSYyhEhB0fbW0">📊</span><div class="label" data-page-node-id="iQKKW3yAq9qp6G2uQEW7Er">事件总数</div><div class="val" data-page-node-id="YApgTtQmc9CwZXn3SUidvF">4287<small data-page-node-id="FOyFNsmQpjlx0G4C5t6crE">已注册</small></div><div class="delta up" data-page-node-id="LGXclRoLt35sIC4rJtmJiQ">▲ 42 本周</div></div>
+        <div class="kpi" data-page-node-id="WJY2G0jum9p4xIOZKzLaZE"><span class="ic" data-page-node-id="ig1bifvzt5F2RGCGOrxkfR">📡</span><div class="label" data-page-node-id="oBI9sVFh3tmWPesqx3ccqx">5 端接入率</div><div class="val" data-page-node-id="hnWZqg2DQxkMTk0h3hhmqF">100<small data-page-node-id="wzp32bRcFaNptFSAClPLkO">% (5/5)</small></div><div class="delta up" data-page-node-id="DoERO9w0qBH1ooyfH3vi7w">▲ 5% MoM</div></div>
+        <div class="kpi" data-page-node-id="m23jJnn0nEPYtabwXtTQi6"><span class="ic" data-page-node-id="nHPnYUf5eaLOZdXFaZDPhp">📈</span><div class="label" data-page-node-id="enjMiGKu8SQL6SuS4vRuQC">整体覆盖率</div><div class="val" data-page-node-id="dNmaaqo0GpLk6YhC8c3Tal">97.4<small data-page-node-id="ZvvuI8U1clYD1hw3GgXlGL">%</small></div><div class="delta up" data-page-node-id="AHBlWqHrLhXp8uJBPeVIuy">▲ 1.2% MoM</div></div>
+        <div class="kpi" data-page-node-id="XdcfBaRH4nFMPBBGI9g082"><span class="ic" data-page-node-id="tPmEiR04VFTRIhjKf6qHJc">⚠️</span><div class="label" data-page-node-id="5RjhmjGoFavoYLxyEvYSst">整体丢失率</div><div class="val" data-page-node-id="kMOPLkjq7CkEdPuZZ1fJHb">1.2<small data-page-node-id="O4II2bscyB1OB0x4fbFchq">%</small></div><div class="delta down" data-page-node-id="fpLJGTn43Q1LOmA1Oe34Ja">▲ 0.3% MoM</div></div>
+        <div class="kpi" data-page-node-id="LEiUPA5rGrhtn7l0IGV2eB"><span class="ic" data-page-node-id="lhMINtnSfQ5aS2euXSjsrz">📦</span><div class="label" data-page-node-id="R1nfiFWkgwYxy3tPZwJGpA">今日上报量</div><div class="val" data-page-node-id="VArZVYCm3fYNOsXsMj6vXU">4.2<small data-page-node-id="rnhseMkQTpsdLybdw8Efpg">亿</small></div><div class="delta up" data-page-node-id="tXJ1iUtjrSLd5r3OVMXFzt">▲ 8% DoD</div></div>
+      </div>
+
+      <div class="card" data-page-node-id="KG4AP1EVgrrlkXfK01bCKg">
+        <div class="card-hd" data-page-node-id="ontkQuLURWoS9rWxW0DI3D"><h3 data-page-node-id="sPFlGYqYYCBT80Mwd2xZea">主题域健康分</h3><div class="meta" data-page-node-id="vAd5rEEFDh2lsBf5WuRYYN">按主题域聚合 · 实时刷新</div></div>
+        <div class="card-body" data-page-node-id="KPfr2siIBeJbEKgrXwrPGa">
+          <div class="v5-domain" data-page-node-id="ME4pREHIqu1r8xoEAG3GAY"><div class="name" data-page-node-id="Ea8Apb88K3qkUbU7S7VVof">🤖 agent</div><div class="bar" data-page-node-id="XyxNUcFCT2ynjEoGCCBuL2"><div style="width:96%" data-page-node-id="FQ9ZtstqOFz9WGBoDSR1TE"></div></div><div class="v" style="color:var(--ok)" data-page-node-id="SlVUJMSjJ1VeYXDgTuLrx0">96%</div><span class="badge ok" style="margin-left:8px" data-page-node-id="NvtjQNqlUgZ1SCQw3DVaW5">健康</span></div>
+          <div class="v5-domain" data-page-node-id="b0FkSx4QGrj9ic1PYFtnej"><div class="name" data-page-node-id="aJgd84z2HHrQbsOaE3yqsE">💼 commerce</div><div class="bar" data-page-node-id="8nS96GtG9ljPxot925Bglc"><div style="width:88%" data-page-node-id="1SgcAtx3TJR4UGAxzp0b4i"></div></div><div class="v" style="color:var(--ok)" data-page-node-id="nXWqTGWibApx6suCmXPxOt">88%</div><span class="badge ok" style="margin-left:8px" data-page-node-id="fQTS2x9Z08qvGZo5sDMvH2">健康</span></div>
+          <div class="v5-domain" data-page-node-id="jCJbpa03HWeEIeDebgKo1H"><div class="name" data-page-node-id="kwBUPee845PE1ClPV6N4Pc">📈 growth</div><div class="bar" data-page-node-id="LH02QR4vth2CxUCX7TSTEs"><div style="width:72%" data-page-node-id="TYN6h8CLHyrjkiGRMV4PfJ"></div></div><div class="v" style="color:var(--warn)" data-page-node-id="teaCA1yXdciRBDJeYncOWt">72%</div><span class="badge warn" style="margin-left:8px" data-page-node-id="cuanAiXjicU4CxQwamsmVO">需关注</span></div>
+          <div class="v5-domain" data-page-node-id="AF5RRTDAa7he9BhbKRUw0w"><div class="name" data-page-node-id="VV2kELLaj5LNlAyaSh8VJv">🛠️ infra</div><div class="bar" data-page-node-id="BdTCSkdmojwzF1DH2sZ5kE"><div style="width:94%" data-page-node-id="tMyDn7cNPyBY56fYfdvcXF"></div></div><div class="v" style="color:var(--ok)" data-page-node-id="VpMqvz3ah9Mn66fzWTDEcS">94%</div><span class="badge ok" style="margin-left:8px" data-page-node-id="rlybkAcK0Ky9BKS2H8FexS">健康</span></div>
+          <div class="v5-domain" data-page-node-id="xpmCU0wlDvMbkqLB4KDFpE"><div class="name" data-page-node-id="1OKh3OrVEm4ha91smIFjQh">📊 product</div><div class="bar" data-page-node-id="QpgQfNoLeMyqaFcqz97nzS"><div style="width:62%;background:var(--err)" data-page-node-id="HWZybGEPT98j4bhIrWTvE1"></div></div><div class="v" style="color:var(--err)" data-page-node-id="Tlw1EElqqfZ3qq7XnYq9PP">62%</div><span class="badge err" style="margin-left:8px" data-page-node-id="ymIYZIDEFftDQoMbGEqaDL">3 端 SDK 待升级</span></div>
+        </div>
+      </div>
+
+      <div class="v5-matrix" style="margin-bottom:14px" data-page-node-id="T3573oojJJWZTofJTAGIRl">
+        <div class="card-hd" data-page-node-id="yBkQz20PANekv8CzVXWY0z"><h3 data-page-node-id="5uASOvoEOHwksMD7CwhgIC">5 端 SDK 接入状态</h3><div class="meta" data-page-node-id="Okz8xS2HEVGZVuGw6MHGpE">实时 · 心跳 60s 一次</div></div>
+        <table data-page-node-id="qu9WBFzEodryqnjPYfofXO">
+          <thead data-page-node-id="DBICIBG5Uh8XuElyOtUcAx"><tr data-page-node-id="UXds0mzIlyzcmZjwJs4sBD"><th data-page-node-id="RXkRX40X9ScTb4bv3BJqUU"></th><th data-page-node-id="czRpvQOr5YiEsEI1ANM2E9">🌐 Web</th><th data-page-node-id="pZvEZGqvDmohtKgJy5O1Er">🖥️ 桌面</th><th data-page-node-id="Z1fWo9sFafTd3EGgYhKO6B">📱 移动</th><th data-page-node-id="dCUwnlfLDkVbgyc3GMZDpy">⚙️ 服务端</th><th data-page-node-id="V4jB7GFtLDvDm3sd41EYLn">🤖 Agent</th></tr></thead>
+          <tbody data-page-node-id="8RxhgEMQnH9qq5tko4897D">
+            <tr data-page-node-id="XD1JkGKSDl9kH9O0mSNsG8"><td data-page-node-id="pmyucUsN5WLK8zfvhMRCPd">SDK 版本</td><td data-page-node-id="mVqEIeIgtt2bd9JLN72JDO"><span class="v ok" data-page-node-id="bkXZ8UtXOqBUI7nKqLGsSe">1.8.3</span></td><td data-page-node-id="mgsalexOflXROCUJBKWLoR"><span class="v ok" data-page-node-id="wzb72PEzkrpnFdz8dVcdTd">1.8.3</span></td><td data-page-node-id="HRa2p69dAt21G3bpRwCIxM"><span class="v warn" data-page-node-id="y5lNgCuDOGJbzRqcftN98f">1.8.2</span></td><td data-page-node-id="GBYaG5Kh2ywbqK2CFMRhr5"><span class="v ok" data-page-node-id="G2Ui5RSuTzWrRONmZNDwL1">1.5.0</span></td><td data-page-node-id="mMKmLqCvGWXSFNB555hoRF"><span class="v warn" data-page-node-id="8u5yXCxsYQNGBnhGYSCcY8">0.9.1</span></td></tr>
+            <tr data-page-node-id="6JH5u9MIZNtl0sEqgrDm4E"><td data-page-node-id="AHYLh76vfn71cdi9eXHo8H">接入率</td><td data-page-node-id="yHYpiEXCSlnmxYlMNIPurA"><span class="v ok" data-page-node-id="qBxROQgI8mt6BoG6AlIxlt">100%</span></td><td data-page-node-id="rTl9FwJH0JX9p0UIPg9NY7"><span class="v ok" data-page-node-id="lXhrxr6yrsyRTj8JZBShep">100%</span></td><td data-page-node-id="Yu3iVFaiD6X47dDOKj4AYK"><span class="v warn" data-page-node-id="FtyY7POFUHiwtlCSoX4Li5">95%</span></td><td data-page-node-id="vfub9yIGMhukz7nWjCOFD3"><span class="v ok" data-page-node-id="WxABTNSTPGXPfSE4YWdxwv">100%</span></td><td data-page-node-id="flNj8gIxD8KZvBNyPxGReT"><span class="v warn" data-page-node-id="8Yngtgu60As0yc7C22iHi1">88%</span></td></tr>
+            <tr data-page-node-id="i6zgz7fJxK5yC8465BUuuU"><td data-page-node-id="25ARgtyumsiPqgtrOq0Kbp">丢包率</td><td data-page-node-id="emmC6pjdYCXXlIL7vUIiIU"><span class="v ok" data-page-node-id="MPxj6TGeUHpxOiJPsv00WW">0.3%</span></td><td data-page-node-id="1rScjnHFE7euwyP06k58D1"><span class="v ok" data-page-node-id="KHvbBWcaRdGwExVef25s9Y">0.5%</span></td><td data-page-node-id="o6tbksH9w1zQsRlGnbnG37"><span class="v warn" data-page-node-id="CNQfF0fGN4iGlr3eW12TeE">2.1%</span></td><td data-page-node-id="jW4qlHDFRoaEqhfAtulSFz"><span class="v ok" data-page-node-id="FfEmzSX9DOxZAYwyBvc2jY">0.0%</span></td><td data-page-node-id="Qs3Fjw1rhRMnRq6ED8IfQe"><span class="v err" data-page-node-id="BCqYFD4LNKuOUDv4F2H8DU">5.3%</span></td></tr>
+            <tr data-page-node-id="tajZFGZr9iTUS6NRp1KSNk"><td data-page-node-id="di0CW3fqqqYrZHQjwwUaKf">上报量（亿/日）</td><td data-page-node-id="mbDDT4xfRrokav6fwureOL">2.10</td><td data-page-node-id="3P99hWNWXhmsKZC3FhBH6S">0.80</td><td data-page-node-id="AjJi3gzS5H5ceCMcbfQXki">1.00</td><td data-page-node-id="cnSJ5U9LvlaPj4NjffwAsd">0.30</td><td data-page-node-id="8Xr5XEnmWbYHPDB4OonQph">0.05</td></tr>
+            <tr data-page-node-id="PtuSiX21X8CoMJi8eqrCHY"><td data-page-node-id="4vI7kuLzLPjvyFsKMQDDBS">网络状态</td><td data-page-node-id="7SHICUVUSsGHz09jECOeCN"><span class="badge ok" data-page-node-id="j9BQw2mDrijYCNxWrp87yG">✓ ok</span></td><td data-page-node-id="X75Se8143uNsQwHqFkFKgd"><span class="badge ok" data-page-node-id="BZd0BuguHv2Fk3RKeyhOik">✓ ok</span></td><td data-page-node-id="PDzrHbpwQbgACvQZHSV4iN"><span class="badge warn" data-page-node-id="g8D7hu4WpvBh1qfHcvrc95">⚠ 抖动</span></td><td data-page-node-id="O6SDAKQ4ti9ZSookGXT5Lc"><span class="badge ok" data-page-node-id="M6Kym6Q1pgx8PwbsPeB4uf">✓ ok</span></td><td data-page-node-id="DjBCqBIOHHygYK2oAgluHg"><span class="badge err" data-page-node-id="jW7YWyxBMmDonQSjaKmnez">⚠ 离线</span></td></tr>
+            <tr data-page-node-id="5EKOYQtyGoF7wcPP1H42yM"><td data-page-node-id="thNQ1zq1gvWDFBWJFrRXQg">Schema 拒绝</td><td data-page-node-id="SorYJs5TwVdQj4JfEzMbb9"><span class="v ok" data-page-node-id="NOPbhPwMLGi0qBOaFok2oh">0</span></td><td data-page-node-id="KPsqu20D5xEo4XBLd9JYPF"><span class="v ok" data-page-node-id="Shtuqzu4apIzi4eaRXTukp">0</span></td><td data-page-node-id="W0Xcci3qcostzjcQhfV7sw"><span class="v warn" data-page-node-id="YsdGZMZVxR8a4Entt7blAE">12</span></td><td data-page-node-id="loSQ7NIEx6uNHnu7HFLANb"><span class="v ok" data-page-node-id="i9dYjMPaBdCc01lURUnOep">0</span></td><td data-page-node-id="8YXGkZ8DVaEgNN4HGQYcY0"><span class="v err" data-page-node-id="YHf5B4LlFUtCYUoUPOKWd8">42</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="v5-grid" data-page-node-id="JMVRRTNaqC5enWKY1zJuKI">
+        <div class="v5-stream" data-page-node-id="91I4gAsv83RopQpwKdb5I5">
+          <div class="v5-stream-h" data-page-node-id="6ClcPo5mUJX4Ccq3H0RBzZ">
+            <h3 data-page-node-id="5FtBoldKS3Rb6A3xNZTvGc">实时事件流（最近 30 秒）</h3>
+            <span class="live" data-page-node-id="roFUDV4kuC3iGDmywAnFti"><span class="dot" data-page-node-id="iTmLWS9GS0K9iDUv8cDIyH"></span>LIVE · 12.4K EPS</span>
+          </div>
+          <div class="v5-stream-body" data-page-node-id="g7fKybCfblDqdua4auqU2y">
+            <div class="v5-stream-row" data-page-node-id="ddOKvgk1ToPIRv6ZJf6Vfk"><span class="ts" data-page-node-id="GozpbPwnPrIpGdzOL0WQfH">12:34:56.812</span><span class="ev" data-page-node-id="Weq2qXG7AooGvDsTYndbI8">turn_complete</span><span class="ct" data-page-node-id="YlcUDCLIffHFGlptkFpLB2">c_8f3a2b · turn_seq=3 · latency=2380ms</span><span class="badge ok" data-page-node-id="GlKh2NvF78F6e5UMF7zvP5">✓</span></div>
+            <div class="v5-stream-row" data-page-node-id="5egY5GfsOUGKNVTRrzop7z"><span class="ts" data-page-node-id="fUVcMDI4dKGoEexyVt7erc">12:34:56.805</span><span class="ev" data-page-node-id="QVgVWXIzyoRFqtsuesvxEc">turn_complete</span><span class="ct" data-page-node-id="dJJ0090QlTh2OO3IcibQLf">c_8f3a2b · server · turn_seq=3</span><span class="badge ok" data-page-node-id="gLITtlIAYDmEpN3PWxqiM0">✓ 主体</span></div>
+            <div class="v5-stream-row" data-page-node-id="kYrS4byKbMCKDgNiDtoASr"><span class="ts" data-page-node-id="g0sUHcpuGtNzlsiv8XDQyV">12:34:56.798</span><span class="ev" data-page-node-id="7FGUBnkNIxgPilWVwtP44M">agent_card_click</span><span class="ct" data-page-node-id="LCSGLeGYhVRFzAKBFN0B3B">card_id=c_xxx · pos=top</span><span class="badge ok" data-page-node-id="gkoExZ0k3dPpQ5D3xEwHnK">✓</span></div>
+            <div class="v5-stream-row" data-page-node-id="pUtQUD9sJoEWrEjEhBY8gA"><span class="ts" data-page-node-id="DLbmHAtp2BMIM2lJB84oBx">12:34:56.790</span><span class="ev" data-page-node-id="iTI8rmnSg2HG5KORaC0faR">page_view</span><span class="ct" data-page-node-id="gAEBU6SoPdX6oBLZLgP2vV">/agent/home · ref=home</span><span class="badge ok" data-page-node-id="3INMgHDvlvUBLNB6bFw14l">✓</span></div>
+            <div class="v5-stream-row" data-page-node-id="KtA31EHHuFexXM3a2g7peX"><span class="ts" data-page-node-id="m6kPcWhEB2rBGNzRZQK9WI">12:34:56.785</span><span class="ev" data-page-node-id="tPEGMCo8EijjfTFWxaqY00">agent_card_click</span><span class="ct" data-page-node-id="9h390t2etxU4YcsQ6sCj9U">card_id=c_xxx · pos=null</span><span class="badge warn" data-page-node-id="1LlPLp59d5Mwltxxm4wJOp">⚠ pos 缺失</span></div>
+            <div class="v5-stream-row" data-page-node-id="UimRfWBJWIqTr4zKX6Lp3C"><span class="ts" data-page-node-id="U8rbIUf7dSgrhQ2PCraBtP">12:34:56.778</span><span class="ev" data-page-node-id="3ZzOtvFFdg64VshAC6W7K2">tool_invoked</span><span class="ct" data-page-node-id="yck6TuRwi8MBDVv3wNTWN1">tool=search · conv=c_xxx</span><span class="badge ok" data-page-node-id="rKGuMFbpDAQakulzr4vt7y">✓</span></div>
+            <div class="v5-stream-row" data-page-node-id="c7qpeIqRTxq5hAFh9e5Wxi"><span class="ts" data-page-node-id="JEab5j8R1KrNPxMJNQ69lC">12:34:56.771</span><span class="ev" data-page-node-id="AnaMSCijjPGMSfRU1qx9rH">answer_cited</span><span class="ct" data-page-node-id="kDBwAYiKVbpCKoiqkIjhtj">3 sources · model=gpt-x</span><span class="badge ok" data-page-node-id="FXGDqzsMTSSGn2tBoaky2W">✓</span></div>
+            <div class="v5-stream-row" data-page-node-id="zwVMgtVdZbCqrHNzw5KV6B"><span class="ts" data-page-node-id="HlQMRCOEAM0xJcopeN8mkG">12:34:56.762</span><span class="ev" data-page-node-id="PNbqOJI6lyH897ltzMffsV">turn_complete</span><span class="ct" data-page-node-id="7agSdRN7w1BrBGFrLPFocn">c_8f3a2b · turn_seq=4 · latency=1820ms</span><span class="badge ok" data-page-node-id="CAN1Jj14toO2xFvdXzhCTY">✓</span></div>
+            <div class="v5-stream-row" data-page-node-id="oZQc2VfduTuEeiur2ubpq4"><span class="ts" data-page-node-id="NMIXHzOvmlyvHeOUUlQHvd">12:34:56.751</span><span class="ev" data-page-node-id="lOri9r2FfcIVUEBDhgsP0C">app_exit</span><span class="ct" data-page-node-id="MYTSWuyY3FJtlHZO3syHAv">duration=1800s · screen_count=8</span><span class="badge ok" data-page-node-id="DkrlzG5R71R2PiGdEhaw5x">✓</span></div>
+            <div class="v5-stream-row" data-page-node-id="Z6YslrKpCWeUhpO5TZM0Ez"><span class="ts" data-page-node-id="cfBNEGv7k9KjTfHSCCbEsy">12:34:56.745</span><span class="ev" data-page-node-id="M53wmz4bXXNwaOXnBfEQ4D">agent_card_click</span><span class="ct" data-page-node-id="Txmphv9cXjeP8xFQn5e4gY">card_id=c_yyy · pos=middle</span><span class="badge ok" data-page-node-id="9SDqGjUTATQy1WDQAc2dCV">✓</span></div>
+          </div>
+        </div>
+
+        <div class="card" data-page-node-id="GkAZywpBzHDdJ0BQzXlf1Z">
+          <div class="card-hd" data-page-node-id="6rhvRg9JBasTdCY91OuuOW"><h3 data-page-node-id="8Ep4p4aSIxgCXyeOMWQyM6">异常 Top 5（30min 聚合）</h3><div class="meta" data-page-node-id="VuJlG0QMEGEVN7iIUuF0Ii">聚类：(event, anomaly_type, time_window)</div></div>
+          <div data-page-node-id="Y2K2QR2foRAbSa5JmhxOAp">
+            <div class="v5-anomaly" data-page-node-id="KSritIoAKQTbBvtfWDFEww">
+              <span class="rank" data-page-node-id="Vb1EKi7Q59FlfbSPm5LHhY">#1</span>
+              <span class="desc" data-page-node-id="9PE8QelBFlVx0I5HJz2Q9Z"><b data-page-node-id="2MBNlJnpyJ5QBFO82buGCl">agent_card_click</b> · <code data-page-node-id="9fGoIXR2bMSZfy6jcHwDQz">position</code> 字段空值</span>
+              <span class="ct" data-page-node-id="TclYVq34IbY3ooHXKDn9Li">487 次 · <span class="badge warn" data-page-node-id="kVmR3T3SxrpoR3ruHnGwXy">WARN</span></span>
+            </div>
+            <div class="v5-anomaly" data-page-node-id="yYwFRr9NCBro6q7yGigx9w">
+              <span class="rank" data-page-node-id="j7u24TGGZf1WK5o1ssEy34">#2</span>
+              <span class="desc" data-page-node-id="BNZFtkOkQRp3KQdOjNtjVj"><b data-page-node-id="wCaKjLbamtDZ9Tbg38O9Qk">turn_complete</b> · 时序偏差 P95 = 95ms</span>
+              <span class="ct" data-page-node-id="dOvBtzhDD887Wtv26yckhp">1,245 次 · <span class="badge warn" data-page-node-id="fIcBbYzdOXGsKdMHRrR8KB">WARN</span></span>
+            </div>
+            <div class="v5-anomaly" data-page-node-id="sopt4oTm1RIeFW5FVbFaO8">
+              <span class="rank" data-page-node-id="EJwmpiEaRacdOFdZAJiyWe">#3</span>
+              <span class="desc" data-page-node-id="KGymG09ARx6AV940lZv8IT"><b data-page-node-id="EP9lhp0fr3eFYaHSxwLAXo">tool_invoked</b> · <code data-page-node-id="5NTEPAvVRGLTMtLh1k7kjf">tool_name</code> 未知枚举值</span>
+              <span class="ct" data-page-node-id="1ma6v5gdBqoV6iy35wMAN7">82 次 · <span class="badge info" data-page-node-id="YpHmRhrNb89OBiVNIXNBhw">INFO</span></span>
+            </div>
+            <div class="v5-anomaly" data-page-node-id="Q1aG5lHIBCKGa41BgqA10x">
+              <span class="rank" data-page-node-id="e4HNorZQUD4PpvGqx9HDcf">#4</span>
+              <span class="desc" data-page-node-id="SnUGiEW5z9lzIqaihGJ6DA"><b data-page-node-id="Sf7U35LeRqJhIvx3MxWzOg">answer_cited</b> · <code data-page-node-id="XIqtiYyUA8tANN7kk1OnYa">sources</code> 字段偶发空数组</span>
+              <span class="ct" data-page-node-id="534xX8VONYzvTAxxDkvswH">31 次 · <span class="badge info" data-page-node-id="dkILjHsZFQZshTHqdPPIC8">INFO</span></span>
+            </div>
+            <div class="v5-anomaly" data-page-node-id="Tj07rUpYr6lQo5ndme7url">
+              <span class="rank" data-page-node-id="6Nhg2uK7TyWj7Z5n2iCMmo">#5</span>
+              <span class="desc" data-page-node-id="4BlvQbuOkccCwpiDhhd7Ao"><b data-page-node-id="BwKsoUhyOqEl2CtFFwHSG4">page_view</b> · Agent SDK 上报重复（同 user 5s 内 3 次）</span>
+              <span class="ct" data-page-node-id="jd4dMZ9mEz7CCfTZKV022n">18 次 · <span class="badge err" data-page-node-id="bLGYbLmmF3yD302Tq2TjC7">BLOCK</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 视图6：验收工作台 ========== -->
+    <section id="v6" class="view" data-page-node-id="zjalXK7ktghNq8DXhef1dR">
+      <div class="page-hd" data-page-node-id="1bK6rvf5wMeloGqTOOWKT8">
+        <div data-page-node-id="78iOlEdV5f7nfv8rnOLgDU">
+          <div class="crumb" data-page-node-id="R8xC5uXPSb6yApBLEPto3n">S2 埋点与事件治理 / 验收工作台</div>
+          <h1 data-page-node-id="GUzzcPK8ayrUe3HzVoiQgN">✅ 验收工作台</h1>
+        </div>
+        <div class="actions" data-page-node-id="iJRWqHybB97NnfjsdcLAr1">
+          <button class="btn ghost" data-page-node-id="4ZbHdUJF3wp0QEFPPfWQEs">⚙ 验收规则</button>
+          <button class="btn primary" data-page-node-id="7Dn7tF5Q8KtANih6C6WosS">+ 触发验收</button>
+        </div>
+      </div>
+
+      <div class="v6-summary" data-page-node-id="2rByJsPl6ejcHkdjq2KRO4">
+        <div class="info" data-page-node-id="kbfEkgYulViP09qtdpLW4K">
+          <h3 data-page-node-id="3d1cifLz1kN1N8mOewDunk">本周验收整体状态</h3>
+          <div class="sub" data-page-node-id="UlqTbTsnZTCQZrcZSTpgGV">提交 18 · 验收中 5 · 通过 11 · 不通过 2 · 待修复 2</div>
+        </div>
+        <div class="stats" data-page-node-id="Ivib5lyNinG5wMeto4x7FT">
+          <div class="item" data-page-node-id="Zk4CXRyXnt5G6cjibTzH4J"><span class="v" data-page-node-id="5VvrmDA6SQuwfn3e27kvno">97%</span><span class="l" data-page-node-id="GOjw3vfeHpVC4Tcr9s5nvX">整体通过率</span></div>
+          <div class="item" data-page-node-id="fBaDAClhsfZC3ktPDl2mGV"><span class="v" data-page-node-id="OPWlp9OTP1N0Mq95MW9SXk">2.4h</span><span class="l" data-page-node-id="Pcu9Mkdfcg10GIIyAQNTzF">平均耗时</span></div>
+          <div class="item" data-page-node-id="X3yyZ03V0cSWMkDZAOWDHN"><span class="v" data-page-node-id="hifdlANMiAeSmIsjMbEin6">5</span><span class="l" data-page-node-id="tap8Ine6EC3aWrzlyui3az">待我处理</span></div>
+        </div>
+      </div>
+
+      <div class="tabs" data-page-node-id="mtiaDFRjc2z2hCDBAfoGhv">
+        <div class="tab active" data-tab="v6t1" data-page-node-id="CgjnVjIUGjGpdr65nuU5U5">待处理 <span class="badge warn" style="margin-left:4px" data-page-node-id="MRVZSmpLBvStheA5AKZgDF">5</span></div>
+        <div class="tab" data-tab="v6t2" data-page-node-id="lFQCD6u22EazNJPjXvBfna">验收中 <span class="badge primary" style="margin-left:4px" data-page-node-id="N4Am7H7r1uhbhMePrR7TAG">3</span></div>
+        <div class="tab" data-tab="v6t3" data-page-node-id="AIYigTn2OWOEZ3JVU0ONd0">已通过</div>
+        <div class="tab" data-tab="v6t4" data-page-node-id="GqjLlvTRM1rpvlMsB2LGek">不通过 <span class="badge err" style="margin-left:4px" data-page-node-id="KXkrcveh6x7nIsfxGSnMCJ">2</span></div>
+        <div class="tab" data-tab="v6t5" data-page-node-id="86GThN6BbcZHlIBgvtoflX">待修复</div>
+      </div>
+
+      <!-- Tab: 待处理 -->
+      <div class="tab-content active" id="tab-v6t1" data-page-node-id="EFa8ZR2xufRG3qggMXEWxf">
+        <div class="v6-row" data-page-node-id="W9bgajygLXWJNjod3FZKoR">
+          <div class="left" data-page-node-id="xQZBFCauvUHz2m7pKnS2xt">
+            <div class="name" data-page-node-id="vHAkogj5WOWrMyxuriGp4h">📋 Agent 卡片改版一期</div>
+            <div class="meta" data-page-node-id="3GVSYpErzDPKlGuQTVCx9Z">REQ-2451 · 提交人 王皓 · 提交于 2026-09-05 14:00 · 已等待 1h 22m</div>
+          </div>
+          <div class="center" data-page-node-id="698esbGJyCEuvemBgoEuQm">
+            <span class="acc ok" data-page-node-id="oi3qpAHUImUlxMa4CEdwjS"><span class="v" data-page-node-id="oDrrHaHZGxAy1GqaN4MzRO">98%</span>覆盖率 ≥99% ⚠</span>
+            <span class="acc ok" data-page-node-id="M5aWoKCsJC6z6kADROdcPA"><span class="v" data-page-node-id="QeoMnNhv93ekOkaYeuc5Qp">99.5%</span>完整率 ≥99%</span>
+            <span class="acc" data-page-node-id="UiVOyMaAUQxKG86ckQYgB0"><span class="v" data-page-node-id="yMgwj8OG3hnNo0RaG5Ge9a">—</span>时序</span>
+            <span class="acc" data-page-node-id="ZlXj1Wh373Sh6eQ3nobVgY"><span class="v" data-page-node-id="D1c0ClerHzAtTTGQNGZdTb">—</span>对账</span>
+          </div>
+          <div class="right" data-page-node-id="lVyPuvWWX9Imyll5bBxWBC">
+            <button class="btn sm" data-page-node-id="QvnzpZbtgL8Kw1uX3PQqk5">查看</button>
+            <button class="btn sm primary" data-page-node-id="ogcKBSVXicWtPMTAH3MyQS">启动验收</button>
+          </div>
+        </div>
+        <div class="v6-row" data-page-node-id="3eOqFLdpBYAZW5haT6ECxg">
+          <div class="left" data-page-node-id="R1HmPr89BTyQZqDQ7a8qd0">
+            <div class="name" data-page-node-id="9IAaJyLnaSzuCNX5B7AB5r">📋 工具调用埋点补齐</div>
+            <div class="meta" data-page-node-id="BJs5uV4QyWqpFkAqTNyoU5">REQ-2389 · 提交人 张磊 · 已等待 0h 30m</div>
+          </div>
+          <div class="center" data-page-node-id="ka399DGNmAPG30Z4d8y95M">
+            <span class="acc ok" data-page-node-id="iCerFzidU4khVzvPP2RI3Z"><span class="v" data-page-node-id="0gvOo0AKOubANA6B3jgVE2">100%</span>覆盖率</span>
+            <span class="acc ok" data-page-node-id="Ue7eHs57W52HqdJ8Cr4MBj"><span class="v" data-page-node-id="v8tSMUUIhEUblhSK9fHE2X">100%</span>完整率</span>
+            <span class="acc warn" data-page-node-id="2UdEPzF0IxY0ywYu2WppMo"><span class="v" data-page-node-id="wecy8PKpSbbLRLaD6kH6Lg">95ms</span>时序 P95 ⚠</span>
+            <span class="acc" data-page-node-id="TaUAL8Bmik3Dz5XgjViAD2"><span class="v" data-page-node-id="Hti0YkXzsK9XvLQu9sxOWU">—</span>对账</span>
+          </div>
+          <div class="right" data-page-node-id="7ui42MIbZN3d17SuQcLDgE">
+            <button class="btn sm" data-page-node-id="11hseVwtLMtIgYH6XZPGlt">查看详情</button>
+            <button class="btn sm primary" data-page-node-id="oAPgCyHtLCFVXtFyK6bytJ">继续</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: 验收中 -->
+      <div class="tab-content" id="tab-v6t2" data-page-node-id="VfaBDe8H0ukbasi21hEBGm">
+        <div class="v6-row" data-page-node-id="Gq183K2FnN1d4L7DlGDd1I">
+          <div class="left" data-page-node-id="BDcpXMh4xCs48XYtcHIuVh">
+            <div class="name" data-page-node-id="vlqVnDGjQQbsAc9eJth5GY">📋 对话首页改版（验收中）</div>
+            <div class="meta" data-page-node-id="oZnE5YsbLtocmHlZ0OxW4R">REQ-2511 · 执行人 陈薇 · 已执行 1h 12m</div>
+          </div>
+          <div class="center" data-page-node-id="xlEgCjuy8g2NpOIOWCguoo">
+            <span class="acc ok" data-page-node-id="7gGb0k2ewnzjfVG8k1pYCf"><span class="v" data-page-node-id="U5AOrBWrteRHDId8HueSOb">99.2%</span>覆盖率</span>
+            <span class="acc" data-page-node-id="9PWrRcri62AnQu9YP2if4c"><span class="v" data-page-node-id="cSaztqqk5zZ2HAEFVwR7Jh">采集样本...</span>完整率</span>
+            <span class="acc" data-page-node-id="FiSz2JiTVqgRBVpDTCAQJT"><span class="v" data-page-node-id="E1ae34BHmDVaSKLwN0GRbM">采集样本...</span>时序</span>
+            <span class="acc" data-page-node-id="E6wCwJ83jzmh9AN2gnQpF2"><span class="v" data-page-node-id="M9bolzAgXVfBb94DdIH095">待对账</span>对账</span>
+          </div>
+          <div class="right" data-page-node-id="tfEQRu2BBMMW3IAyQm4Kjw">
+            <button class="btn sm" data-page-node-id="G2I7oGRzTFux1WuWpWqh7s">查看进度</button>
+            <button class="btn sm" data-page-node-id="ODIAZVlyDge7oXBST9N7CN">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: 不通过 (展示详细卡片) -->
+      <div class="tab-content" id="tab-v6t4" data-page-node-id="rqbvz29Pi39R9kMbZZjDWL">
+        <div class="v6-detail" data-page-node-id="Crktos7dSMUSb5kdDNn9Jh">
+          <div class="v6-detail-h" data-page-node-id="ZiCEdCQSMVE1HPUgUXkr2T">
+            <h3 data-page-node-id="CJlA9OZwdSbnFWSSjWwLq2">❌ 验收不通过：工具调用埋点补齐 v2</h3>
+            <div class="sub" data-page-node-id="FIn2KCqBAVeafmqbsugRia">REQ-2389 · 提交人 张磊 · 验收时间 2026-09-04 16:42</div>
+          </div>
+          <div class="v6-detail-body" data-page-node-id="T0Nofi7ci9bWaMU1MJBEJF">
+            <div class="v6-acc" data-page-node-id="knPnnuEQ2W5KuEp6ddJltv">
+              <div class="v6-acc-cell ok" data-page-node-id="GGNcABylTwSwb9RtJkaMx0"><div class="l" data-page-node-id="4D1HLPnNYS2QFFOdyFnV4H"><span class="ic" data-page-node-id="ErIUMl2Wc3jKZGZVqU7HUa">✓</span>覆盖率</div><div class="v" data-page-node-id="e7waA4zXmKBr2pyGhIDj5G">100<small style="font-size:13px" data-page-node-id="wVBPKLXSV0DVqSP02HwWbi">%</small></div><div class="th" data-page-node-id="YV1QxGaIqkbj5odwUk2gQ6">阈值 ≥99%</div></div>
+              <div class="v6-acc-cell ok" data-page-node-id="fQCbaGEXp9YbgDVB6dbeDp"><div class="l" data-page-node-id="xzQEM97WbZ3ZJgfzP4NBXQ"><span class="ic" data-page-node-id="102MQRqa4rapWjuaoCYRAI">✓</span>完整率</div><div class="v" data-page-node-id="BwDWsq2UJgOGxJZNXUqENh">99.6<small style="font-size:13px" data-page-node-id="mbcoQkDAbE0agPHFIcmlMW">%</small></div><div class="th" data-page-node-id="QAs6p6HnhG9ztBNZE8s9xT">阈值 ≥99%</div></div>
+              <div class="v6-acc-cell err" data-page-node-id="I3tQFNUEufVnbIVPR4B8k9"><div class="l" data-page-node-id="Gq2ugQVEN5E51LA4CKfMb4"><span class="ic" data-page-node-id="JXYB5Q7eWpAOM4CzWTnwzp">✗</span>时序</div><div class="v" data-page-node-id="eOeB15z1nZgS0Qfl1YNEnT">125<small style="font-size:13px" data-page-node-id="rlhDiFK7xxaGRUgoXoIq8k">ms</small></div><div class="th" data-page-node-id="q2QgXBUjFTG0rRrEq6AZJZ">P95 偏差 ≤ 100ms</div></div>
+              <div class="v6-acc-cell ok" data-page-node-id="DdcjZgSgSVPZMMyfUfEXDz"><div class="l" data-page-node-id="XmPSIPUlnQKSHDGy5SMOSB"><span class="ic" data-page-node-id="e9jyb7YpPAawzoqXPLJxYL">✓</span>对账</div><div class="v" data-page-node-id="UuUlDV0qQ8YZcvlVQ7Rx63">99.8<small style="font-size:13px" data-page-node-id="AkAw2gxxZDplFXerML28m2">%</small></div><div class="th" data-page-node-id="0E6UaqSAwuAJjypDrAutx3">阈值 ≥99.5%</div></div>
+            </div>
+
+            <div class="v6-fail-reason" data-page-node-id="6cqYn1qmMCBfpShwxWLU7e">
+              <h5 data-page-node-id="fibbxuCWAgmBQIeUdlBINp">失败原因：时序 P95 偏差超阈值</h5>
+              <ul data-page-node-id="kM37BUQevla5VjU1MXgpk5">
+                <li data-page-node-id="NQnlleMVMb0ZDRDnWHEDFK">客户端 <code data-page-node-id="Xz44t8Vbmx1wazzTEDvCsE">client_ts</code> 比服务端 <code data-page-node-id="l6HETIckJ0kNOGsUKUHn2N">server_ts</code> 平均提前 <b data-page-node-id="aBgCkFxIhZHEnRmujIn1TO">125ms</b>（阈值 100ms）</li>
+                <li data-page-node-id="ewhyvsmmn43bEfJOEKXUAW">影响样本：<b data-page-node-id="PAsS1760BSpHMZqLCq5RU5">1,245 / 24,500</b>（5.1%）</li>
+                <li data-page-node-id="gyngu3I9nCeF3Tv0fJJnnZ">根因推断：客户端时钟漂移（macOS 14.6 已知问题）</li>
+                <li data-page-node-id="gdAp7pBFy7BHlWb07gyYiQ">下游影响：DWD 层时序排序需调整；KPI 计算偏差 +0.3%</li>
+              </ul>
+            </div>
+
+            <div style="background:var(--primary-bg);border:1px solid var(--primary-2);border-radius:7px;padding:10px 14px;margin-bottom:12px;font-size:12.5px" data-page-node-id="fj2chMJ7RUp2pZWqslWLhU">
+              <b style="color:#0e7490" data-page-node-id="YmDK2g1aAAvmI8eRozLyq6">建议修复路径：</b>
+              <ol style="margin-left:20px;margin-top:6px;color:#155e75" data-page-node-id="HUBPp0qC0YUapW6tBjS5Bi">
+                <li data-page-node-id="gGjSXtQWIudFZrL3lNyAb7">SDK 端启用 NTP 校准（<code data-page-node-id="18Bk0vH3I4037eq96TYdnd">tracker.enableNtpSync(true)</code>）</li>
+                <li data-page-node-id="97s1Xi6deSouOG423cfxqj">服务端时序优先：DW 层去重时按 <code data-page-node-id="rtzZCqzCsTgyLf0W0VlQZ7">server_ts</code> 排序</li>
+                <li data-page-node-id="YCSVIrKIqogkNhoqM6WOrU">添加时序偏差监控告警</li>
+              </ol>
+            </div>
+
+            <div style="display:flex;gap:8px" data-page-node-id="DNONMpAxdTy6Xtr4Bhe2H8">
+              <button class="btn danger" data-page-node-id="azz1d7QXTraTLaG7y5JwOA">返回实施（生成修复工单）</button>
+              <button class="btn" data-page-node-id="9yVmA58ufYg77XfVK8Laa1">强制通过（需 DG 审批）</button>
+              <button class="btn ghost" data-page-node-id="bzYtok1SyXdjRbrZXLejHz">查看影响面</button>
+              <button class="btn ghost" data-page-node-id="FibrtEq480RBovz0WyehnE">下载报告</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+// ============ Mock 数据 ============
+const M_EVENTS = [
+  {name:'turn_complete',          cat:'business',   desc:'一轮对话结束',                status:'published', version:'v1.3.0', cov:0.98, owner:'王皓', cat_label:'业务过程'},
+  {name:'agent_card_click',       cat:'interaction',desc:'Agent 卡片点击',               status:'completed',  version:'v1.2.0', cov:0.97, owner:'张磊', cat_label:'交互'},
+  {name:'page_view',              cat:'generic',    desc:'页面浏览',                    status:'completed',  version:'v2.1.0', cov:0.99, owner:'陈薇', cat_label:'通用'},
+  {name:'tool_invoked',           cat:'agent',      desc:'Agent 工具调用',               status:'completed',  version:'v0.9.0', cov:0.94, owner:'王皓', cat_label:'Agent'},
+  {name:'answer_cited',           cat:'agent',      desc:'引用溯源',                    status:'completed',  version:'v0.7.0', cov:0.92, owner:'王皓', cat_label:'Agent'},
+  {name:'conversation_start',     cat:'business',   desc:'会话开始',                    status:'completed',  version:'v1.0.0', cov:0.96, owner:'张磊', cat_label:'业务过程'},
+  {name:'app_launch',             cat:'generic',    desc:'应用启动',                    status:'completed',  version:'v1.5.0', cov:1.00, owner:'李明', cat_label:'通用'},
+  {name:'app_exit',               cat:'generic',    desc:'应用退出',                    status:'completed',  version:'v1.5.0', cov:0.99, owner:'李明', cat_label:'通用'},
+  {name:'tool_call_submit',       cat:'interaction',desc:'提交工具调用',                  status:'completed',  version:'v1.0.0', cov:0.95, owner:'张磊', cat_label:'交互'},
+  {name:'intent_recognized',      cat:'agent',      desc:'意图识别',                    status:'completed',  version:'v0.5.0', cov:0.91, owner:'王皓', cat_label:'Agent'},
+  {name:'turn_complete_v2',       cat:'business',   desc:'一轮对话结束 v2 (旧)',         status:'deprecated', version:'v0.9.0', cov:0.00, owner:'张磊', cat_label:'业务过程'},
+  {name:'api_error',              cat:'system',     desc:'API 调用失败',                  status:'completed',  version:'v1.0.0', cov:1.00, owner:'赵琳', cat_label:'系统'},
+];
+
+// ============ 视图切换 ============
+function showView(v){
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById(v).classList.add('active');
+  document.querySelectorAll('.side-nav a').forEach(a => a.classList.remove('active'));
+  document.querySelector(`.side-nav a[data-view="${v}"]`)?.classList.add('active');
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.side-nav a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    showView(a.dataset.view);
+  });
+});
+
+// ============ 视图1：渲染事件列表 ============
+function renderEventList(){
+  const html = M_EVENTS.map(e => {
+    const statusBadge = e.status === 'published' ? 'ok' : e.status === 'deprecated' ? 'gray' : 'primary';
+    const lock = e.status === 'completed' ? '<span class="lock">🔒</span>' : '';
+    return `<div class="event-row" onclick="showView('v2')">
+      <span class="name">${e.name}${lock}</span>
+      <span class="badge ${statusBadge}">${e.status === 'published' ? '已上线' : e.status === 'deprecated' ? '已废弃' : '设计中'}</span>
+      <span class="badge primary" style="margin-right:8px">${e.cat_label}</span>
+      <span class="desc">${e.desc}</span>
+      <span class="cov"><div class="progress" style="width:60px"><div style="width:${e.cov*100}%" class="${e.cov>=0.95?'ok':e.cov>=0.85?'':'warn'}"></div></div> ${(e.cov*100).toFixed(0)}%</span>
+      <span class="v">${e.version} · ${e.owner}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('eventList').innerHTML = html;
+}
+renderEventList();
+
+// ============ Tab 切换（事件详情 + 验收工作台） ============
+document.querySelectorAll('.tabs').forEach(tabs => {
+  tabs.addEventListener('click', e => {
+    const t = e.target.closest('.tab');
+    if (!t || !t.dataset.tab) return;
+    tabs.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const scope = tabs.parentElement;
+    scope.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    scope.querySelector('#tab-' + t.dataset.tab)?.classList.add('active');
+  });
+});
+
+// ============ SDK Tab 切换 ============
+document.querySelectorAll('.sdk-tabs').forEach(tabs => {
+  tabs.addEventListener('click', e => {
+    const t = e.target.closest('.t');
+    if (!t) return;
+    tabs.querySelectorAll('.t').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+
+// ============ 点击事件卡片选中 ============
+document.querySelectorAll('.evt-card').forEach(c => {
+  c.addEventListener('click', e => {
+    if (e.target.classList.contains('del')) return;
+    document.querySelectorAll('.evt-card').forEach(x => x.classList.remove('selected'));
+    c.classList.add('selected');
+  });
+});
+
+// ============ 分类筛选（mock） ============
+function filterCat(cat){
+  alert('筛选分类：' + cat + '（原型交互）');
+}
+</script>
+</body>
+</html>

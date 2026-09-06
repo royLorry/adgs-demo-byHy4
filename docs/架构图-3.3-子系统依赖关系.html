@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="oPtPWvBMZi2atQbfSdktpD">
+<head data-page-node-id="msWIFqzHROinB5xiFwTw4l">
+<meta charset="utf-8" data-page-node-id="0yIhP5jF2S98AWPRW1CXwU">
+<meta name="viewport" content="width=device-width, initial-scale=1" data-page-node-id="06rpMQrmvimKxF1QBoCsL5">
+<title>3.3 子系统依赖关系图 · 智能体数据治理系统（ADGS）</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --panel:#fff; --line:#e2e6ea; --line-soft:#eef1f4;
+    --ink:#1f2328; --ink-2:#3f4650; --muted:#767e8a;
+    --gov:#7c3aed; --gov-bg:#f7f4ff;
+    --data:#2563eb; --data-bg:#eff4ff;
+    --cons:#0d9488; --cons-bg:#eefaf7;
+    --f-flow:#1d4ed8;   /* 数据流 / 数据交付 */
+    --f-loop:#7c3aed;   /* 治理面内部依赖 */
+    --f-ctrl:#d97706;   /* 跨平面管控下发 */
+    --f-back:#0891b2;   /* 跨平面元数据回流 */
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);
+       font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Segoe UI",system-ui,-apple-system,sans-serif;
+       -webkit-font-smoothing:antialiased;font-size:14px}
+  .page{max-width:1200px;margin:0 auto;padding:28px 24px 60px}
+
+  h1{font-size:21px;margin:0 0 6px;letter-spacing:.2px}
+  h1 .num{color:var(--muted);font-weight:600;margin-right:8px}
+  .subtitle{color:var(--muted);font-size:13px;margin:0 0 18px;line-height:1.7}
+
+  /* 依赖组摘要 */
+  .groups{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+  .gcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 13px}
+  .gcard .t{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .gcard .sw{width:22px;height:0;border-top:2.5px solid;flex:0 0 22px}
+  .gcard .b{font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:6px}
+  .gcard .b code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;color:var(--ink-2);background:#f4f6f8;padding:0 3px;border-radius:3px}
+
+  /* 图例 */
+  .legend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;background:var(--panel);
+          border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:12px}
+  .legend .lead{font-size:12px;color:var(--muted);font-weight:600}
+  .tg{display:inline-flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;user-select:none;
+      padding:4px 10px 4px 7px;border-radius:20px;border:1px solid var(--line);background:#fcfcfd}
+  .tg input{margin:0;accent-color:#475569;cursor:pointer}
+  .tg .sw{width:24px;height:0;border-top-width:2.5px;border-top-style:solid;flex:0 0 24px}
+  .tg.off{opacity:.42;text-decoration:line-through}
+  .hint{margin-left:auto;font-size:11.5px;color:var(--muted)}
+  .hint b{color:var(--ink-2);font-weight:600}
+
+  .scroll{overflow-x:auto;padding-bottom:6px}
+  .diagram{position:relative;min-width:780px;display:flex;gap:110px}
+
+  .plane{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 13px 13px}
+  .phead{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding-bottom:8px;margin-bottom:10px;border-bottom:1px dashed var(--line)}
+  .phead .nm{font-size:13px;font-weight:700}
+  .phead .en{font-size:10.5px;color:var(--muted)}
+  .phead .mods{margin-left:auto;font-size:10.5px;color:var(--muted)}
+
+  .plane.gov{border-color:#e4dcfb;background:linear-gradient(180deg,#fbfaff 0%,#fff 60%);
+             flex:0 0 360px;padding-left:130px;position:relative}
+  .plane.gov .phead .nm{color:var(--gov)}
+  .plane.dat{border-color:#d8e4fb;background:linear-gradient(180deg,#fafcff 0%,#fff 60%)}
+  .plane.dat .phead .nm{color:var(--data)}
+  .plane.con{border-color:#cfeae4;background:linear-gradient(180deg,#f7fdfc 0%,#fff 60%)}
+  .plane.con .phead .nm{color:var(--cons)}
+
+  /* 左侧弧线走廊的竖排说明 */
+  .gutlab{position:absolute;left:16px;top:52px;width:104px;font-size:10.5px;color:#a89bd8;
+          line-height:1.6;font-weight:600;letter-spacing:.06em}
+  .gutlab b{display:block;color:var(--gov);font-size:11px;margin-bottom:4px}
+
+  .rcol{flex:0 0 240px;display:flex;flex-direction:column;justify-content:space-between}
+
+  .node{position:relative;background:#fff;border:1px solid var(--line);border-radius:8px;
+        padding:7px 10px;transition:box-shadow .15s,border-color .15s}
+  .node .row{display:flex;align-items:center;gap:7px}
+  .node .code{font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;flex:0 0 auto}
+  .node .nm{font-size:11.5px;font-weight:650;color:var(--ink);line-height:1.3}
+  .node .sb{font-size:10px;color:var(--muted);margin-top:2px}
+  [data-node].hl{box-shadow:0 0 0 2.5px rgba(37,99,235,.30);border-color:#93b4f7;z-index:3}
+
+  .gov .node{border-color:#e4ddfa;border-left:3px solid var(--gov);margin-bottom:12px}
+  .gov .node:last-child{margin-bottom:0}
+  .gov .node .code{background:var(--gov-bg);color:var(--gov)}
+  .gov .node.hub{border-left-width:4px;border-left-color:#6d28d9;background:#fdfcff;
+                 box-shadow:0 1px 3px rgba(124,58,237,.10)}
+  .gov .node.hub .nm{font-size:12px;font-weight:700}
+  .gov .node.hub .code{background:var(--gov);color:#fff}
+
+  .dat .node{border-color:#d8e4fb;margin-bottom:12px}
+  .dat .node:last-child{margin-bottom:0}
+  .dat .node .code{background:var(--data-bg);color:var(--data)}
+  .con .node{border-color:#cfeae4;margin-bottom:12px}
+  .con .node:last-child{margin-bottom:0}
+  .con .node .code{background:var(--cons-bg);color:var(--cons)}
+
+  /* 连线 */
+  .wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:visible}
+  .wires path{fill:none;stroke-width:1.8;transition:opacity .15s,stroke-width .15s}
+  .wires path.k-flow{stroke:var(--f-flow)}
+  .wires path.k-loop{stroke:var(--f-loop)}
+  .wires path.k-ctrl{stroke:var(--f-ctrl);stroke-dasharray:6 4}
+  .wires path.k-back{stroke:var(--f-back);stroke-dasharray:2.5 4;stroke-linecap:round}
+  .wires.dim path{opacity:.10}
+  .wires.dim path.hl{opacity:1;stroke-width:2.7}
+
+  .labels{position:absolute;inset:0;pointer-events:none;z-index:6}
+  .lbl{position:absolute;left:0;top:0;white-space:nowrap;font-size:10.5px;font-weight:600;
+       padding:1.5px 6px;border-radius:5px;background:rgba(255,255,255,.95);
+       border:1px solid var(--line);color:var(--ink-2);transition:opacity .15s}
+  .lbl.k-flow{color:var(--f-flow);border-color:#cddcf8}
+  .lbl.k-loop{color:#6d28d9;border-color:#ddd3fb}
+  .lbl.k-ctrl{color:#a95c05;border-color:#f1dcb8}
+  .lbl.k-back{color:#07748f;border-color:#c5e5ee}
+  .labels.dim .lbl{opacity:.12}
+  .labels.dim .lbl.hl{opacity:1;box-shadow:0 1px 4px rgba(0,0,0,.13)}
+
+  .diagram.hide-flow .k-flow{display:none}
+  .diagram.hide-loop .k-loop{display:none}
+  .diagram.hide-ctrl .k-ctrl{display:none}
+  .diagram.hide-back .k-back{display:none}
+
+  details.edgelist{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:0 14px}
+  details.edgelist summary{cursor:pointer;font-size:12.5px;font-weight:700;padding:12px 0;color:var(--ink-2)}
+  .elgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 22px;padding-bottom:14px}
+  .elgrid h4{margin:0 0 7px;font-size:12px}
+  .elgrid ul{margin:0;padding-left:17px}
+  .elgrid li{font-size:11.5px;color:var(--ink-2);line-height:1.8}
+  .elgrid li b{font-weight:700}
+  code.e{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;background:#f4f6f8;padding:0 3px;border-radius:3px}
+
+  footer{margin-top:16px;font-size:11.5px;color:var(--muted);line-height:1.85}
+  footer b{color:var(--ink-2)}
+</style>
+</head>
+<body data-page-node-id="IYMIBDoC6aT9JY8Yg2Bsx7">
+<div class="page" data-page-node-id="bHq7LJfBcNSn1uvJos4nHA">
+
+  <h1 data-page-node-id="UVr5FDzGUV9eJowAlHzKHq"><span class="num" data-page-node-id="AHpnxzpTG4uWXONxV0IyOM">3.3</span>子系统依赖关系图</h1>
+  <p class="subtitle" data-page-node-id="3HDt9Gwb82BeUqbAQyJBHb">
+    14 个子系统的 26 条依赖，按<b data-page-node-id="frYqrofh5dOibvESSH2qBA">平面内依赖</b>与<b data-page-node-id="S9UvQGpTrF8zRmMq2xFg2Q">跨平面依赖</b>两类组织。治理面在左侧呈一条纵向依赖链，其内部的
+    <code data-page-node-id="EHOFbkfQ39PuJlkwoqDEXL">S1 → S7 → S8 → S9 → S14 → S1</code> 构成治理自闭环；跨平面依赖则成对出现（管控下发 ↔ 元数据回流）。
+  </p>
+
+  <div class="groups" data-page-node-id="c86fpeRg50VKqCrICp1IOP">
+    <div class="gcard" data-page-node-id="2Dmh0KltDu7WTYptK7OTGF">
+      <div class="t" data-page-node-id="joIk1WwdATGk4HEsLjnif1"><span class="sw" style="border-top-color:var(--f-loop)" data-page-node-id="BG2QhmTVpeW9akVORdy10y"></span>治理面内部依赖与闭环</div>
+      <div class="b" data-page-node-id="sNsPDOC0JMKAioB1pjKdlf"><code data-page-node-id="jfRDDoR9ueND6Alpz6ksMb">S1→S7→S8→S9→S14→S1</code> 治理自闭环；<code data-page-node-id="yD0Dt5TmsgsasIXJHC8nQn">S1→S2/S6/S7/S11</code> S1 作为元数据底座向各治理子系统供给事实源。</div>
+    </div>
+    <div class="gcard" data-page-node-id="Ns60JbHtf4s5lKsaNVjEgS">
+      <div class="t" data-page-node-id="RCKsORqkIYyswYnExdCYNu"><span class="sw" style="border-top-color:var(--f-ctrl)" data-page-node-id="HxiNcq2PE9nEmTrvqES1SJ"></span>跨平面 · 管控下发</div>
+      <div class="b" data-page-node-id="EHks2Jn3XBbXfiDPHmPpgq">治理面 → 数据面/消费面：事件契约、脱敏策略、质量卡点、主题域与分层规范、生命周期策略、指标口径与权限策略。</div>
+    </div>
+    <div class="gcard" data-page-node-id="4yMTFy1hqmbXexaf4wjJqc">
+      <div class="t" data-page-node-id="fiSJ7AetUSrV0Yu68Iis3q"><span class="sw" style="border-top-color:var(--f-back)" data-page-node-id="SREnBbf6JHbwAL19oBCNED"></span>跨平面 · 元数据回流</div>
+      <div class="b" data-page-node-id="wd5eWe3lQmMqcKv2T37iVT">数据面 → 治理面：上报质量数据、管道血缘、模型血缘、建模产物。任一管控下发均有对应回流路径，避免"治理空转"。</div>
+    </div>
+  </div>
+
+  <div class="legend" data-page-node-id="e3SyunfTPSuYB40PaD4VP1">
+    <span class="lead" data-page-node-id="3EBhR1zPjQPC6oPez1soKL">链路过滤</span>
+    <label class="tg" data-kind="flow" data-page-node-id="D3Pwnl5ArkzXDItucgIV9H"><input type="checkbox" checked data-page-node-id="Z36QPBQ6hYXmW1NTbS5RGa"><span class="sw" style="border-top-color:var(--f-flow)" data-page-node-id="g46KVvxiyzNrX6rJElMbfr"></span>数据流 / 交付</label>
+    <label class="tg" data-kind="loop" data-page-node-id="Uh67izJ1itz8rbmigyy0gl"><input type="checkbox" checked data-page-node-id="g3cvU6JC7Y64vDyTPO5phh"><span class="sw" style="border-top-color:var(--f-loop)" data-page-node-id="bZqlIu5U4ykltiVc1qyvaZ"></span>治理面内部</label>
+    <label class="tg" data-kind="ctrl" data-page-node-id="bvvig47uWS3wHEa0uwdwSM"><input type="checkbox" checked data-page-node-id="IZrAEs10AWCQAngdVJri1j"><span class="sw" style="border-top-color:var(--f-ctrl);border-top-style:dashed" data-page-node-id="oYTlc1P7Z9MkqgrSyFK8dA"></span>管控下发</label>
+    <label class="tg" data-kind="back" data-page-node-id="RdJd7hKEGjaT4WZlMNdy4S"><input type="checkbox" checked data-page-node-id="b1vRfEdFrLBsZEIVsX4LhO"><span class="sw" style="border-top-color:var(--f-back);border-top-style:dotted" data-page-node-id="9OeWVnXYzspEb4NNfGs7Uy"></span>元数据回流</label>
+    <span class="hint" data-page-node-id="5IF0S7CFVVfKM04d5OXGIF">交互：<b data-page-node-id="vQ89CO5vuFkfB6uDlJ7Zi5">悬停任意子系统</b>可高亮其全部入向/出向依赖，其余连线淡出。</span>
+  </div>
+
+  <div class="scroll" data-page-node-id="WGOTESaGK0D91Z8hTrNrFO">
+  <div class="diagram" id="diagram" data-page-node-id="EUi0lclCcLTYGfbEZKirGL">
+
+    <!-- 治理面 -->
+    <div class="plane gov" data-page-node-id="xnxN9MmXDSTGAmhwytXqzz">
+      <div class="gutlab" data-page-node-id="7xFCZtV90zDgP2gYcn8zNb"><b data-page-node-id="aWHHkJBGhxvDkEHoAcdqi6">治理闭环走廊</b>跨节点的内部依赖以弧线绕行，避免压盖中间子系统</div>
+      <div class="phead" data-page-node-id="Y1Aw39FLoARABF2jP6rbFo">
+        <span class="nm" data-page-node-id="vWs6eyNS1vFR9pWZk2Jvm0">治理面 Governance Plane</span>
+        <span class="mods" data-page-node-id="3FVQJ6uQPVoDgzOhRhtMCR">9 个子系统</span>
+      </div>
+      <div class="node hub" data-node="S1" data-page-node-id="lGyF4zYNqcP8dDJ3x8Ljn4"><div class="row" data-page-node-id="LtqkGLu3JEnFhhohBZudbC"><span class="code" data-page-node-id="9x0dirR2oaviKp8MvuqiFx">S1</span><span class="nm" data-page-node-id="gDiYMONt9FAY6C4em6J9Sw">元数据与资产中心</span></div><div class="sb" data-page-node-id="XVlE9pqdieCRl9cguHFjFH">全局元数据底座 · 分类体系定义者</div></div>
+      <div class="node" data-node="S2" data-page-node-id="Aa0AItd7hbSXAm4GtlxWWd"><div class="row" data-page-node-id="YUL6kElaI02EskLISXG0vJ"><span class="code" data-page-node-id="WWCpsaEr6ilMQxBvEpTyCF">S2</span><span class="nm" data-page-node-id="qKKSlpUf4Q9DTjxchb6Uis">埋点与事件治理</span></div></div>
+      <div class="node" data-node="S6" data-page-node-id="8hs1wvNP67LFZtDHwyl8V0"><div class="row" data-page-node-id="46yVC0HcFGbCNyGIAJjTm5"><span class="code" data-page-node-id="esXIWemx36wplDtrfUzsGI">S6</span><span class="nm" data-page-node-id="LVxhOkg9EQnAWFbAgZWuLC">指标与语义层</span></div></div>
+      <div class="node" data-node="S11" data-page-node-id="wwaQNB2ILCafQAx7U1crwo"><div class="row" data-page-node-id="dg0C0F6QgfuoTUCUp9Xi3C"><span class="code" data-page-node-id="HNYj4CvzNgIdIm7cIaA20K">S11</span><span class="nm" data-page-node-id="zTle5lRo3BMoVsEBS10w70">安全与合规</span></div></div>
+      <div class="node" data-node="S7" data-page-node-id="YroM0xNvf1S7V5FVoe6Lub"><div class="row" data-page-node-id="IcTdC7Gxu0HKjMo8FR9ZIt"><span class="code" data-page-node-id="wnbTMnoyzErEZ6syzMO9NT">S7</span><span class="nm" data-page-node-id="UWAQfkcaIYm2pclDpM2NBl">血缘与影响分析</span></div></div>
+      <div class="node" data-node="S8" data-page-node-id="916HcGfWQ46WYwFg9A1T1i"><div class="row" data-page-node-id="4SQKCoTd9UCSs1iW61fkXI"><span class="code" data-page-node-id="ZiqtZjrx11x6FbUv02Iwtt">S8</span><span class="nm" data-page-node-id="pRa4tiOtDkimdmfMMrdhxl">数据质量治理</span></div></div>
+      <div class="node" data-node="S9" data-page-node-id="XVhxGy9s6ZhYEKGPTuhiED"><div class="row" data-page-node-id="DAYCwyFEGP7IDlHIzATi04"><span class="code" data-page-node-id="KHNmKTvUC2cOUTjFnLISEF">S9</span><span class="nm" data-page-node-id="qGS4LDKLu3rApWhv4GjypC">协作与工作流</span></div></div>
+      <div class="node" data-node="S14" data-page-node-id="Z8U95ErQw0rREysqaWGdUA"><div class="row" data-page-node-id="ASei8mLUxCma6kgNaXvpoD"><span class="code" data-page-node-id="l9eBzSeIdGALoKh9ICFvmf">S14</span><span class="nm" data-page-node-id="97CB6uShWTcnNn0Gg6AD8m">治理度量与运营</span></div></div>
+      <div class="node" data-node="S12" data-page-node-id="OuyMWdcpimc6RMAhe1WFjk"><div class="row" data-page-node-id="4BYeTsWyAI2MxZxlK5rsuI"><span class="code" data-page-node-id="6PFtGtfjbfJhM7q7YBV1Oh">S12</span><span class="nm" data-page-node-id="CwhueHm84tVmqdECFTJ7P0">生命周期与成本</span></div></div>
+    </div>
+
+    <!-- 数据面 + 消费面 -->
+    <div class="rcol" data-page-node-id="HEAuu0D4MJ5rZB3SdfYyey">
+      <div class="plane dat" data-page-node-id="WZv93MMgGA4VkR3FFD6AnD">
+        <div class="phead" data-page-node-id="L7p218lfndngwjaY50HNuu"><span class="nm" data-page-node-id="tllPYjISupZwJ2BuQlTldh">数据面 Data Plane</span><span class="mods" data-page-node-id="UOWFMljLxUcTUFazy4QWL7">S3 · S4 · S5</span></div>
+        <div class="node" data-node="S3" data-page-node-id="dd4SW0GYw8wdBiONV6L6GV"><div class="row" data-page-node-id="um0294oxVgavTqbtgOYKNB"><span class="code" data-page-node-id="Saswyr1jz6AuDmEOwtP1G8">S3</span><span class="nm" data-page-node-id="F3BOrCKOHBC0XxoCDGULDc">采集与接入网关</span></div></div>
+        <div class="node" data-node="S4" data-page-node-id="zQl70RtG5jogevHRCxAm2v"><div class="row" data-page-node-id="3ZnXZkRm7CFhwcwcYmxhxt"><span class="code" data-page-node-id="8y5y9gKfyuyeUuGPkV8FKQ">S4</span><span class="nm" data-page-node-id="SshucTfSX4CAyvdvojq76a">管道编排</span></div></div>
+        <div class="node" data-node="S5" data-page-node-id="pNVBo0SdjVbK6G0MUvREUc"><div class="row" data-page-node-id="rKEJ3xcZEzWUoUapGu7Csy"><span class="code" data-page-node-id="RAK99lbKc0W7ZpbkgQoR1u">S5</span><span class="nm" data-page-node-id="0mOgiqiyKtpXE5l58kOY6O">数仓建模</span></div></div>
+      </div>
+
+      <div class="plane con" data-page-node-id="07jAgQ7DL9PQtlA3J6CeoO">
+        <div class="phead" data-page-node-id="A8jCA7bE6BEMHLnBG77CEp"><span class="nm" data-page-node-id="pDreqE9Nf1QIwzRMCyw8yd">消费面 Consumption Plane</span><span class="mods" data-page-node-id="0GHBWQ8v6FzgHLThwIyfHH">S10 · S13</span></div>
+        <div class="node" data-node="S10" data-page-node-id="W1AQjyX3cDMWGFXetLi3bD"><div class="row" data-page-node-id="dBIeC1xQOOoqFgOX4Gw9bh"><span class="code" data-page-node-id="x9DQRW7L4fCvbNrUqVun0Y">S10</span><span class="nm" data-page-node-id="Bzcur1x7TzwLlPXmcLcBMR">Agent 评测与 Trace</span></div></div>
+        <div class="node" data-node="S13" data-page-node-id="somTxISiBE6RMnNvQSOtb0"><div class="row" data-page-node-id="abs13lFZBKbLFCoQlObj4N"><span class="code" data-page-node-id="AKV7zqLma3D0AmC0URLCgS">S13</span><span class="nm" data-page-node-id="mr4GEx0DEuHPIAD6qmIxBW">数据服务与数据集</span></div></div>
+      </div>
+    </div>
+
+    <svg class="wires" id="wires" data-page-node-id="yYDeuHdG4rFkkTFtNP8F6S">
+      <defs data-page-node-id="HKgG36CWB06w0VBXXpQgNo">
+        <marker id="a-flow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5.6" markerHeight="5.6" orient="auto" markerUnits="strokeWidth" data-page-node-id="6lSk0t8AyqhfP4sG2UiW17"><path d="M0,0 L10,5 L0,10 Z" fill="#1d4ed8" data-page-node-id="QZmQ3DdAP4tQQ3MjXBIqEV"/></marker>
+        <marker id="a-loop" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5.6" markerHeight="5.6" orient="auto" markerUnits="strokeWidth" data-page-node-id="yzaZfx8nVRmyVQUDoyFCWL"><path d="M0,0 L10,5 L0,10 Z" fill="#7c3aed" data-page-node-id="sby9z640gwRcR31EPZDOrJ"/></marker>
+        <marker id="a-ctrl" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5.6" markerHeight="5.6" orient="auto" markerUnits="strokeWidth" data-page-node-id="eOJ1YxEQCvhyzoJNhNS4Yc"><path d="M0,0 L10,5 L0,10 Z" fill="#d97706" data-page-node-id="XMFUbUJGMEqrw3t9aRFQCd"/></marker>
+        <marker id="a-back" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="5.6" markerHeight="5.6" orient="auto" markerUnits="strokeWidth" data-page-node-id="xGLVZtbmcG5VyRBcHL1qb9"><path d="M0,0 L10,5 L0,10 Z" fill="#0891b2" data-page-node-id="x6UoAOLAp0OLY7D9ZViCGA"/></marker>
+      </defs>
+      <g id="paths" data-page-node-id="uLRAsZEzskkzRRGF3WtBi1"></g>
+    </svg>
+    <div class="labels" id="labels" data-page-node-id="8DyUeDCOAioI1S7x5ZN1dq"></div>
+
+  </div>
+  </div>
+
+  <details class="edgelist" data-page-node-id="zzwfUCCFH6DgZ5XKeaPn9N">
+    <summary data-page-node-id="xZg2baGoAvGB2b5GjLLld6">依赖清单（文本版 · 与图完全对应，26 条）</summary>
+    <div class="elgrid" id="elgrid" data-page-node-id="QiE3NrtszqhBqpggHyFnmk"></div>
+  </details>
+
+  <footer data-page-node-id="zkarOGtyAVbr8Lhbt2ji5f">
+    <b data-page-node-id="192jNeWbDeeQ2lnmm7TK4X">读图提示</b>　① 左侧紫色弧线区是治理面<b data-page-node-id="Ru3Y6vBBht1fqDqXbfyMPC">跨节点内部依赖</b>的专用走廊（S1→S6/S11/S7、S14→S1），弧线从左边缘绕行，绝不压盖中间子系统。
+    ② <b data-page-node-id="cDZjMDDYmFJIF288dIaCzA">S1 是全局最强依赖</b>：出向 6 条（S2/S5/S6/S7/S11/S13）、入向 2 条（S5/S14），不可用将导致全部治理能力降级（NFR-05）。
+    ③ <b data-page-node-id="l5ZMWgGN0aAPbesxQhBTOM">跨平面依赖成对出现</b>：S8→S4（质量卡点）对应 S3→S8（上报质量回流）；S1→S5（定义权）对应 S5→S1（执行权回写）——单向管控会导致治理空转。
+    ④ <b data-page-node-id="SH2UYtLjm6WrMFAGBRq38w">S7 是治理闭环枢纽</b>：S8 异常定位、S6 口径变更影响、S12 下线决策、S11 删除权执行均依赖 S7。
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var diagram = document.getElementById('diagram');
+  var svg     = document.getElementById('wires');
+  var gPaths  = document.getElementById('paths');
+  var layer   = document.getElementById('labels');
+
+  // mode: 'h' 水平进出 | 'v' 垂直进出 | 'arc' 左边缘弧线绕行（跨节点内部依赖）
+  var EDGES = [
+    // —— 数据流 / 数据交付 ——
+    {s:'S3',  t:'S4',  k:'flow', m:'v', label:'',            off:0},
+    {s:'S4',  t:'S5',  k:'flow', m:'v', label:'',            off:0},
+    {s:'S5',  t:'S10', k:'flow', m:'v', label:'评测集构建',   off:-16},
+    {s:'S5',  t:'S13', k:'flow', m:'v', label:'数据集供给',   off:16},
+    {s:'S10', t:'S13', k:'flow', m:'v', label:'统一出口',     off:0},
+    // —— 治理面内部依赖与闭环 ——
+    {s:'S1',  t:'S2',  k:'loop', m:'v',   label:'分类体系',   off:0},
+    {s:'S1',  t:'S6',  k:'loop', m:'arc', label:'资产语义',   bow:-35},
+    {s:'S1',  t:'S11', k:'loop', m:'arc', label:'分级基准',   bow:-60},
+    {s:'S1',  t:'S7',  k:'loop', m:'arc', label:'资产关系',   bow:-85},
+    {s:'S7',  t:'S8',  k:'loop', m:'v',   label:'血缘定位',   off:0},
+    {s:'S8',  t:'S9',  k:'loop', m:'v',   label:'异常建单',   off:0},
+    {s:'S9',  t:'S14', k:'loop', m:'v',   label:'流程数据',   off:0},
+    {s:'S14', t:'S1',  k:'loop', m:'arc', label:'度量反哺',   bow:-110},
+    // —— 跨平面 · 管控下发 ——
+    {s:'S2',  t:'S3',  k:'ctrl', m:'h', label:'事件契约',      off:-10},
+    {s:'S11', t:'S3',  k:'ctrl', m:'h', label:'脱敏策略',      off:10},
+    {s:'S1',  t:'S5',  k:'ctrl', m:'h', label:'主题域 · 分层规范', off:-12},
+    {s:'S12', t:'S5',  k:'ctrl', m:'h', label:'生命周期策略',  off:12},
+    {s:'S8',  t:'S4',  k:'ctrl', m:'h', label:'质量卡点',      off:0},
+    {s:'S1',  t:'S13', k:'ctrl', m:'v', label:'资产元数据',    off:-24},
+    {s:'S11', t:'S13', k:'ctrl', m:'v', label:'权限策略',      off:0},
+    {s:'S6',  t:'S13', k:'ctrl', m:'v', label:'指标口径',      off:24},
+    // —— 跨平面 · 元数据回流 ——
+    {s:'S5',  t:'S1',  k:'back', m:'h', label:'产物挂载',      off:-14},
+    {s:'S3',  t:'S8',  k:'back', m:'h', label:'上报质量回流',  off:-12},
+    {s:'S4',  t:'S7',  k:'back', m:'h', label:'管道血缘',      off:12},
+    {s:'S5',  t:'S7',  k:'back', m:'h', label:'模型血缘',      off:26},
+    {s:'S5',  t:'S6',  k:'back', m:'h', label:'建模产物',      off:0}
+  ];
+
+  var MARKER = {flow:'a-flow', loop:'a-loop', ctrl:'a-ctrl', back:'a-back'};
+  var GAP = 3;
+
+  function box(id){
+    var el = diagram.querySelector('[data-node="'+id+'"]');
+    if(!el) return null;
+    var r = el.getBoundingClientRect(), c = diagram.getBoundingClientRect();
+    return {el:el,
+      left:r.left-c.left, right:r.right-c.left, top:r.top-c.top, bottom:r.bottom-c.top,
+      cx:r.left-c.left+r.width/2, cy:r.top-c.top+r.height/2};
+  }
+
+  function anchor(a, b, mode, off){
+    if(mode === 'arc'){                       // 左边缘进出，弧线整体位于节点列左侧
+      return {sx:a.left-GAP, sy:a.cy+off, tx:b.left-GAP, ty:b.cy+off};
+    }
+    var dx = b.cx-a.cx, dy = b.cy-a.cy;
+    if(mode === 'h'){
+      var toRight = dx >= 0;
+      return {sx: toRight ? a.right+GAP : a.left-GAP,  sy:a.cy+off,
+              tx: toRight ? b.left-GAP  : b.right+GAP, ty:b.cy+off};
+    }
+    var toDown = dy >= 0;
+    return {sx:a.cx+off, sy: toDown ? a.bottom+GAP : a.top-GAP,
+            tx:b.cx+off, ty: toDown ? b.top-GAP    : b.bottom+GAP};
+  }
+
+  var pathEls = [], labelEls = [];
+
+  function draw(){
+    svg.setAttribute('viewBox','0 0 '+diagram.scrollWidth+' '+diagram.scrollHeight);
+    svg.setAttribute('preserveAspectRatio','none');
+    gPaths.innerHTML = ''; layer.innerHTML = '';
+    pathEls = []; labelEls = [];
+    var placed = [];
+
+    EDGES.forEach(function(e){
+      var a = box(e.s), b = box(e.t);
+      if(!a || !b) return;
+      var p = anchor(a, b, e.m, e.off||0), d;
+
+      if(e.m === 'arc'){
+        var bw = e.bow || -50;
+        d = 'M'+p.sx+','+p.sy+' C'+(p.sx+bw)+','+p.sy+' '+(p.tx+bw)+','+p.ty+' '+p.tx+','+p.ty;
+      } else if(e.m === 'h'){
+        var dx = p.tx-p.sx, sg = dx >= 0 ? 1 : -1;
+        var kh = Math.min(Math.max(Math.abs(dx)*0.5, 34), 130);
+        d = 'M'+p.sx+','+p.sy+' C'+(p.sx+sg*kh)+','+p.sy+' '+(p.tx-sg*kh)+','+p.ty+' '+p.tx+','+p.ty;
+      } else {
+        var dy = p.ty-p.sy, sv = dy >= 0 ? 1 : -1;
+        var kv = Math.min(Math.max(Math.abs(dy)*0.45, 34), 130);
+        d = 'M'+p.sx+','+p.sy+' C'+p.sx+','+(p.sy+sv*kv)+' '+p.tx+','+(p.ty-sv*kv)+' '+p.tx+','+p.ty;
+      }
+
+      var path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d', d);
+      path.setAttribute('class', 'k-'+e.k);
+      path.setAttribute('marker-end', 'url(#'+MARKER[e.k]+')');
+      path.dataset.s = e.s; path.dataset.t = e.t; path.dataset.k = e.k;
+      gPaths.appendChild(path); pathEls.push(path);
+      if(!e.label) return;
+
+      var lab = document.createElement('div');
+      lab.className = 'lbl k-'+e.k; lab.textContent = e.label;
+      lab.dataset.s = e.s; lab.dataset.t = e.t; lab.dataset.k = e.k;
+      layer.appendChild(lab);
+
+      var pt = path.getPointAtLength(path.getTotalLength()*0.42);
+      var x = pt.x, y = pt.y, w = lab.offsetWidth, h = lab.offsetHeight;
+      for(var it=0; it<24; it++){
+        var moved = false;
+        for(var j=0;j<placed.length;j++){
+          var q = placed[j];
+          if(Math.abs(x-q.x) < (w+q.w)/2+8 && Math.abs(y-q.y) < (h+q.h)/2+4){
+            y = q.y + (h+q.h)/2 + 5; moved = true;
+          }
+        }
+        if(!moved) break;
+      }
+      placed.push({x:x,y:y,w:w,h:h});
+      lab.style.transform = 'translate(-50%,-50%) translate('+x+'px,'+y+'px)';
+      labelEls.push(lab);
+    });
+
+    svg.classList.remove('dim'); layer.classList.remove('dim');
+  }
+
+  var current = null;
+  function highlight(node){
+    current = node;
+    if(!node){
+      svg.classList.remove('dim'); layer.classList.remove('dim');
+      pathEls.forEach(function(p){p.classList.remove('hl');});
+      labelEls.forEach(function(l){l.classList.remove('hl');});
+      diagram.querySelectorAll('[data-node]').forEach(function(n){n.classList.remove('hl');});
+      return;
+    }
+    svg.classList.add('dim'); layer.classList.add('dim');
+    pathEls.forEach(function(p){ p.classList.toggle('hl', p.dataset.s===node||p.dataset.t===node); });
+    labelEls.forEach(function(l){ l.classList.toggle('hl', l.dataset.s===node||l.dataset.t===node); });
+    diagram.querySelectorAll('[data-node]').forEach(function(n){
+      var id = n.getAttribute('data-node');
+      if(id === node){ n.classList.add('hl'); return; }
+      n.classList.remove('hl');
+      if(pathEls.some(function(p){
+        return (p.dataset.s===node&&p.dataset.t===id)||(p.dataset.t===node&&p.dataset.s===id);
+      })) n.classList.add('hl');
+    });
+  }
+  diagram.addEventListener('mouseover', function(ev){
+    var n = ev.target.closest ? ev.target.closest('[data-node]') : null;
+    if(!n) return;
+    var id = n.getAttribute('data-node');
+    if(id !== current) highlight(id);
+  });
+  diagram.addEventListener('mouseleave', function(){ highlight(null); });
+
+  document.querySelectorAll('.tg').forEach(function(tg){
+    var input = tg.querySelector('input');
+    input.addEventListener('change', function(){
+      diagram.classList.toggle('hide-'+tg.dataset.kind, !input.checked);
+      tg.classList.toggle('off', !input.checked);
+    });
+  });
+
+  (function buildList(){
+    var NAME = {
+      S1:'S1 元数据与资产中心', S2:'S2 埋点与事件治理', S3:'S3 采集与接入网关', S4:'S4 管道编排',
+      S5:'S5 数仓建模', S6:'S6 指标与语义层', S7:'S7 血缘与影响分析', S8:'S8 数据质量治理',
+      S9:'S9 协作与工作流', S10:'S10 Agent 评测与 Trace', S11:'S11 安全与合规',
+      S12:'S12 生命周期与成本', S13:'S13 数据服务与数据集', S14:'S14 治理度量与运营'
+    };
+    var G = [
+      {k:'flow', t:'数据流 / 数据交付', c:'var(--f-flow)', d:'数据实体在链路中流动'},
+      {k:'loop', t:'治理面内部依赖与闭环', c:'var(--f-loop)', d:'元数据底座供给 + 治理自闭环'},
+      {k:'ctrl', t:'跨平面 · 管控下发', c:'var(--f-ctrl)', d:'规范 · 契约 · 策略 · 卡点'},
+      {k:'back', t:'跨平面 · 元数据回流', c:'var(--f-back)', d:'元数据 · 血缘 · 运行指标'}
+    ];
+    var wrap = document.getElementById('elgrid');
+    G.forEach(function(g){
+      var box = document.createElement('div');
+      var h = document.createElement('h4'); h.style.color = g.c; h.textContent = g.t;
+      var p = document.createElement('div');
+      p.style.cssText = 'font-size:11px;color:var(--muted);margin:-3px 0 7px'; p.textContent = g.d;
+      var ul = document.createElement('ul');
+      EDGES.filter(function(e){return e.k===g.k;}).forEach(function(e){
+        var li = document.createElement('li');
+        li.innerHTML = '<code class="e">'+NAME[e.s]+'</code> → <code class="e">'+NAME[e.t]+'</code>'
+                     + (e.label ? '　<b>'+e.label+'</b>' : '');
+        ul.appendChild(li);
+      });
+      box.appendChild(h); box.appendChild(p); box.appendChild(ul); wrap.appendChild(box);
+    });
+  })();
+
+  draw();
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(draw); }
+  var t; window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(draw,120); });
+})();
+</script>
+</body>
+</html>
